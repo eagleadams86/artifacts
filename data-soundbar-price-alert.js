@@ -1,0 +1,2 @@
+window.taskData = window.taskData || {};
+window.taskData["soundbar-price-alert"] = {"updatedAt": "2026-06-15T09:40:37Z", "content": "No alert today. Samsung HW-Q600F prices as of June 15, 2026:\n- Amazon: $397.99 (FREE shipping)\n- Best Buy: $699.99 (FREE shipping)\n- Newegg: $697.99 (FREE shipping)\n- Walmart: $599.00 (FREE shipping)\nLowest today: $397.99 at Amazon. Still $97.99 above your $300 target."};
