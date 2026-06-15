@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Task Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d1117; color: #e6edf3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding: 32px 24px; }
+  h1 { font-size: 28px; font-weight: 600; margin-bottom: 6px; color: #f0f6fc; }
+  .subtitle { color: #8b949e; font-size: 14px; margin-bottom: 36px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); gap: 24px; }
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; overflow: hidden; }
+  .card-header { padding: 18px 20px 14px; border-bottom: 1px solid #21262d; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .card-title { font-size: 16px; font-weight: 600; color: #f0f6fc; }
+  .card-schedule { font-size: 12px; color: #58a6ff; background: #1f3a5c; border-radius: 6px; padding: 3px 8px; white-space: nowrap; flex-shrink: 0; }
+  .card-meta { font-size: 12px; color: #8b949e; margin-top: 4px; }
+  .card-body { padding: 20px; font-size: 14px; line-height: 1.7; color: #c9d1d9; white-space: pre-wrap; word-break: break-word; max-height: 480px; overflow-y: auto; }
+  .card-body::-webkit-scrollbar { width: 6px; }
+  .card-body::-webkit-scrollbar-track { background: #0d1117; }
+  .card-body::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+  .empty { color: #484f58; font-style: italic; }
+  .alert { color: #f85149; font-weight: 600; }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .last-updated { font-size: 11px; color: #484f58; margin-top: 8px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #238636; display: inline-block; margin-right: 6px; }
+  .status-dot.stale { background: #484f58; }
+</style>
+</head>
+<body>
+<div class="header-row">
+  <div>
+    <h1>Claude Task Dashboard</h1>
+    <div class="subtitle">Live outputs from your scheduled Claude tasks</div>
+  </div>
+</div>
+<div class="grid" id="grid"></div>
+
+<script>
+const TASKS = [
+  {
+    id: 'daily-news-briefing',
+    title: '🗞️ Daily News Briefing',
+    schedule: '6:00 AM & 6:00 PM daily',
+    description: 'Local Pendleton/Buffalo/WNY, US, and global headlines'
+  },
+  {
+    id: 'soundbar-price-alert',
+    title: '🔊 Soundbar Price Alert',
+    schedule: 'Every day at 12:00 AM',
+    description: 'Samsung HW-Q600F — alert when ≤$300 incl. shipping'
+  },
+  {
+    id: 'ios-beta-weekly-check',
+    title: '📱 iOS Beta Weekly Check',
+    schedule: 'Every Monday at 4:00 AM',
+    description: 'Go/no-go recommendation for iPhone 15 Pro Max'
+  },
+  {
+    id: 'buffalo-weekend-events',
+    title: '🎉 Buffalo Weekend Events',
+    schedule: 'Every Friday at 7:00 AM',
+    description: 'Free & paid events in and around Buffalo'
+  },
+  {
+    id: 'streaming-weekly-digest',
+    title: '📺 Streaming Weekly Digest',
+    schedule: 'Every Saturday at 7:00 AM',
+    description: 'New on Apple TV+, Crunchyroll, and Prime Video'
+  }
+];
+
+const BASE = 'https://raw.githubusercontent.com/eagleadams86/artifacts/main/data/';
+
+function formatContent(text) {
+  // Convert markdown-ish links to real links
+  return text.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+}
+
+function timeAgo(iso) {
+  if (!iso) return 'never';
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h/24)}d ago`;
+}
+
+async function loadTask(task) {
+  try {
+    const res = await fetch(BASE + task.id + '.json?t=' + Date.now());
+    if (!res.ok) throw new Error('not found');
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+async function render() {
+  const grid = document.getElementById('grid');
+  const results = await Promise.all(TASKS.map(loadTask));
+
+  TASKS.forEach((task, i) => {
+    const data = results[i];
+    const isStale = !data || !data.updatedAt;
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const updatedStr = data?.updatedAt ? `Last updated ${timeAgo(data.updatedAt)} — ${new Date(data.updatedAt).toLocaleString()}` : 'No data yet';
+
+    card.innerHTML = `
+      <div class="card-header">
+        <div>
+          <div class="card-title"><span class="status-dot ${isStale ? 'stale' : ''}"></span>${task.title}</div>
+          <div class="card-meta">${task.description}</div>
+        </div>
+        <div class="card-schedule">${task.schedule}</div>
+      </div>
+      <div class="card-body" id="body-${task.id}">
+        ${data?.content ? formatContent(data.content) : '<span class="empty">No output yet — waiting for first run.</span>'}
+      </div>
+      <div class="last-updated" style="padding: 8px 20px 14px; color: #484f58; font-size: 11px;">${updatedStr}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+render();
+// Refresh every 5 minutes
+setInterval(render, 5 * 60 * 1000);
+</script>
+</body>
+</html>
