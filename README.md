@@ -18,6 +18,12 @@ Cards are sorted by most recently updated and expand to show full content. Refre
 | 🎉 Buffalo Weekend Events | Every Friday at 5:00 AM | Free & paid events in and around Buffalo |
 | 📺 Streaming Weekly Digest | Every Saturday at 7:00 AM | New on Apple TV+, Crunchyroll, and Prime Video |
 
+## Notes & Guides
+
+| File | Description |
+|---|---|
+| 📓 [Nice_Guy_to_Integrated_Man_Notes.html](https://eagleadams86.github.io/artifacts/Nice_Guy_to_Integrated_Man_Notes.html) | Personal development notes — Nice Guy to Kind Man |
+
 ## How it works
 
 Each scheduled Claude task writes its output to a corresponding `data-*.js` file in this repo. The `claude.html` dashboard loads all five files as scripts and renders them as cards — no server required, works as a plain `file://` page or via GitHub Pages.
