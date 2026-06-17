@@ -19,13 +19,15 @@
   .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; overflow: hidden; }
   .card-header { padding: 18px 20px 14px; border-bottom: 1px solid #21262d; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
   .card-title { font-size: 16px; font-weight: 600; color: #f0f6fc; }
-  .card-schedule { font-size: 12px; color: #58a6ff; background: #1f3a5c; border-radius: 6px; padding: 3px 8px; white-space: nowrap; flex-shrink: 0; }
+  .card-updated { text-align: right; flex-shrink: 0; }
+  .updated-ago { font-size: 12px; color: #58a6ff; background: #1f3a5c; border-radius: 6px; padding: 3px 8px; white-space: nowrap; display: inline-block; }
+  .updated-ago.stale { color: #8b949e; background: #21262d; }
+  .updated-full { font-size: 11px; color: #484f58; margin-top: 5px; white-space: nowrap; }
   .card-meta { font-size: 12px; color: #8b949e; margin-top: 4px; }
   .card-body { padding: 20px; font-size: 14px; line-height: 1.7; color: #c9d1d9; white-space: pre-wrap; word-break: break-word; }
   .empty { color: #484f58; font-style: italic; }
   a { color: #58a6ff; text-decoration: none; }
   a:hover { text-decoration: underline; }
-  .last-updated { padding: 8px 20px 14px; color: #484f58; font-size: 11px; }
   .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #238636; display: inline-block; margin-right: 6px; }
   .status-dot.stale { background: #484f58; }
   .reload-btn { font-size: 12px; color: #8b949e; background: #21262d; border: 1px solid #30363d; border-radius: 6px; padding: 4px 10px; cursor: pointer; margin-left: 12px; }
@@ -105,9 +107,8 @@ TASKS.forEach(task => {
   const d = data[task.id];
   const hasContent = d && d.content;
   const isStale = !d || !d.updatedAt;
-  const updatedStr = d && d.updatedAt
-    ? `Last updated ${timeAgo(d.updatedAt)} — ${new Date(d.updatedAt).toLocaleString()}`
-    : 'No data yet — waiting for first run';
+  const agoLabel = d && d.updatedAt ? `Updated ${timeAgo(d.updatedAt)}` : 'No data yet';
+  const fullLabel = d && d.updatedAt ? new Date(d.updatedAt).toLocaleString() : 'waiting for first run';
 
   const card = document.createElement('div');
   card.className = 'card';
@@ -117,12 +118,14 @@ TASKS.forEach(task => {
         <div class="card-title"><span class="status-dot ${isStale ? 'stale' : ''}"></span>${task.title}</div>
         <div class="card-meta">${task.description}</div>
       </div>
-      <div class="card-schedule">${task.schedule}</div>
+      <div class="card-updated">
+        <div class="updated-ago ${isStale ? 'stale' : ''}">${agoLabel}</div>
+        <div class="updated-full">${fullLabel}</div>
+      </div>
     </div>
     <div class="card-body">
       ${hasContent ? formatContent(d.content) : '<span class="empty">No output yet — waiting for first run.</span>'}
     </div>
-    <div class="last-updated">${updatedStr}</div>
   `;
   grid.appendChild(card);
 });
