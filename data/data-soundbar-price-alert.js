@@ -1,0 +1,2 @@
+window.taskData = window.taskData || {};
+window.taskData["soundbar-price-alert"] = {"updatedAt": "2026-06-17T04:06:06Z", "content": "No alert today. Samsung HW-Q600F prices as of 2026-06-17:\n- Amazon: $697.99 (new; free delivery)\n- Best Buy: $699.99\n- Newegg: $697.99 (free shipping)\n- Walmart: $599.00 (free shipping)\nLowest today: $599.00 at Walmart. Still $299.00 above your $300 target.\n\nNote: Used/Renewed units appear on Amazon around $310-$312, but no NEW listing is at or under $300."};
