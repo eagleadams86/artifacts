@@ -17,14 +17,19 @@
   .subtitle { color: #8b949e; font-size: 14px; margin-bottom: 36px; }
   .grid { display: flex; flex-direction: column; gap: 24px; }
   .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; overflow: hidden; }
-  .card-header { padding: 18px 20px 14px; border-bottom: 1px solid #21262d; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .card-header { padding: 18px 20px; border-bottom: 1px solid transparent; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; cursor: pointer; user-select: none; -webkit-user-select: none; transition: background 0.12s; }
+  .card-header:hover { background: #1c2230; }
+  .card.expanded .card-header { border-bottom-color: #21262d; padding-bottom: 14px; }
   .card-title { font-size: 16px; font-weight: 600; color: #f0f6fc; }
+  .chevron { display: inline-block; width: 12px; color: #8b949e; margin-right: 8px; transition: transform 0.15s; font-size: 11px; }
+  .card.expanded .chevron { transform: rotate(90deg); }
   .card-updated { text-align: right; flex-shrink: 0; }
   .updated-ago { font-size: 12px; color: #58a6ff; background: #1f3a5c; border-radius: 6px; padding: 3px 8px; white-space: nowrap; display: inline-block; }
   .updated-ago.stale { color: #8b949e; background: #21262d; }
   .updated-full { font-size: 11px; color: #484f58; margin-top: 5px; white-space: nowrap; }
   .card-meta { font-size: 12px; color: #8b949e; margin-top: 4px; }
-  .card-body { padding: 20px; font-size: 14px; line-height: 1.7; color: #c9d1d9; white-space: pre-wrap; word-break: break-word; }
+  .card-body { display: none; padding: 20px; font-size: 14px; line-height: 1.7; color: #c9d1d9; white-space: pre-wrap; word-break: break-word; }
+  .card.expanded .card-body { display: block; }
   .empty { color: #484f58; font-style: italic; }
   a { color: #58a6ff; text-decoration: none; }
   a:hover { text-decoration: underline; }
@@ -114,7 +119,7 @@ TASKS.forEach(task => {
   card.innerHTML = `
     <div class="card-header">
       <div>
-        <div class="card-title"><span class="status-dot ${isStale ? 'stale' : ''}"></span>${task.title}</div>
+        <div class="card-title"><span class="chevron">▶</span><span class="status-dot ${isStale ? 'stale' : ''}"></span>${task.title}</div>
         <div class="card-meta">${task.description}</div>
       </div>
       <div class="card-updated">
@@ -126,6 +131,11 @@ TASKS.forEach(task => {
       ${hasContent ? formatContent(d.content) : '<span class="empty">No output yet — waiting for first run.</span>'}
     </div>
   `;
+  card.querySelector('.card-header').addEventListener('click', () => {
+    const wasExpanded = card.classList.contains('expanded');
+    document.querySelectorAll('.card.expanded').forEach(c => c.classList.remove('expanded'));
+    if (!wasExpanded) card.classList.add('expanded');
+  });
   grid.appendChild(card);
 });
 </script>
