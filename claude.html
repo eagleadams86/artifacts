@@ -132,7 +132,14 @@ TASKS.forEach(task => {
   card.querySelector('.card-header').addEventListener('click', () => {
     const wasExpanded = card.classList.contains('expanded');
     document.querySelectorAll('.card.expanded').forEach(c => c.classList.remove('expanded'));
-    if (!wasExpanded) card.classList.add('expanded');
+    if (!wasExpanded) {
+      card.classList.add('expanded');
+      // Bring the top of the expanded card to the top of the viewport.
+      requestAnimationFrame(() => {
+        const top = card.getBoundingClientRect().top + window.pageYOffset - 16;
+        window.scrollTo({ top, behavior: 'smooth' });
+      });
+    }
   });
   grid.appendChild(card);
 });
