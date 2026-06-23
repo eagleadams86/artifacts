@@ -19,12 +19,6 @@ Cards are sorted by most recently updated and expand to show full content. Refre
 | 📺 Streaming Digest | Every day at 2:00 AM | New on Apple TV+, Crunchyroll, and Prime Video |
 | 🤖 Claude News | Every day at 1:00 AM | Latest Anthropic & Claude news from the past 24 hours |
 
-## Notes & Guides
-
-| File | Description |
-|---|---|
-| 📓 [Nice_Guy_to_Integrated_Man_Notes.html](https://eagleadams86.github.io/artifacts/Nice_Guy_to_Integrated_Man_Notes.html) | Personal development notes — Nice Guy to Kind Man |
-
 ## How it works
 
 Each scheduled Claude task writes its output to a corresponding `data/data-*.js` file in this repo. The `claude.html` dashboard loads all the data files as scripts and renders them as cards — no server required, works as a plain `file://` page or via GitHub Pages.
