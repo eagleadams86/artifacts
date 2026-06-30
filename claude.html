@@ -5,37 +5,66 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Claude Task Dashboard</title>
 <link rel="icon" href="favicon.ico">
+<script>
+  // Apply saved theme before render to avoid a flash of the default theme.
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('dashboard-theme') || 'dark');
+</script>
 <script src="data/data-daily-news-briefing.js"></script>
 <script src="data/data-ios-beta-weekly-check.js"></script>
 <script src="data/data-buffalo-weekend-events.js"></script>
 <script src="data/data-streaming-weekly-digest.js"></script>
 <script src="data/data-daily-claude-news.js"></script>
 <style>
+  /* ---- Themes ---- */
+  :root, [data-theme="dark"] {
+    --bg: #0d1117; --text: #e6edf3; --heading: #f0f6fc; --muted: #8b949e;
+    --card-bg: #161b22; --border: #30363d; --header-hover: #1c2230; --divider: #21262d;
+    --chip-text: #58a6ff; --chip-bg: #1f3a5c; --chip-stale-text: #8b949e; --chip-stale-bg: #21262d;
+    --faint: #484f58; --body-text: #c9d1d9; --link: #58a6ff;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  [data-theme="terminal"] {
+    --bg: #0a0f0a; --text: #4ade80; --heading: #86efac; --muted: #3f8f5a;
+    --card-bg: #0e160e; --border: #1e3a1e; --header-hover: #142414; --divider: #1e3a1e;
+    --chip-text: #bbf7d0; --chip-bg: #16331b; --chip-stale-text: #3f8f5a; --chip-stale-bg: #142414;
+    --faint: #2f6f3f; --body-text: #5ee892; --link: #86efac;
+    --font: 'SF Mono', ui-monospace, Menlo, Monaco, 'Courier New', monospace;
+  }
+  [data-theme="light"] {
+    --bg: #ffffff; --text: #1f2328; --heading: #1f2328; --muted: #656d76;
+    --card-bg: #f6f8fa; --border: #d0d7de; --header-hover: #eef1f4; --divider: #d8dee4;
+    --chip-text: #0969da; --chip-bg: #ddf4ff; --chip-stale-text: #656d76; --chip-stale-bg: #eaeef2;
+    --faint: #8c959f; --body-text: #1f2328; --link: #0969da;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #0d1117; color: #e6edf3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding: 32px 24px; }
-  h1 { font-size: 28px; font-weight: 600; margin-bottom: 6px; color: #f0f6fc; }
-  .subtitle { color: #8b949e; font-size: 14px; margin-bottom: 36px; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; padding: 32px 24px; transition: background 0.15s, color 0.15s; }
+  h1 { font-size: 28px; font-weight: 600; margin-bottom: 6px; color: var(--heading); }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 36px; }
   .grid { display: flex; flex-direction: column; gap: 24px; }
-  .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; overflow: hidden; }
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
   .card-header { padding: 18px 20px; border-bottom: 1px solid transparent; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; cursor: pointer; user-select: none; -webkit-user-select: none; transition: background 0.12s; }
-  .card-header:hover { background: #1c2230; }
-  .card.expanded .card-header { border-bottom-color: #21262d; padding-bottom: 14px; }
-  .card-title { font-size: 16px; font-weight: 600; color: #f0f6fc; }
-  .chevron { display: inline-block; width: 12px; color: #8b949e; margin-right: 8px; transition: transform 0.15s; font-size: 11px; }
+  .card-header:hover { background: var(--header-hover); }
+  .card.expanded .card-header { border-bottom-color: var(--divider); padding-bottom: 14px; }
+  .card-title { font-size: 16px; font-weight: 600; color: var(--heading); }
+  .chevron { display: inline-block; width: 12px; color: var(--muted); margin-right: 8px; transition: transform 0.15s; font-size: 11px; }
   .card.expanded .chevron { transform: rotate(90deg); }
   .card-updated { text-align: right; flex-shrink: 0; }
-  .updated-ago { font-size: 12px; color: #58a6ff; background: #1f3a5c; border-radius: 6px; padding: 3px 8px; white-space: nowrap; display: inline-block; }
-  .updated-ago.stale { color: #8b949e; background: #21262d; }
-  .updated-full { font-size: 11px; color: #484f58; margin-top: 5px; white-space: nowrap; }
-  .card-meta { font-size: 12px; color: #8b949e; margin-top: 4px; }
-  .card-body { display: none; padding: 20px; font-size: 14px; line-height: 1.7; color: #c9d1d9; white-space: pre-wrap; word-break: break-word; }
+  .updated-ago { font-size: 12px; color: var(--chip-text); background: var(--chip-bg); border-radius: 6px; padding: 3px 8px; white-space: nowrap; display: inline-block; }
+  .updated-ago.stale { color: var(--chip-stale-text); background: var(--chip-stale-bg); }
+  .updated-full { font-size: 11px; color: var(--faint); margin-top: 5px; white-space: nowrap; }
+  .card-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .card-body { display: none; padding: 20px; font-size: 14px; line-height: 1.7; color: var(--body-text); white-space: pre-wrap; word-break: break-word; }
   .card.expanded .card-body { display: block; }
-  .empty { color: #484f58; font-style: italic; }
-  a { color: #58a6ff; text-decoration: none; }
+  .empty { color: var(--faint); font-style: italic; }
+  a { color: var(--link); text-decoration: none; }
   a:hover { text-decoration: underline; }
-  .reload-btn { font-size: 12px; color: #8b949e; background: #21262d; border: 1px solid #30363d; border-radius: 6px; padding: 4px 10px; cursor: pointer; margin-left: 12px; }
-  .reload-btn:hover { color: #f0f6fc; }
-  .header-row { display: flex; align-items: center; margin-bottom: 8px; }
+  .header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .ctl { font-size: 12px; color: var(--muted); background: var(--chip-stale-bg); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; cursor: pointer; font-family: var(--font); }
+  .ctl:hover { color: var(--heading); }
+  select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%238b949e' stroke-width='1.5'/></svg>"); background-repeat: no-repeat; background-position: right 9px center; }
 </style>
 </head>
 <body>
@@ -43,11 +72,26 @@
   <div>
     <h1>Claude Task Dashboard</h1>
   </div>
-  <button class="reload-btn" onclick="location.reload()">↻ Refresh</button>
+  <div class="controls">
+    <select class="ctl" id="theme" aria-label="Theme">
+      <option value="dark">🌙 Dark</option>
+      <option value="terminal">🖥️ Terminal</option>
+      <option value="light">☀️ Light</option>
+    </select>
+    <button class="ctl" onclick="location.reload()">↻ Refresh</button>
+  </div>
 </div>
 <div class="grid" id="grid"></div>
 
 <script>
+// ---- Theme picker ----
+const themeSelect = document.getElementById('theme');
+themeSelect.value = document.documentElement.getAttribute('data-theme');
+themeSelect.addEventListener('change', () => {
+  document.documentElement.setAttribute('data-theme', themeSelect.value);
+  localStorage.setItem('dashboard-theme', themeSelect.value);
+});
+
 const TASKS = [
   {
     id: 'daily-news-briefing',
