@@ -37,6 +37,34 @@
     --faint: #8c959f; --body-text: #1f2328; --link: #0969da;
     --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
+  [data-theme="synthwave"] {
+    --bg: #1a0b2e; --text: #ffb3f0; --heading: #fe75fe; --muted: #7a5fb0;
+    --card-bg: #241046; --border: #582a82; --header-hover: #2e1456; --divider: #582a82;
+    --chip-text: #00f0ff; --chip-bg: #2a1a4a; --chip-stale-text: #7a5fb0; --chip-stale-bg: #241046;
+    --faint: #6f4fa0; --body-text: #ffc4f3; --link: #00f0ff;
+    --font: 'SF Mono', ui-monospace, Menlo, Monaco, 'Courier New', monospace;
+  }
+  [data-theme="dracula"] {
+    --bg: #282a36; --text: #f8f8f2; --heading: #ff79c6; --muted: #6272a4;
+    --card-bg: #343746; --border: #44475a; --header-hover: #3c3f51; --divider: #44475a;
+    --chip-text: #8be9fd; --chip-bg: #20394a; --chip-stale-text: #6272a4; --chip-stale-bg: #343746;
+    --faint: #6272a4; --body-text: #f8f8f2; --link: #bd93f9;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  [data-theme="nord"] {
+    --bg: #2e3440; --text: #d8dee9; --heading: #eceff4; --muted: #7b88a1;
+    --card-bg: #3b4252; --border: #434c5e; --header-hover: #434c5e; --divider: #4c566a;
+    --chip-text: #88c0d0; --chip-bg: #2c3e44; --chip-stale-text: #7b88a1; --chip-stale-bg: #434c5e;
+    --faint: #6c7689; --body-text: #e5e9f0; --link: #88c0d0;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  [data-theme="sakura"] {
+    --bg: #fff5f7; --text: #5a2a3a; --heading: #b03060; --muted: #a96b80;
+    --card-bg: #ffe9ef; --border: #f3c6d3; --header-hover: #ffdde6; --divider: #f3c6d3;
+    --chip-text: #c2185b; --chip-bg: #ffd0e0; --chip-stale-text: #a96b80; --chip-stale-bg: #ffdde6;
+    --faint: #cfa0b0; --body-text: #5a2a3a; --link: #c2185b;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; padding: 32px 24px; transition: background 0.15s, color 0.15s; }
@@ -77,6 +105,10 @@
       <option value="dark">🌙 Dark</option>
       <option value="terminal">🖥️ Terminal</option>
       <option value="light">☀️ Light</option>
+      <option value="synthwave">🌆 Synthwave</option>
+      <option value="dracula">🧛 Dracula</option>
+      <option value="nord">❄️ Nord</option>
+      <option value="sakura">🌸 Sakura</option>
     </select>
     <button class="ctl" onclick="location.reload()">↻ Refresh</button>
   </div>
