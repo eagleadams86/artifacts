@@ -6,7 +6,9 @@ A personal dashboard that displays the live outputs of scheduled Claude tasks.
 
 **[View claude.html](https://eagleadams86.github.io/artifacts/claude.html)**
 
-Cards are sorted by most recently updated and expand to show full content. Refresh the page to see the latest outputs.
+Cards are sorted by most recently updated and collapse by default — click a card header to expand it (and collapse any other). Refresh the page to see the latest outputs.
+
+A theme picker in the top-right switches between three themes — 🌙 Dark, 🖥️ Terminal (green monospace), and ☀️ Light. Your choice is saved in the browser and persists across visits.
 
 ## Tasks
 
