@@ -14,9 +14,9 @@ A theme picker in the top-right switches between seven themes — 🌙 Dark, �
 
 | Task | Schedule | Description |
 |---|---|---|
-| 🗞️ Daily News Briefing | 6:00 AM & 6:00 PM daily | Local Pendleton/Buffalo/WNY, US, and global headlines |
+| 🗞️ Daily News Briefing | Every day at 5:00 AM | Local Pendleton/Buffalo/WNY, US, and global headlines |
 | 📱 iOS Beta Check | Every day at 4:00 AM | Go/no-go recommendation for iPhone 15 Pro Max |
-| 🎉 Buffalo Weekend Events | Every day at 5:00 AM | Free & paid events in and around Buffalo |
+| 🎉 Buffalo Weekend Events | Every day at 3:00 AM | Free & paid events in and around Buffalo |
 | 📺 Streaming Digest | Every day at 2:00 AM | New on Apple TV+, Crunchyroll, and Prime Video |
 | 🤖 Claude News | Every day at 1:00 AM | Latest Anthropic & Claude news from the past 24 hours |
 
