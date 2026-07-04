@@ -217,9 +217,7 @@ TASKS.forEach(task => {
         <div class="updated-full">${fullLabel}</div>
       </div>
     </div>
-    <div class="card-body">
-      ${hasContent ? formatContent(d.content) : '<span class="empty">No output yet — waiting for first run.</span>'}
-    </div>
+    <div class="card-body">${hasContent ? formatContent(d.content) : '<span class="empty">No output yet — waiting for first run.</span>'}</div>
   `;
   card.querySelector('.card-header').addEventListener('click', () => {
     const wasExpanded = card.classList.contains('expanded');
