@@ -7,7 +7,7 @@
 <link rel="icon" href="favicon.ico">
 <script>
   // Apply saved theme and text size before render to avoid a flash of the defaults.
-  document.documentElement.setAttribute('data-theme', localStorage.getItem('dashboard-theme') || 'dark');
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('dashboard-theme') || 'midnight');
   document.documentElement.style.setProperty('--scale', localStorage.getItem('dashboard-textsize') || '1');
 </script>
 <script src="data/data-daily-news-briefing.js"></script>
@@ -118,13 +118,13 @@
     </select>
     <select class="ctl" id="theme" aria-label="Theme">
       <option value="dark">🌙 Dark</option>
-      <option value="terminal">🖥️ Terminal</option>
-      <option value="light">☀️ Light</option>
-      <option value="synthwave">🌆 Synthwave</option>
       <option value="dracula">🧛 Dracula</option>
-      <option value="nord">❄️ Nord</option>
+      <option value="light">☀️ Light</option>
       <option value="midnight">🌌 Midnight</option>
+      <option value="nord">❄️ Nord</option>
       <option value="sakura">🌸 Sakura</option>
+      <option value="synthwave">🌆 Synthwave</option>
+      <option value="terminal">🖥️ Terminal</option>
     </select>
     <button class="ctl" onclick="location.reload()">↻ Refresh</button>
   </div>
