@@ -19,6 +19,7 @@ A theme picker in the top-right switches between eight themes — 🌙 Dark, �
 | 🎉 Buffalo Weekend Events | Every day at 3:00 AM | Free & paid events in and around Buffalo |
 | 📺 Streaming Digest | Every day at 2:00 AM | New on Apple TV+, Crunchyroll, and Prime Video |
 | 🤖 Claude News | Every day at 1:00 AM | Latest Anthropic & Claude news from the past 24 hours |
+| 📲 iPhone Rumors | Every day at 6:00 AM | Next-iPhone rumor roundup, grouped by confidence level |
 
 ## How it works
 
