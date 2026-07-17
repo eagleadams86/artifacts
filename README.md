@@ -14,7 +14,7 @@ A theme picker in the top-right switches between eight themes — 🌙 Dark, �
 
 | Task | Schedule | Description |
 |---|---|---|
-| 🤖 Claude News | Every day at 1:00 AM | Latest Anthropic & Claude news from the past 24 hours |
+| 🤖 Claude and Other AI News | Every day at 1:00 AM | Latest Anthropic, Claude, and AI industry news from the past 24 hours |
 | 📲 iPhone Rumors | Every day at 1:30 AM | Next-iPhone rumor roundup, grouped by confidence level |
 | 📺 Streaming Digest | Every day at 2:00 AM | New on Apple TV+, Crunchyroll, and Prime Video |
 | 🗞️ Daily News Briefing | Every day at 2:30 AM | Local Pendleton/Buffalo/WNY, US, and global headlines |
