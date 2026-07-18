@@ -14,14 +14,14 @@ A theme picker in the top-right switches between eight themes — 🌙 Dark, �
 
 | Task | Schedule | Description |
 |---|---|---|
-| 🤖 Claude and Other AI News | Every day at 1:00 AM | Latest Anthropic, Claude, and AI industry news from the past 24 hours |
-| 📲 iPhone Rumors | Every day at 1:30 AM | Next-iPhone rumor roundup, grouped by confidence level |
-| 📺 Streaming Digest | Every day at 2:00 AM | New on Apple TV+, Crunchyroll, and Prime Video |
-| 🗞️ Daily News Briefing | Every day at 2:30 AM | Local Pendleton/Buffalo/WNY, US, and global headlines |
-| 🎉 Buffalo Weekend Events | Every day at 3:00 AM | Free & paid events in and around Buffalo |
-| 📱 iOS Beta Check | Every day at 3:30 AM | Go/no-go recommendation for iPhone 15 Pro Max |
-| 💻 macOS Beta Check | Every day at 4:00 AM | Go/no-go recommendation for Apple Silicon MacBook Pro |
-| 💉 GLP-1 News | Every day at 4:30 AM | GLP-1 drug news — trials, FDA actions, and industry developments |
+| 🎉 Buffalo Weekend Events | Every day at 12:00 AM | Free & paid events in and around Buffalo |
+| 📺 Streaming Digest | Every day at 12:15 AM | New on Apple TV+, Crunchyroll, and Prime Video |
+| 💻 macOS Beta Check | Every day at 12:30 AM | Go/no-go recommendation for Apple Silicon MacBook Pro |
+| 📱 iOS Beta Check | Every day at 12:45 AM | Go/no-go recommendation for iPhone 15 Pro Max |
+| 📲 iPhone Rumors | Every day at 1:00 AM | Next-iPhone rumor roundup, grouped by confidence level |
+| 💉 GLP-1 News | Every day at 1:15 AM | GLP-1 drug news — trials, FDA actions, and industry developments |
+| 🤖 Claude and Other AI News | Every day at 1:30 AM | Latest Anthropic, Claude, and AI industry news from the past 24 hours |
+| 🗞️ Daily News Briefing | Every day at 1:45 AM | Local Pendleton/Buffalo/WNY, US, and global headlines |
 
 ## How it works
 
