@@ -21,6 +21,7 @@ A theme picker in the top-right switches between eight themes — 🌙 Dark, �
 | 🎉 Buffalo Weekend Events | Every day at 3:00 AM | Free & paid events in and around Buffalo |
 | 📱 iOS Beta Check | Every day at 3:30 AM | Go/no-go recommendation for iPhone 15 Pro Max |
 | 💻 macOS Beta Check | Every day at 4:00 AM | Go/no-go recommendation for Apple Silicon MacBook Pro |
+| 💉 GLP-1 News | Every day at 4:30 AM | GLP-1 drug news — trials, FDA actions, and industry developments |
 
 ## How it works
 
