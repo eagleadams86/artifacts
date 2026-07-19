@@ -1,0 +1,11 @@
+# Whitelist: ignore everything, then re-allow only the public dashboard files.
+# Everything else in this folder (task SKILL.md files, sync machinery, logs)
+# stays local-only and can never be committed to this public repo.
+/*
+!/.gitignore
+!/claude.html
+!/README.md
+!/favicon.ico
+!/data/
+/data/*
+!/data/data-*.js
