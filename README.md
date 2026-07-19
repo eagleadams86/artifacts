@@ -1,3 +1,4 @@
+<!-- 2026-07-19 -->
 # Claude Scheduled Task Dashboard
 
 A personal dashboard that displays the live outputs of scheduled Claude tasks.
