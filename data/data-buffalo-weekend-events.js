@@ -1,2 +1,88 @@
 window.taskData = window.taskData || {};
-window.taskData["buffalo-weekend-events"] = {"updatedAt": "2026-07-19T12:54:48Z", "content": "📅 <strong>This Weekend — Today, Sun July 19</strong>\n\n<strong>FREE</strong>\n\n- 🎪 <strong>Canal Fest of the Tonawandas (Opening Day)</strong> — Sun, midday–evening | Gratwick Riverside Park, North Tonawanda\n  Free-admission opening day for the region's largest outdoor festival at its new waterfront home — rides, games, food, and live music kick off an 8-day run through July 26.\n\n- 🎵 <strong>31st Annual Pappy Martin Legacy Masten Jazz Festival</strong> — Sun, 2:00 PM | MLK Jr. Park, Buffalo\n  Free outdoor jazz festival honoring Buffalo's jazz heritage with live performances all afternoon.\n\n- 🌿 <strong>SkyRide +190</strong> — Sun, 6:30 – 1:00 PM | Outer Harbor/Skyway/NYS 190, Buffalo\n  Roads close to cars so cyclists and walkers can take over the Skyway and Outer Harbor for a scenic morning ride.\n\n- 🌿 <strong>Fitness in the Parks</strong> — Sun, 10:00 – 11:00 AM | Delaware Park/Rose Garden, Buffalo\n  Free outdoor group fitness class open to all levels in the Rose Garden.\n\n- 🍺 <strong>South Buffalo Farmers Market</strong> — Sun, 9:00 AM – 1:00 PM | Cazenovia Park, Buffalo\n  Local produce, baked goods, and crafts from Western New York vendors at the weekly Sunday market.\n\n- 🎪 <strong>Grease Pole Festival</strong> — Sun (final day) | Agustín \"Pucho\" Olivencia Community Center, Buffalo\n  Puerto Rican cultural festival with music, dancing, food, and the traditional greased-pole climbing competition.\n\n<strong>PAID</strong>\n\n- 🎪 <strong>Oatka Festival</strong> — Sun, 10:00 AM – 5:00 PM (car show 11 AM, duck derby 5 PM) | LeRoy\n  Small-town festival wrapping up its run with a car show and a duck derby down Oatka Creek.\n\n- 🌿 <strong>Wild America Nature Festival</strong> — Sun, 10:00 AM – 5:00 PM | Panama Rocks, Panama, NY | price TBD, check website\n  Over 40 art, craft, and food vendors set up among the Panama Rocks scenic park formations. Link: https://www.panamarocks.com\n\n- 🎵 <strong>Matt Maeson</strong> — Sun, 7:00 PM | Asbury Hall, Buffalo | price TBD, check website\n  Singer-songwriter Matt Maeson brings his indie-folk/rock sound to the historic Asbury Hall.\n\n---\n\n📅 <strong>Next Weekend — Fri July 24 – Sun July 26</strong>\n\n<strong>FREE</strong>\n\n- 🎪 <strong>Canal Fest of the Tonawandas (Final Weekend)</strong> — Fri–Sun, midday–evening | Gratwick Riverside Park, North Tonawanda\n  Free-admission festival wraps up its 8-day run with rides, games, food vendors, and live music on the waterfront. Link: https://www.canalfest.org\n\n- 🎨 <strong>Garden Walk Buffalo</strong> — Sat–Sun, 10:00 AM – 4:00 PM | Elmwood Village & citywide, Buffalo\n  America's largest free self-guided garden tour, with 300+ private and public gardens open across the city.\n\n- 🎵 <strong>40th Annual GospelFest</strong> — Sat, 2:00 – 8:00 PM | MLK Jr. Park, Buffalo\n  Free all-ages gospel festival featuring national touring act Windy City Spiritualaires alongside local choirs.\n\n- 🎵 <strong>22nd Annual Queen City Jazz Festival</strong> — Sat, 1:00 – 9:00 PM | Lafayette Square, Buffalo\n  Free all-day jazz festival headlined by Special EFX featuring Chieli Minucci; bring a lawn chair.\n\n- 🎭 <strong>Shakespeare in Delaware Park: The Taming of the Shrew (Opening Weekend)</strong> — Sat & Sun, 7:00 PM | Shakespeare Hill, Delaware Park, Buffalo\n  Free, non-ticketed outdoor Shakespeare opens its new production on the hill by Hoyt Lake — bring a blanket and a picnic.\n\n- 🎪 <strong>57th Annual East Aurora Street Festival and Sidewalk Sale</strong> — Fri–Sat, all day | Main Street, East Aurora\n  Over 100 vendors line Main Street for East Aurora's classic summer shopping and strolling festival.\n\n- 👨‍👩‍👧 <strong>Orchard Park Cornhole Tournament (3rd Annual)</strong> — Sat, 10:00 AM check-in, 11:00 AM – 5:00 PM | Behind KeyBank, Village of Orchard Park\n  Community cornhole tournament with games and vendors; free to watch, entry fee to compete.\n\n- 🍺 <strong>Paula's Donuts 30th Anniversary</strong> — Sun, 1:00 – 5:00 PM | Paula's Donuts, 872 Seneca St, Larkin District, Buffalo\n  Buffalo's beloved donut shop marks 30 years with an anniversary celebration at its Seneca Street location.\n\n<strong>PAID</strong>\n\n- 🎵 <strong>Ne-Yo and Akon</strong> — Fri, evening | Darien Lake Amphitheater, Darien Center | price TBD, check website\n  R&B and hip-hop hitmakers Ne-Yo and Akon co-headline at the region's biggest outdoor amphitheater.\n\n- 🎵 <strong>Slightly Stoopid, The Elovaters & Bumpin Uglies</strong> — Fri, evening | Outer Harbor Live at Terminal B, Buffalo | price TBD, check website\n  Reggae-rock triple bill on the waterfront at Terminal B. Link: https://www.outerharborlive.com\n\n- 🎵 <strong>Hatebreed</strong> — Fri, evening | Town Ballroom, Buffalo | price TBD, check website\n  Metal/hardcore lineup featuring Hatebreed with Snuffed on Sight, Balmora, Face Yourself, and Incantation.\n\n- 🍺 <strong>42 North HillTAP Festival (6th Annual)</strong> — Sat | Spruce Lake, Holiday Valley, Ellicottville | price TBD, check website\n  Craft beer festival atop Holiday Valley's Spruce Lake with mountain views and local brewers.\n\n- 🎵 <strong>Mariah the Scientist</strong> — Sat, evening | Outer Harbor Live at Terminal B, Buffalo | price TBD, check website\n  R&B artist Mariah the Scientist headlines the waterfront venue with support from Laila.\n\n- 🎨 <strong>Indigenous Music & Arts Festival</strong> — Sat–Sun | Buffalo area | price TBD, check website\n  Two-day celebration of Indigenous music, art, and culture with performances and vendors.\n\n- 🎪 <strong>Erie County Fair</strong> — runs through Sun (Tue July 21 – Sun July 26) | Hamburg Fairgrounds, Hamburg | price TBD, check website\n  One of the country's largest county fairs, with midway rides, grandstand shows, food, and agricultural exhibits. Link: https://ecfair.org\n\n- 🎵 <strong>Rick Ross — Buffalo Summer Jam</strong> — Sun, 6:00 PM | Outer Harbor Live at Terminal B, Buffalo | price TBD, check website\n  Rick Ross headlines Buffalo Summer Jam on the waterfront to close out the weekend."};
+window.taskData["buffalo-weekend-events"] = {"updatedAt": "2026-07-20T04:11:53Z", "content": `📅 <strong>This Weekend — Fri, Jul 24 – Sun, Jul 26</strong>
+
+<strong>FREE</strong>
+
+- 🎪 <strong>Galbani Buffalo Italian Heritage Festival</strong> — Fri-Sun, 11 AM–9:30 PM (Sun until 7 PM) | Hertel Ave (btwn Delaware & Lovering), North Buffalo
+  Three-day Italian food, music, and culture festival with vendors and live entertainment along Hertel Avenue.
+
+- 🎵 <strong>22nd Annual Queen City Jazz Festival</strong> — Sat, 1–9 PM | Lafayette Square, downtown Buffalo
+  Free all-day jazz festival headlined by Special EFX featuring Chieli Minucci; bring a lawn chair.
+
+- 🎵 <strong>40th Annual GospelFest</strong> — Sat, 2–8 PM | MLK Jr. Park, Buffalo
+  Free all-ages gospel festival featuring national touring act Windy City Spiritualaires alongside local choirs.
+
+- 🎭 <strong>Shakespeare in Delaware Park: The Taming of the Shrew</strong> (opening weekend) — Fri-Sun, 7 PM | Shakespeare Hill, Delaware Park/Hoyt Lake
+  Free, non-ticketed outdoor Shakespeare opens its new production on the hill — bring a blanket and a picnic.
+
+- 🎪 <strong>Indigenous Music & Arts Festival</strong> — Sat-Sun, from 10 AM | Martin Luther King Jr. Park, Buffalo
+  Two-day celebration of Indigenous music, art, and culture with vendors and performances.
+
+- 🎪 <strong>57th Annual East Aurora Street Festival and Sidewalk Sale</strong> — Fri-Sat, all day | Main Street, East Aurora
+  Over 100 vendors line Main Street for East Aurora's classic summer shopping and strolling festival.
+
+- 👨‍👩‍👧 <strong>Orchard Park Cornhole Tournament (3rd Annual)</strong> — Sat, 11 AM–5 PM | Behind KeyBank, Village of Orchard Park
+  Community cornhole tournament with games and vendors; free to watch, entry fee to compete.
+
+- 🍺 <strong>Paula's Donuts 30th Anniversary</strong> — Sun, 1–5 PM | 872 Seneca St, Larkin District, Buffalo
+  Buffalo's beloved donut shop marks 30 years with an anniversary celebration at its Seneca Street location.
+
+<strong>PAID</strong>
+
+- 🎵 <strong>Ne-Yo and Akon</strong> — Fri, evening | Darien Lake Amphitheater, Darien Center | price TBD, check venue site
+  R&B and hip-hop hitmakers Ne-Yo and Akon co-headline the region's biggest outdoor amphitheater.
+
+- 🎵 <strong>Slightly Stoopid, The Elovaters & Bumpin Uglies</strong> — Fri, 7:30 PM | Outer Harbor Live at Terminal B, Buffalo | price TBD, check venue site
+  Reggae-rock triple bill on the waterfront at Terminal B.
+
+- 🎵 <strong>Hatebreed</strong> w/ Snuffed on Sight, Balmora, Face Yourself & Incantation — Fri, 5 PM | Town Ballroom, Buffalo | price TBD, check venue site
+  Metal/hardcore lineup headlined by Hatebreed.
+
+- 🎭 <strong>The Music of Paul McCartney</strong> — Fri-Sat | Bear's Den, Seneca Niagara Casino & Hotel, Niagara Falls | price TBD, check venue site
+  Tribute performance covering the songs of Paul McCartney and The Beatles.
+
+- 🍺 <strong>42 North HillTAP Festival (6th Annual)</strong> — Sat | Spruce Lake, Holiday Valley, Ellicottville | price TBD, check venue site
+  Craft beer festival atop Holiday Valley's Spruce Lake with mountain views and local brewers.
+
+- 🎵 <strong>Mariah the Scientist</strong> w/ Laila — Sat, 8 PM | Outer Harbor Live at Terminal B, Buffalo | price TBD, check venue site
+  R&B artist Mariah the Scientist headlines the waterfront venue.
+
+- 🎵 <strong>Shaq's Bass All Stars</strong> — Sat, 7 PM | Buffalo RiverWorks, Buffalo | $39.50+
+  Bass/dance music show hosted by DJ Diesel (Shaquille O'Neal) with Getter, Infekt, and more.
+
+- 🎪 <strong>Erie County Fair</strong> — runs through Sun (Tue Jul 21 – Sun Jul 26) | Hamburg Fairgrounds, Hamburg | price TBD, check venue site
+  One of the country's largest county fairs, with midway rides, grandstand shows, food, and agricultural exhibits.
+
+- 🎵 <strong>Rick Ross — Buffalo Summer Jam</strong> — Sun, 6 PM | Outer Harbor Live at Terminal B, Buffalo | price TBD, check venue site
+  Rick Ross headlines Buffalo Summer Jam on the waterfront to close out the weekend.
+
+---
+
+📅 <strong>Next Weekend — Fri, Jul 31 – Sun, Aug 2</strong>
+
+Fewer events are confirmed this far out — check back closer to the date for more listings.
+
+<strong>FREE</strong>
+
+- 🎨 <strong>Chalkfest 2026</strong> — Sat-Sun, 9 AM–5 PM | Buffalo RiverWorks, Buffalo
+  Outdoor chalk art festival where artists transform the RiverWorks grounds into colorful murals; free to watch.
+
+- 🌿 <strong>Elmwood Village Farmers Market</strong> — Sat, 8 AM–1 PM | Bidwell Park, Elmwood Village
+  Weekly farmers market with local produce, baked goods, and crafts.
+
+- 🎨 <strong>Shopkeeper's Saturday on Hertel</strong> — Sat, 9 AM–3 PM | Hertel Ave (btwn Main & Delaware), Buffalo
+  Sidewalk sales and shopping along Hertel Avenue's boutiques.
+
+- 🎵 <strong>Sunset Sundays '26</strong> — Sun, 4–9 PM | Buffalo RiverWorks, Buffalo
+  Live music and waterfront sunset views at RiverWorks to close out the weekend.
+
+<strong>PAID</strong>
+
+- 🎭 <strong>Death at the Silos Returns: Murder Mystery Dinner</strong> — Fri, 6–9:30 PM | The Silos, Buffalo RiverWorks | price TBD, check venue site
+  Interactive murder mystery dinner theater experience at RiverWorks' Silos event space.
+
+- 🎵 <strong>Sunset at the Stables 2026</strong> (final weekend) — Fri-Sat | Knox Farm State Park, East Aurora | price TBD, check venue site
+  Closing weekend of this summer concert series set on the grounds of a historic farm estate.
+
+- 🎵 <strong>Michael Hund</strong> — Fri, 5–8 PM | Buffalo RiverWorks, Buffalo | price TBD, check venue site
+  Live acoustic/local music set on the RiverWorks patio.`};
