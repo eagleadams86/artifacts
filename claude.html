@@ -3,12 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Defence in depth: task content is sanitised in JS before it is rendered, and
+     this CSP means even a sanitiser bug cannot execute injected script. Inline
+     <script>/<style> here are covered by 'unsafe-inline' (no build step to hash
+     against), but external and eval'd script are blocked outright. -->
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Claude Task Dashboard</title>
 <link rel="icon" href="favicon.ico">
 <script>
   // Apply saved theme and text size before render to avoid a flash of the defaults.
-  document.documentElement.setAttribute('data-theme', localStorage.getItem('dashboard-theme') || 'midnight');
-  document.documentElement.style.setProperty('--scale', localStorage.getItem('dashboard-textsize') || '1');
+  // Both are validated against the known sets so a stale or hand-edited
+  // localStorage value falls back cleanly instead of leaving the pickers blank.
+  var THEMES = ['dark','terminal','light','synthwave','dracula','nord','midnight','sakura'];
+  var SIZES = ['0.85','1','1.15','1.3','1.5'];
+  var t = localStorage.getItem('dashboard-theme');
+  var s = localStorage.getItem('dashboard-textsize');
+  document.documentElement.setAttribute('data-theme', THEMES.indexOf(t) > -1 ? t : 'midnight');
+  document.documentElement.style.setProperty('--scale', SIZES.indexOf(s) > -1 ? s : '1');
 </script>
 <script src="data/data-daily-news-briefing.js"></script>
 <script src="data/data-ios-beta-weekly-check.js"></script>
@@ -20,60 +32,64 @@
 <script src="data/data-glp1-daily-news.js"></script>
 <style>
   /* ---- Themes ---- */
+  /* Muted/faint/chip text and control borders are tuned to meet WCAG AA
+     (4.5:1 for text, 3:1 for control borders) against every surface they sit
+     on, with each theme's original hue preserved. --border stays decorative:
+     cards are already separated from the page by --card-bg. */
   :root, [data-theme="dark"] {
     --bg: #0d1117; --text: #e6edf3; --heading: #f0f6fc; --muted: #8b949e;
-    --card-bg: #161b22; --border: #30363d; --header-hover: #1c2230; --divider: #21262d;
+    --card-bg: #161b22; --border: #3c444c; --header-hover: #1c2230; --divider: #21262d;
     --chip-text: #58a6ff; --chip-bg: #1f3a5c; --chip-stale-text: #8b949e; --chip-stale-bg: #21262d;
-    --faint: #484f58; --body-text: #c9d1d9; --link: #58a6ff;
+    --faint: #798391; --body-text: #c9d1d9; --link: #58a6ff; --ctl-border: #63707e;
     --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   [data-theme="terminal"] {
-    --bg: #0a0f0a; --text: #4ade80; --heading: #86efac; --muted: #3f8f5a;
-    --card-bg: #0e160e; --border: #1e3a1e; --header-hover: #142414; --divider: #1e3a1e;
-    --chip-text: #bbf7d0; --chip-bg: #16331b; --chip-stale-text: #3f8f5a; --chip-stale-bg: #142414;
-    --faint: #2f6f3f; --body-text: #5ee892; --link: #86efac;
+    --bg: #0a0f0a; --text: #4ade80; --heading: #86efac; --muted: #42975f;
+    --card-bg: #0e160e; --border: #264926; --header-hover: #142414; --divider: #1e3a1e;
+    --chip-text: #bbf7d0; --chip-bg: #16331b; --chip-stale-text: #42975f; --chip-stale-bg: #142414;
+    --faint: #3c8e50; --body-text: #5ee892; --link: #86efac; --ctl-border: #3d773d;
     --font: 'SF Mono', ui-monospace, Menlo, Monaco, 'Courier New', monospace;
   }
   [data-theme="light"] {
-    --bg: #ffffff; --text: #1f2328; --heading: #1f2328; --muted: #656d76;
-    --card-bg: #f6f8fa; --border: #d0d7de; --header-hover: #eef1f4; --divider: #d8dee4;
-    --chip-text: #0969da; --chip-bg: #ddf4ff; --chip-stale-text: #656d76; --chip-stale-bg: #eaeef2;
-    --faint: #8c959f; --body-text: #1f2328; --link: #0969da;
+    --bg: #ffffff; --text: #1f2328; --heading: #1f2328; --muted: #646c75;
+    --card-bg: #f6f8fa; --border: #b2bdc9; --header-hover: #eef1f4; --divider: #d8dee4;
+    --chip-text: #0969da; --chip-bg: #ddf4ff; --chip-stale-text: #646c75; --chip-stale-bg: #eaeef2;
+    --faint: #6a737e; --body-text: #1f2328; --link: #0969da; --ctl-border: #778ba0;
     --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   [data-theme="synthwave"] {
-    --bg: #1a0b2e; --text: #ffb3f0; --heading: #fe75fe; --muted: #7a5fb0;
-    --card-bg: #241046; --border: #582a82; --header-hover: #2e1456; --divider: #582a82;
-    --chip-text: #00f0ff; --chip-bg: #2a1a4a; --chip-stale-text: #7a5fb0; --chip-stale-bg: #241046;
-    --faint: #6f4fa0; --body-text: #ffc4f3; --link: #00f0ff;
+    --bg: #1a0b2e; --text: #ffb3f0; --heading: #fe75fe; --muted: #8f78bc;
+    --card-bg: #241046; --border: #5b2c87; --header-hover: #2e1456; --divider: #582a82;
+    --chip-text: #00f0ff; --chip-bg: #2a1a4a; --chip-stale-text: #8f78bc; --chip-stale-bg: #241046;
+    --faint: #9277bc; --body-text: #ffc4f3; --link: #00f0ff; --ctl-border: #8847c3;
     --font: 'SF Mono', ui-monospace, Menlo, Monaco, 'Courier New', monospace;
   }
   [data-theme="dracula"] {
-    --bg: #282a36; --text: #f8f8f2; --heading: #ff79c6; --muted: #6272a4;
-    --card-bg: #343746; --border: #44475a; --header-hover: #3c3f51; --divider: #44475a;
-    --chip-text: #8be9fd; --chip-bg: #20394a; --chip-stale-text: #6272a4; --chip-stale-bg: #343746;
-    --faint: #6272a4; --body-text: #f8f8f2; --link: #bd93f9;
+    --bg: #282a36; --text: #f8f8f2; --heading: #ff79c6; --muted: #95a0c1;
+    --card-bg: #343746; --border: #50546a; --header-hover: #3c3f51; --divider: #44475a;
+    --chip-text: #8be9fd; --chip-bg: #20394a; --chip-stale-text: #95a0c1; --chip-stale-bg: #343746;
+    --faint: #95a0c1; --body-text: #f8f8f2; --link: #bd93f9; --ctl-border: #7b7f9b;
     --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   [data-theme="nord"] {
-    --bg: #2e3440; --text: #d8dee9; --heading: #eceff4; --muted: #7b88a1;
-    --card-bg: #3b4252; --border: #434c5e; --header-hover: #434c5e; --divider: #4c566a;
-    --chip-text: #88c0d0; --chip-bg: #2c3e44; --chip-stale-text: #7b88a1; --chip-stale-bg: #434c5e;
-    --faint: #6c7689; --body-text: #e5e9f0; --link: #88c0d0;
+    --bg: #2e3440; --text: #d8dee9; --heading: #eceff4; --muted: #b4bcca;
+    --card-bg: #3b4252; --border: #535e74; --header-hover: #434c5e; --divider: #4c566a;
+    --chip-text: #88c0d0; --chip-bg: #2c3e44; --chip-stale-text: #b4bcca; --chip-stale-bg: #434c5e;
+    --faint: #a7aeba; --body-text: #e5e9f0; --link: #88c0d0; --ctl-border: #8e99ae;
     --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   [data-theme="midnight"] {
-    --bg: #05070f; --text: #a9b8e8; --heading: #c8d3f5; --muted: #545c7e;
-    --card-bg: #0b101f; --border: #1c2540; --header-hover: #111830; --divider: #1c2540;
-    --chip-text: #7aa2f7; --chip-bg: #16213e; --chip-stale-text: #545c7e; --chip-stale-bg: #111830;
-    --faint: #3b4261; --body-text: #a9b8e8; --link: #7aa2f7;
+    --bg: #05070f; --text: #a9b8e8; --heading: #c8d3f5; --muted: #7780a4;
+    --card-bg: #0b101f; --border: #2e3d69; --header-hover: #111830; --divider: #1c2540;
+    --chip-text: #7aa2f7; --chip-bg: #16213e; --chip-stale-text: #7780a4; --chip-stale-bg: #111830;
+    --faint: #6f7aa8; --body-text: #a9b8e8; --link: #7aa2f7; --ctl-border: #4a62a9;
     --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   [data-theme="sakura"] {
-    --bg: #fff5f7; --text: #5a2a3a; --heading: #b03060; --muted: #a96b80;
-    --card-bg: #ffe9ef; --border: #f3c6d3; --header-hover: #ffdde6; --divider: #f3c6d3;
-    --chip-text: #c2185b; --chip-bg: #ffd0e0; --chip-stale-text: #a96b80; --chip-stale-bg: #ffdde6;
-    --faint: #cfa0b0; --body-text: #5a2a3a; --link: #c2185b;
+    --bg: #fff5f7; --text: #5a2a3a; --heading: #b03060; --muted: #915469;
+    --card-bg: #ffe9ef; --border: #eba1b7; --header-hover: #ffdde6; --divider: #f3c6d3;
+    --chip-text: #bc1758; --chip-bg: #ffd0e0; --chip-stale-text: #915469; --chip-stale-bg: #ffdde6;
+    --faint: #a3536e; --body-text: #5a2a3a; --link: #c2185b; --ctl-border: #db547b;
     --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 
@@ -84,17 +100,24 @@
   .subtitle { color: var(--muted); font-size: calc(14px * var(--scale)); margin-bottom: 36px; }
   .grid { display: flex; flex-direction: column; gap: 24px; }
   .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-  .card-header { padding: 18px 20px; border-bottom: 1px solid transparent; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; cursor: pointer; user-select: none; -webkit-user-select: none; transition: background 0.12s; }
+  /* The header is a real <button> (inside an <h2>) so it is keyboard-reachable
+     and announced as an expandable control. These rules undo the UA button
+     styling; the layout below is unchanged. */
+  .card-header-h { font-size: inherit; font-weight: inherit; }
+  .card-header { width: 100%; font: inherit; color: inherit; background: none; border: none; border-bottom: 1px solid transparent; text-align: left;
+                 padding: 18px 20px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; cursor: pointer; user-select: none; -webkit-user-select: none; transition: background 0.12s; }
   .card-header:hover { background: var(--header-hover); }
+  .card-header:focus-visible { outline: 2px solid var(--link); outline-offset: -3px; }
   .card.expanded .card-header { border-bottom-color: var(--divider); padding-bottom: 14px; }
-  .card-title { font-size: calc(16px * var(--scale)); font-weight: 600; color: var(--heading); }
+  .card-title { display: block; font-size: calc(16px * var(--scale)); font-weight: 600; color: var(--heading); }
   .chevron { display: inline-block; width: 12px; color: var(--muted); margin-right: 8px; transition: transform 0.15s; font-size: calc(11px * var(--scale)); }
   .card.expanded .chevron { transform: rotate(90deg); }
-  .card-updated { text-align: right; flex-shrink: 0; }
+  .card-headline { display: block; }
+  .card-updated { display: block; text-align: right; flex-shrink: 0; }
   .updated-ago { font-size: calc(12px * var(--scale)); color: var(--chip-text); background: var(--chip-bg); border-radius: 6px; padding: 3px 8px; white-space: nowrap; display: inline-block; }
   .updated-ago.stale { color: var(--chip-stale-text); background: var(--chip-stale-bg); }
-  .updated-full { font-size: calc(11px * var(--scale)); color: var(--faint); margin-top: 5px; white-space: nowrap; }
-  .card-meta { font-size: calc(12px * var(--scale)); color: var(--muted); margin-top: 4px; }
+  .updated-full { display: block; font-size: calc(11px * var(--scale)); color: var(--faint); margin-top: 5px; white-space: nowrap; }
+  .card-meta { display: block; font-size: calc(12px * var(--scale)); color: var(--muted); margin-top: 4px; font-weight: 400; }
   .card-body { display: none; padding: 20px; font-size: calc(14px * var(--scale)); line-height: 1.7; color: var(--body-text); white-space: pre-wrap; word-break: break-word; }
   .card.expanded .card-body { display: block; }
   .empty { color: var(--faint); font-style: italic; }
@@ -102,8 +125,10 @@
   a:hover { text-decoration: underline; }
   .header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
   .controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-  .ctl { font-size: 12px; color: var(--muted); background: var(--chip-stale-bg); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; cursor: pointer; font-family: var(--font); }
+  .ctl { font-size: calc(12px * var(--scale)); color: var(--muted); background: var(--chip-stale-bg); border: 1px solid var(--ctl-border); border-radius: 6px; padding: 5px 10px; cursor: pointer; font-family: var(--font); }
   .ctl:hover { color: var(--heading); }
+  .ctl:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 2px; }
   select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%238b949e' stroke-width='1.5'/></svg>"); background-repeat: no-repeat; background-position: right 9px center; }
 
   /* ---- Narrow screens: let the header and card headers wrap instead of squeezing/clipping ---- */
@@ -116,6 +141,11 @@
     .card-updated { width: 100%; text-align: left; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
     .updated-full { margin-top: 0; }
     .card-body { padding: 16px; }
+  }
+
+  /* Respect the OS "reduce motion" setting. */
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
   }
 </style>
 </head>
@@ -145,7 +175,10 @@
     <button class="ctl" onclick="location.reload()">↻ Refresh</button>
   </div>
 </div>
-<div class="grid" id="grid"></div>
+<noscript>
+  <p>This dashboard needs JavaScript to display your scheduled-task output.</p>
+</noscript>
+<main class="grid" id="grid"></main>
 
 <script>
 // ---- Theme picker ----
@@ -215,65 +248,128 @@ const TASKS = [
   }
 ];
 
-function formatContent(text) {
-  return text.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ESC[c]);
 }
 
-function timeAgo(iso) {
-  if (!iso) return 'never';
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = Math.floor(diff / 60000);
+// Task content is written by scheduled tasks that summarise pages from the open
+// web, so it is untrusted and must never reach innerHTML unescaped. Everything
+// is escaped first, then a small allowlist is re-enabled:
+//   * bare <strong>/<em>/<b>/<i>/<br> with no attributes (the data uses <strong>)
+//   * [label](http(s)://...) markdown links
+// Because the URL is already escaped when it is placed in the href, a quote
+// inside it becomes &quot; and cannot break out to forge a new attribute.
+// A tag carrying attributes (e.g. <strong onclick=...>) never matches the
+// allowlist and stays escaped as visible text.
+function formatContent(text) {
+  if (typeof text !== 'string') return '';
+  let out = escapeHtml(text);
+  out = out.replace(/&lt;(\/?)(strong|em|b|i|br)\s*\/?&gt;/gi,
+    (m, slash, tag) => `<${slash}${tag.toLowerCase()}>`);
+  out = out.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+    (m, label, url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`);
+  return out;
+}
+
+function parseStamp(iso) {
+  if (!iso) return null;
+  const t = new Date(iso).getTime();
+  return Number.isFinite(t) ? t : null;
+}
+
+// Reports the distance from now in the largest sensible unit. A timestamp ahead
+// of the clock is labelled "from now" rather than silently reading as fresh,
+// so a skewed clock or a bad mtime is visible instead of hidden.
+function timeAgo(t) {
+  const signed = Date.now() - t;
+  const future = signed < -60000;
+  const m = Math.floor(Math.abs(signed) / 60000);
   if (m < 1) return 'just now';
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
+  let out;
+  if (m < 60) out = `${m}m`;
+  else {
+    const h = Math.floor(m / 60);
+    out = h < 24 ? `${h}h` : `${Math.floor(h / 24)}d`;
+  }
+  return future ? `${out} from now` : `${out} ago`;
 }
 
 const grid = document.getElementById('grid');
 const data = window.taskData || {};
 
-TASKS.sort((a, b) => {
-  const aTime = data[a.id]?.updatedAt ? new Date(data[a.id].updatedAt) : new Date(0);
-  const bTime = data[b.id]?.updatedAt ? new Date(data[b.id].updatedAt) : new Date(0);
-  return bTime - aTime;
-});
+TASKS.sort((a, b) => (parseStamp(data[b.id]?.updatedAt) || 0) - (parseStamp(data[a.id]?.updatedAt) || 0));
+
+function collapseAll() {
+  document.querySelectorAll('.card.expanded').forEach(c => {
+    c.classList.remove('expanded');
+    c.querySelector('.card-header').setAttribute('aria-expanded', 'false');
+  });
+}
 
 TASKS.forEach(task => {
-  const d = data[task.id];
-  const hasContent = d && d.content;
-  const isStale = !d || !d.updatedAt;
-  const agoLabel = d && d.updatedAt ? `Updated ${timeAgo(d.updatedAt)}` : 'No data yet';
-  const fullLabel = d && d.updatedAt ? new Date(d.updatedAt).toLocaleString() : 'waiting for first run';
+  // One malformed data file must not blank the rest of the dashboard, so each
+  // card renders independently and failures degrade to a visible notice.
+  try {
+    const d = data[task.id];
+    const stamp = parseStamp(d?.updatedAt);
+    const isStale = stamp === null;
+    const agoLabel = stamp !== null ? `Updated ${timeAgo(stamp)}`
+                   : d?.updatedAt ? 'Timestamp unreadable' : 'No data yet';
+    const fullLabel = stamp !== null ? new Date(stamp).toLocaleString()
+                    : d?.updatedAt ? String(d.updatedAt) : 'waiting for first run';
+    const raw = typeof d?.content === 'string' ? d.content : '';
+    const bodyHtml = raw.trim() ? formatContent(raw)
+                   : '<span class="empty">No output yet — waiting for first run.</span>';
+    const bodyId = `body-${task.id}`;
+    const titleId = `title-${task.id}`;
 
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
-    <div class="card-header">
-      <div>
-        <div class="card-title"><span class="chevron">▶</span>${task.title}</div>
-        <div class="card-meta">${task.description}</div>
-      </div>
-      <div class="card-updated">
-        <div class="updated-ago ${isStale ? 'stale' : ''}">${agoLabel}</div>
-        <div class="updated-full">${fullLabel}</div>
-      </div>
-    </div>
-    <div class="card-body">${hasContent ? formatContent(d.content) : '<span class="empty">No output yet — waiting for first run.</span>'}</div>
-  `;
-  card.querySelector('.card-header').addEventListener('click', () => {
-    const wasExpanded = card.classList.contains('expanded');
-    document.querySelectorAll('.card.expanded').forEach(c => c.classList.remove('expanded'));
-    if (!wasExpanded) {
-      card.classList.add('expanded');
-      // Bring the top of the expanded card to the top of the viewport.
-      requestAnimationFrame(() => {
-        const top = card.getBoundingClientRect().top + window.pageYOffset - 16;
-        window.scrollTo({ top, behavior: 'smooth' });
-      });
-    }
-  });
-  grid.appendChild(card);
+    const card = document.createElement('div');
+    card.className = 'card';
+    // The header is a <button> inside an <h2>: keyboard-focusable, announced as
+    // an expandable control, and Enter/Space work natively. Every interpolated
+    // value is escaped even where it is currently a hard-coded constant.
+    card.innerHTML = `
+      <h2 class="card-header-h">
+        <button type="button" class="card-header" aria-expanded="false" aria-controls="${bodyId}">
+          <span class="card-headline">
+            <span class="card-title" id="${titleId}"><span class="chevron" aria-hidden="true">▶</span>${escapeHtml(task.title)}</span>
+            <span class="card-meta">${escapeHtml(task.description)}</span>
+          </span>
+          <span class="card-updated">
+            <span class="updated-ago ${isStale ? 'stale' : ''}">${escapeHtml(agoLabel)}</span>
+            <span class="updated-full">${escapeHtml(fullLabel)}</span>
+          </span>
+        </button>
+      </h2>
+      <div class="card-body" id="${bodyId}" role="region" aria-labelledby="${titleId}">${bodyHtml}</div>
+    `;
+
+    const btn = card.querySelector('.card-header');
+    btn.addEventListener('click', () => {
+      const wasExpanded = card.classList.contains('expanded');
+      collapseAll();
+      if (!wasExpanded) {
+        card.classList.add('expanded');
+        btn.setAttribute('aria-expanded', 'true');
+        // Bring the top of the expanded card to the top of the viewport.
+        requestAnimationFrame(() => {
+          const top = card.getBoundingClientRect().top + window.scrollY - 16;
+          const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          window.scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' });
+        });
+      }
+    });
+    grid.appendChild(card);
+  } catch (err) {
+    console.error(`Failed to render task "${task.id}":`, err);
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `<div class="card-body" style="display:block">
+      <span class="empty">${escapeHtml(task.title)} — could not be displayed (malformed data file).</span>
+    </div>`;
+    grid.appendChild(card);
+  }
 });
 </script>
 </body>

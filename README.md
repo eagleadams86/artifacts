@@ -10,6 +10,10 @@ Cards are sorted by most recently updated and collapse by default — click a ca
 
 A theme picker in the top-right switches between eight themes — 🌙 Dark, 🧛 Dracula, ☀️ Light, 🌌 Midnight (default), ❄️ Nord, 🌸 Sakura, 🌆 Synthwave, and 🖥️ Terminal (green monospace). A text size picker next to it offers Small / Normal / Large / XL / XXL. Both choices are saved in the browser and persist across visits.
 
+### Accessibility
+
+Card headers are real buttons, so the whole dashboard works by keyboard: Tab to a card, Enter or Space to expand it. Each card is a labelled region with `aria-expanded`, and the page uses a proper heading outline (`h1` → `h2` per card). All eight themes meet WCAG AA contrast (4.5:1 for text, 3:1 for control borders) on every surface, and the OS "reduce motion" setting disables the smooth scroll and transitions.
+
 ## Tasks
 
 | Task | Schedule | Description |
@@ -26,3 +30,9 @@ A theme picker in the top-right switches between eight themes — 🌙 Dark, �
 ## How it works
 
 Each scheduled Claude task writes its output to a local `data/data-*.js` file, which a file watcher pushes to this repo within moments of the task finishing. The `claude.html` dashboard loads all the data files as scripts and renders them as cards — no server required, works as a plain `file://` page or via GitHub Pages.
+
+### Handling task content safely
+
+Task output is written by scheduled tasks that summarise pages from the open web, so the dashboard treats it as untrusted. Content is HTML-escaped before rendering, then a small allowlist is re-enabled: bare `<strong>`, `<em>`, `<b>`, `<i>`, `<br>` (no attributes) and `[label](https://…)` markdown links, which become `rel="noopener noreferrer"` anchors. Anything else — script tags, event-handler attributes, `javascript:` URLs — stays inert as visible text. A Content-Security-Policy meta tag backs this up, and a malformed data file degrades to a single "could not be displayed" card instead of blanking the dashboard.
+
+If a task ever needs a new tag (a list, a heading), add it to the allowlist in `formatContent` rather than removing the escaping.
