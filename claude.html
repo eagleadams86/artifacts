@@ -15,7 +15,8 @@
   // Apply saved theme and text size before render to avoid a flash of the defaults.
   // Both are validated against the known sets so a stale or hand-edited
   // localStorage value falls back cleanly instead of leaving the pickers blank.
-  var THEMES = ['dark','terminal','light','synthwave','dracula','nord','midnight','sakura'];
+  // Keep in sync with the [data-theme=...] blocks and the picker's <option>s.
+  var THEMES = ['dark','terminal','light','synthwave','dracula','nord','midnight','sakura','sepia'];
   var SIZES = ['0.85','1','1.15','1.3','1.5'];
   var t = localStorage.getItem('dashboard-theme');
   var s = localStorage.getItem('dashboard-textsize');
@@ -92,6 +93,18 @@
     --faint: #a3536e; --body-text: #5a2a3a; --link: #c2185b; --ctl-border: #db547b;
     --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
+  /* Sepia mirrors the canonical palette in claude-lottery/theme.css: --bg,
+     --bg-card, --bg-card-alt, --text-primary/-muted/-hint and --red/--red-bg
+     are carried over as-is. Two derived values had to be darkened to clear AA
+     here — the chip text (4.30) and a control border, since --border-strong
+     only reaches 1.50 against the page. */
+  [data-theme="sepia"] {
+    --bg: #f3ead7; --text: #3a3020; --heading: #3a3020; --muted: #6a5e46;
+    --card-bg: #fbf5e7; --border: #c3a96d; --header-hover: #eee2c9; --divider: #e0d3b4;
+    --chip-text: #ab3e29; --chip-bg: #f3d9cf; --chip-stale-text: #6a5e46; --chip-stale-bg: #eee2c9;
+    --faint: #72684f; --body-text: #3a3020; --link: #b1402a; --ctl-border: #977e48;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root { --scale: 1; }
@@ -123,6 +136,12 @@
   .empty { color: var(--faint); font-style: italic; }
   a { color: var(--link); text-decoration: none; }
   a:hover { text-decoration: underline; }
+  /* Citation links sit inside body text, where colour alone does not separate
+     them from the surrounding prose (WCAG 1.4.1) — only the Light theme clears
+     3:1 against --body-text. Underlining them makes the cue non-colour-based
+     in every theme; hover thickens it. */
+  .card-body a { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+  .card-body a:hover { text-decoration-thickness: 2px; }
   .header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
   .controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
   .ctl { font-size: calc(12px * var(--scale)); color: var(--muted); background: var(--chip-stale-bg); border: 1px solid var(--ctl-border); border-radius: 6px; padding: 5px 10px; cursor: pointer; font-family: var(--font); }
@@ -169,6 +188,7 @@
       <option value="midnight">🌌 Midnight</option>
       <option value="nord">❄️ Nord</option>
       <option value="sakura">🌸 Sakura</option>
+      <option value="sepia">📜 Sepia</option>
       <option value="synthwave">🌆 Synthwave</option>
       <option value="terminal">🖥️ Terminal</option>
     </select>
