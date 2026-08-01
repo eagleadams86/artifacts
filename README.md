@@ -8,11 +8,11 @@ A personal dashboard that displays the live outputs of scheduled Claude tasks.
 
 Cards are sorted by most recently updated and collapse by default — click a card header to expand it (and collapse any other). Refresh the page to see the latest outputs.
 
-A theme picker in the top-right switches between the four unified themes shared by all my apps — ✦ Midnight (default), ☾ Dark, ☀️ Light and 📜 Sepia. (Dracula, Nord, Sakura, Synthwave and Terminal were retired in August 2026; a saved choice of one of them falls back to Midnight.) A text size picker next to it offers Small / Normal / Large / XL / XXL. Both choices are saved in the browser and persist across visits.
+A theme picker in the top-right switches between the four unified themes shared by all my apps, listed alphabetically — ☾ Dark, ☀️ Light, ✦ Midnight (the default) and 📜 Sepia. (Dracula, Nord, Sakura, Synthwave and Terminal were retired in August 2026; a saved choice of one of them falls back to Midnight.) A text size picker next to it offers Small / Normal / Large / XL / XXL. Both choices are saved in the browser and persist across visits.
 
 The palettes are transcribed from the private `claude-theme-pack` repo — the source of truth for the colours of every app in this family — whose script verifies every colour pair at WCAG AA. The token mapping is documented in the comment above the theme blocks in `claude.html`.
 
-Adding a theme starts in the theme pack (new themes need its contrast gate to pass), then four edits in `claude.html`: a `[data-theme="…"]` block, an `<option>` in the picker (default first), the `THEMES` validation array in the `<head>` script, and this list.
+Adding a theme starts in the theme pack (new themes need its contrast gate to pass), then four edits in `claude.html`: a `[data-theme="…"]` block, an `<option>` in the picker (kept alphabetical), the `THEMES` validation array in the `<head>` script, and this list.
 
 ### Accessibility
 
