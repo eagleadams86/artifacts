@@ -8,15 +8,15 @@ A personal dashboard that displays the live outputs of scheduled Claude tasks.
 
 Cards are sorted by most recently updated and collapse by default — click a card header to expand it (and collapse any other). Refresh the page to see the latest outputs.
 
-A theme picker in the top-right switches between nine themes — 🌙 Dark, 🧛 Dracula, ☀️ Light, 🌌 Midnight (default), ❄️ Nord, 🌸 Sakura, 📜 Sepia, 🌆 Synthwave, and 🖥️ Terminal (green monospace). A text size picker next to it offers Small / Normal / Large / XL / XXL. Both choices are saved in the browser and persist across visits.
+A theme picker in the top-right switches between the four unified themes shared by all my apps — ✦ Midnight (default), ☾ Dark, ☀️ Light and 📜 Sepia. (Dracula, Nord, Sakura, Synthwave and Terminal were retired in August 2026; a saved choice of one of them falls back to Midnight.) A text size picker next to it offers Small / Normal / Large / XL / XXL. Both choices are saved in the browser and persist across visits.
 
-Sepia mirrors the canonical palette in `claude-lottery/theme.css` — its `--bg`, `--bg-card`, `--bg-card-alt`, text colours and `--red`/`--red-bg` carry over unchanged; only the chip text and a control border were darkened to clear AA here.
+The palettes are transcribed from the private `claude-theme-pack` repo — the source of truth for the colours of every app in this family — whose script verifies every colour pair at WCAG AA. The token mapping is documented in the comment above the theme blocks in `claude.html`.
 
-Adding a theme means four edits in `claude.html`: a `[data-theme="…"]` block, an `<option>` in the picker (kept alphabetical), the `THEMES` validation array in the `<head>` script, and this list.
+Adding a theme starts in the theme pack (new themes need its contrast gate to pass), then four edits in `claude.html`: a `[data-theme="…"]` block, an `<option>` in the picker (default first), the `THEMES` validation array in the `<head>` script, and this list.
 
 ### Accessibility
 
-Card headers are real buttons, so the whole dashboard works by keyboard: Tab to a card, Enter or Space to expand it. Each card is a labelled region with `aria-expanded`, and the page uses a proper heading outline (`h1` → `h2` per card). All nine themes meet WCAG AA contrast (4.5:1 for text, 3:1 for control borders) on every surface, links inside body text are underlined so colour is never the only cue, and the OS "reduce motion" setting disables the smooth scroll and transitions.
+Card headers are real buttons, so the whole dashboard works by keyboard: Tab to a card, Enter or Space to expand it. Each card is a labelled region with `aria-expanded`, and the page uses a proper heading outline (`h1` → `h2` per card). All four themes meet WCAG AA contrast (4.5:1 for text, 3:1 for control borders) on every surface, links inside body text are underlined so colour is never the only cue, and the OS "reduce motion" setting disables the smooth scroll and transitions.
 
 ## Tasks
 

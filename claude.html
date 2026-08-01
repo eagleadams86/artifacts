@@ -16,7 +16,7 @@
   // Both are validated against the known sets so a stale or hand-edited
   // localStorage value falls back cleanly instead of leaving the pickers blank.
   // Keep in sync with the [data-theme=...] blocks and the picker's <option>s.
-  var THEMES = ['dark','terminal','light','synthwave','dracula','nord','midnight','sakura','sepia'];
+  var THEMES = ['midnight','dark','light','sepia']; // retired themes fall back to midnight below
   var SIZES = ['0.85','1','1.15','1.3','1.5'];
   var t = localStorage.getItem('dashboard-theme');
   var s = localStorage.getItem('dashboard-textsize');
@@ -33,76 +33,44 @@
 <script src="data/data-glp1-daily-news.js"></script>
 <style>
   /* ---- Themes ---- */
-  /* Muted/faint/chip text and control borders are tuned to meet WCAG AA
-     (4.5:1 for text, 3:1 for control borders) against every surface they sit
-     on, with each theme's original hue preserved. --border stays decorative:
-     cards are already separated from the page by --card-bg. */
-  :root, [data-theme="dark"] {
-    --bg: #0d1117; --text: #e6edf3; --heading: #f0f6fc; --muted: #8b949e;
-    --card-bg: #161b22; --border: #3c444c; --header-hover: #1c2230; --divider: #21262d;
-    --chip-text: #58a6ff; --chip-bg: #1f3a5c; --chip-stale-text: #8b949e; --chip-stale-bg: #21262d;
-    --faint: #798391; --body-text: #c9d1d9; --link: #58a6ff; --ctl-border: #63707e;
+  /* Values transcribed from the unified theme pack (tokens.json in the private
+     claude-theme-pack repo — the source of truth for every app's palette; this
+     page keeps them inline because it is a single self-contained file). Token
+     mapping: bg←bg, card-bg←surface, header-hover & chip-stale-bg←surfaceAlt,
+     divider←border, border←borderStrong (decorative), ctl-border←borderControl
+     (3:1 on page and card), text & heading←textPrimary, muted &
+     chip-stale-text←textMuted, faint←textHint, chip-text & link←accent,
+     chip-bg←accentBg; body-text←textSecondary on the dark themes (the old
+     dimmed-body look), textPrimary on the light ones. Sepia's accent is
+     monochrome, so its chips/links use the pack's err/errBg pair instead —
+     the same warm red the old sepia used, and AA-verified by the pack's gate.
+     Don't retune values here; change the pack and re-transcribe. */
+  :root, [data-theme="midnight"] {
+    --bg: #0a0e1a; --text: #e7eaf6; --heading: #e7eaf6; --muted: #838cab;
+    --card-bg: #121829; --border: #374163; --header-hover: #1b2238; --divider: #262f4a;
+    --chip-text: #818cf8; --chip-bg: #242b4a; --chip-stale-text: #838cab; --chip-stale-bg: #1b2238;
+    --faint: #7f88a9; --body-text: #aab2d0; --link: #818cf8; --ctl-border: #536396;
     --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
-  [data-theme="terminal"] {
-    --bg: #0a0f0a; --text: #4ade80; --heading: #86efac; --muted: #42975f;
-    --card-bg: #0e160e; --border: #264926; --header-hover: #142414; --divider: #1e3a1e;
-    --chip-text: #bbf7d0; --chip-bg: #16331b; --chip-stale-text: #42975f; --chip-stale-bg: #142414;
-    --faint: #3c8e50; --body-text: #5ee892; --link: #86efac; --ctl-border: #3d773d;
-    --font: 'SF Mono', ui-monospace, Menlo, Monaco, 'Courier New', monospace;
+  [data-theme="dark"] {
+    --bg: #13151b; --text: #eef0f5; --heading: #eef0f5; --muted: #9396a3;
+    --card-bg: #1c1f27; --border: #3d424e; --header-hover: #262a33; --divider: #2d313b;
+    --chip-text: #eef0f5; --chip-bg: #3c3e46; --chip-stale-text: #9396a3; --chip-stale-bg: #262a33;
+    --faint: #8c909d; --body-text: #adb1bd; --link: #eef0f5; --ctl-border: #626a7d;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   [data-theme="light"] {
-    --bg: #ffffff; --text: #1f2328; --heading: #1f2328; --muted: #646c75;
-    --card-bg: #f6f8fa; --border: #b2bdc9; --header-hover: #eef1f4; --divider: #d8dee4;
-    --chip-text: #0969da; --chip-bg: #ddf4ff; --chip-stale-text: #646c75; --chip-stale-bg: #eaeef2;
-    --faint: #6a737e; --body-text: #1f2328; --link: #0969da; --ctl-border: #778ba0;
+    --bg: #f5f5f3; --text: #111110; --heading: #111110; --muted: #656562;
+    --card-bg: #ffffff; --border: #c8c8c4; --header-hover: #f0f0ee; --divider: #e0e0dd;
+    --chip-text: #266dc3; --chip-bg: #e9f0f9; --chip-stale-text: #656562; --chip-stale-bg: #f0f0ee;
+    --faint: #6d6d6d; --body-text: #111110; --link: #266dc3; --ctl-border: #8e8e86;
     --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
-  [data-theme="synthwave"] {
-    --bg: #1a0b2e; --text: #ffb3f0; --heading: #fe75fe; --muted: #8f78bc;
-    --card-bg: #241046; --border: #5b2c87; --header-hover: #2e1456; --divider: #582a82;
-    --chip-text: #00f0ff; --chip-bg: #2a1a4a; --chip-stale-text: #8f78bc; --chip-stale-bg: #241046;
-    --faint: #9277bc; --body-text: #ffc4f3; --link: #00f0ff; --ctl-border: #8847c3;
-    --font: 'SF Mono', ui-monospace, Menlo, Monaco, 'Courier New', monospace;
-  }
-  [data-theme="dracula"] {
-    --bg: #282a36; --text: #f8f8f2; --heading: #ff79c6; --muted: #95a0c1;
-    --card-bg: #343746; --border: #50546a; --header-hover: #3c3f51; --divider: #44475a;
-    --chip-text: #8be9fd; --chip-bg: #20394a; --chip-stale-text: #95a0c1; --chip-stale-bg: #343746;
-    --faint: #95a0c1; --body-text: #f8f8f2; --link: #bd93f9; --ctl-border: #7b7f9b;
-    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
-  [data-theme="nord"] {
-    --bg: #2e3440; --text: #d8dee9; --heading: #eceff4; --muted: #b4bcca;
-    --card-bg: #3b4252; --border: #535e74; --header-hover: #434c5e; --divider: #4c566a;
-    --chip-text: #88c0d0; --chip-bg: #2c3e44; --chip-stale-text: #b4bcca; --chip-stale-bg: #434c5e;
-    --faint: #a7aeba; --body-text: #e5e9f0; --link: #88c0d0; --ctl-border: #8e99ae;
-    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
-  [data-theme="midnight"] {
-    --bg: #05070f; --text: #a9b8e8; --heading: #c8d3f5; --muted: #7780a4;
-    --card-bg: #0b101f; --border: #2e3d69; --header-hover: #111830; --divider: #1c2540;
-    --chip-text: #7aa2f7; --chip-bg: #16213e; --chip-stale-text: #7780a4; --chip-stale-bg: #111830;
-    --faint: #6f7aa8; --body-text: #a9b8e8; --link: #7aa2f7; --ctl-border: #4a62a9;
-    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
-  [data-theme="sakura"] {
-    --bg: #fff5f7; --text: #5a2a3a; --heading: #b03060; --muted: #915469;
-    --card-bg: #ffe9ef; --border: #eba1b7; --header-hover: #ffdde6; --divider: #f3c6d3;
-    --chip-text: #bc1758; --chip-bg: #ffd0e0; --chip-stale-text: #915469; --chip-stale-bg: #ffdde6;
-    --faint: #a3536e; --body-text: #5a2a3a; --link: #c2185b; --ctl-border: #db547b;
-    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
-  /* Sepia mirrors the canonical palette in claude-lottery/theme.css: --bg,
-     --bg-card, --bg-card-alt, --text-primary/-muted/-hint and --red/--red-bg
-     are carried over as-is. Two derived values had to be darkened to clear AA
-     here — the chip text (4.30) and a control border, since --border-strong
-     only reaches 1.50 against the page. */
   [data-theme="sepia"] {
     --bg: #f3ead7; --text: #3a3020; --heading: #3a3020; --muted: #6a5e46;
-    --card-bg: #fbf5e7; --border: #c3a96d; --header-hover: #eee2c9; --divider: #e0d3b4;
-    --chip-text: #ab3e29; --chip-bg: #f3d9cf; --chip-stale-text: #6a5e46; --chip-stale-bg: #eee2c9;
-    --faint: #72684f; --body-text: #3a3020; --link: #b1402a; --ctl-border: #977e48;
+    --card-bg: #fbf5e7; --border: #cbb992; --header-hover: #eee2c9; --divider: #e0d3b4;
+    --chip-text: #9a3412; --chip-bg: #f3d9cf; --chip-stale-text: #6a5e46; --chip-stale-bg: #eee2c9;
+    --faint: #71644b; --body-text: #3a3020; --link: #9a3412; --ctl-border: #9c824b;
     --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 
@@ -182,15 +150,10 @@
       <option value="1.5">🔠 XXL</option>
     </select>
     <select class="ctl" id="theme" aria-label="Theme">
-      <option value="dark">🌙 Dark</option>
-      <option value="dracula">🧛 Dracula</option>
+      <option value="midnight">✦ Midnight</option>
+      <option value="dark">☾ Dark</option>
       <option value="light">☀️ Light</option>
-      <option value="midnight">🌌 Midnight</option>
-      <option value="nord">❄️ Nord</option>
-      <option value="sakura">🌸 Sakura</option>
       <option value="sepia">📜 Sepia</option>
-      <option value="synthwave">🌆 Synthwave</option>
-      <option value="terminal">🖥️ Terminal</option>
     </select>
     <button class="ctl" onclick="location.reload()">↻ Refresh</button>
   </div>
