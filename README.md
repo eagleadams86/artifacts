@@ -6,7 +6,7 @@ A personal dashboard that displays the live outputs of scheduled Claude tasks.
 
 **[View claude.html](https://eagleadams86.github.io/artifacts/claude.html)**
 
-Cards are sorted by most recently updated and collapse by default — click a card header to expand it (and collapse any other). Refresh the page to see the latest outputs.
+Cards are sorted by most recently updated and collapse by default — click a card header to expand it (and collapse any other). Refresh the page to see the latest outputs. Each card header shows when the task is due (🕐 line, left) next to when it actually last ran (right), so a task that has missed its slot is visible at a glance.
 
 A theme picker in the top-right switches between the four unified themes shared by all my apps, listed alphabetically — ☾ Dark, ☀️ Light, ✦ Midnight (the default) and 📜 Sepia. (Dracula, Nord, Sakura, Synthwave and Terminal were retired in August 2026; a saved choice of one of them falls back to Midnight.) A text size picker next to it offers Small / Normal / Large / XL / XXL. Both choices are saved in the browser and persist across visits.
 
