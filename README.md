@@ -22,11 +22,11 @@ Card headers are real buttons, so the whole dashboard works by keyboard: Tab to 
 
 | Task | Schedule | Description |
 |---|---|---|
-| 🎉 Buffalo Weekend Events | Every day at 12:00 AM | Free & paid events in and around Buffalo |
-| 📺 Streaming Digest | Every day at 12:15 AM | New on Apple TV+, Crunchyroll, and Prime Video |
-| 💻 macOS Beta Check | Every day at 12:30 AM | Go/no-go recommendation for Apple Silicon MacBook Pro |
-| 📱 iOS Beta Check | Every day at 12:45 AM | Go/no-go recommendation for iPhone 15 Pro Max |
-| 📲 iPhone Rumors | Every day at 1:00 AM | Next-iPhone rumor roundup, grouped by confidence level |
+| 🎉 Buffalo Weekend Events | Every Friday at 12:00 AM | Free & paid events in and around Buffalo |
+| 📺 Streaming Digest | Every Friday at 12:15 AM | New on Apple TV+, Crunchyroll, and Prime Video |
+| 💻 macOS Beta Check | Every Wednesday at 12:30 AM | Go/no-go recommendation for Apple Silicon MacBook Pro |
+| 📱 iOS Beta Check | Every Wednesday at 12:45 AM | Go/no-go recommendation for iPhone 15 Pro Max |
+| 📲 iPhone Rumors | Every Monday at 1:00 AM | Next-iPhone rumor roundup, grouped by confidence level |
 | 💉 GLP-1 News | Every day at 1:15 AM | GLP-1 drug news — trials, FDA actions, and industry developments |
 | 🤖 Claude and Other AI News | Every day at 1:30 AM | Latest Anthropic, Claude, and AI industry news from the past 24 hours |
 | 🗞️ Daily News Briefing | Every day at 1:45 AM | Local Pendleton/Buffalo/WNY, US, and global headlines |
