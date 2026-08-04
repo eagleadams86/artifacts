@@ -35,6 +35,8 @@ Card headers are real buttons, so the whole dashboard works by keyboard: Tab to 
 
 Each scheduled Claude task writes its output to a local `data/data-*.js` file, which a file watcher pushes to this repo within moments of the task finishing. The `claude.html` dashboard loads all the data files as scripts and renders them as cards — no server required, works as a plain `file://` page or via GitHub Pages.
 
+`tests.html` pins the dashboard's sanitizer — the function that decides what a task's untrusted output may render as HTML — and its timestamp helpers. Open it via a local server (`python3 -m http.server 8013`, then http://localhost:8013/tests.html): it loads the real `claude.html` in a hidden iframe and either reports "All N tests pass" or lists what broke.
+
 ### Handling task content safely
 
 Task output is written by scheduled tasks that summarise pages from the open web, so the dashboard treats it as untrusted. Content is HTML-escaped before rendering, then a small allowlist is re-enabled: bare `<strong>`, `<em>`, `<b>`, `<i>`, `<br>` (no attributes) and `[label](https://…)` markdown links, which become `rel="noopener noreferrer"` anchors. Anything else — script tags, event-handler attributes, `javascript:` URLs — stays inert as visible text. A Content-Security-Policy meta tag backs this up, and a malformed data file degrades to a single "could not be displayed" card instead of blanking the dashboard.

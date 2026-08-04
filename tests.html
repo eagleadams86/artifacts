@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — tests</title>
+<style>
+  /* Dev-only page: pins claude.html's sanitizer (formatContent) — the function
+     that decides what untrusted scheduled-task output may render as HTML — plus
+     its timestamp helpers. Loads the real dashboard in a hidden same-origin
+     iframe and calls its functions directly, so what's tested is what ships.
+     Serve over http://localhost (python3 -m http.server 8013); file:// iframes
+     are blocked in some browsers. Read-only: nothing here writes localStorage.
+     Colours are the Midnight palette from the theme pack (dev page, hardcoded). */
+  body { background: #0a0e1a; color: #e7eaf6; margin: 0;
+         font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .sub { color: #838cab; font-size: 12.5px; margin: 0 0 18px; }
+  #summary { font-weight: 600; padding: 10px 14px; border-radius: 10px; margin-bottom: 16px;
+             border: 1px solid #262f4a; background: #121829; }
+  #summary.ok  { color: #72fe84; border-color: #72fe84; }
+  #summary.bad { color: #fb7874; border-color: #fb7874; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td { padding: 6px 8px; border-bottom: 1px solid #262f4a; vertical-align: top; }
+  td.st { width: 28px; font-weight: 700; }
+  tr.pass td.st { color: #72fe84; }
+  tr.fail td.st { color: #fb7874; }
+  tr.fail td.msg { color: #fb7874; }
+  .msg { color: #838cab; font-size: 12px; white-space: pre-wrap; }
+  .group td { padding-top: 16px; font-size: 11px; font-weight: 600; letter-spacing: .06em;
+              text-transform: uppercase; color: #838cab; border-bottom-color: #374163; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Dashboard — sanitizer tests</h1>
+  <p class="sub">Runs against the real <code>claude.html</code> in a hidden iframe. Read-only: nothing is saved.</p>
+  <div id="summary">Loading dashboard…</div>
+  <table><tbody id="out"></tbody></table>
+</div>
+<iframe id="app" src="claude.html" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" title="dashboard under test"></iframe>
+
+<script>
+'use strict';
+const TESTS = [];
+function group(name) { TESTS.push({ group: name }); }
+function t(name, fn) { TESTS.push({ name, fn }); }
+function eq(actual, expected, note) {
+  const a = JSON.stringify(actual), e = JSON.stringify(expected);
+  if (a !== e) throw new Error((note ? note + ': ' : '') + 'expected ' + e + ', got ' + a);
+}
+function ok(cond, note) { if (!cond) throw new Error(note || 'expected truthy'); }
+let w;
+
+group('formatContent — escapes everything, then re-enables a tiny allowlist');
+t('script tags come out as visible text, never markup', () => {
+  eq(w.formatContent('<script>alert(1)<\/script>'),
+     '&lt;script&gt;alert(1)&lt;/script&gt;');
+});
+t('bare strong/em/b/i/br are re-enabled, case-insensitively, self-closing too', () => {
+  eq(w.formatContent('a <strong>b</strong> <EM>c</EM> d<br>e<br/>f'),
+     'a <strong>b</strong> <em>c</em> d<br>e<br>f');
+});
+t('a tag carrying any attribute stays escaped as text', () => {
+  const html = w.formatContent('<strong onclick=alert(1)>x</strong>');
+  ok(html.includes('&lt;strong onclick=alert(1)&gt;'),
+     'opening tag with attribute stays visible text: ' + html);
+  ok(!/<strong\s/i.test(html), 'no live element with a handler can result: ' + html);
+  // The bare closing tag legitimately matches the allowlist; only the opening
+  // tag carried the attribute, and it must not.
+});
+t('markdown links become anchors — http(s) only, with noopener noreferrer', () => {
+  const html = w.formatContent('see [the docs](https://example.com/a)');
+  eq(html, 'see <a href="https://example.com/a" target="_blank" rel="noopener noreferrer">the docs</a>');
+});
+t('a javascript: link is never linked', () => {
+  const html = w.formatContent('[click](javascript:alert(1))');
+  ok(!html.includes('<a '), 'no anchor for a javascript: URL: ' + html);
+});
+t('a quote inside a URL cannot break out of the href attribute', () => {
+  const html = w.formatContent('[x](https://e.com/a"onmouseover="alert(1))');
+  ok(!/" *onmouseover/i.test(html.replace(/&quot;/g, '')), 'no live attribute escape');
+  // The URL regex stops at the first ')', so the href ends at "alert(1" — and the
+  // quotes inside it arrive entity-escaped, which is the property that matters.
+  ok(html.includes('href="https://e.com/a&quot;onmouseover=&quot;alert(1"'),
+     'quote arrives entity-escaped inside the attribute: ' + html);
+});
+t('non-string input renders as nothing', () => {
+  eq(w.formatContent(null), '');
+  eq(w.formatContent(undefined), '');
+  eq(w.formatContent(42), '');
+});
+
+group('timestamps — a skewed clock is visible, not hidden');
+t('a future timestamp reads "from now" rather than looking fresh', () => {
+  ok(w.timeAgo(Date.now() + 3 * 3600000).endsWith('from now'));
+});
+t('recent and old stamps pick sensible units', () => {
+  ok(w.timeAgo(Date.now() - 30000) === 'just now');
+  ok(/^\d+m ago$/.test(w.timeAgo(Date.now() - 5 * 60000)));
+  ok(/^\d+h ago$/.test(w.timeAgo(Date.now() - 3 * 3600000)));
+  ok(/^\d+d ago$/.test(w.timeAgo(Date.now() - 49 * 3600000)));
+});
+t('parseStamp rejects junk instead of NaN-ing the sort', () => {
+  eq(w.parseStamp('not a date'), null);
+  eq(w.parseStamp(''), null);
+  ok(typeof w.parseStamp('2026-08-03T12:00:00Z') === 'number');
+});
+
+/* ── Runner ───────────────────────────────────────────────────────────────── */
+window.addEventListener('load', () => {
+  const frame = document.getElementById('app');
+  const start = () => setTimeout(run, 150);
+  if (frame.contentDocument && frame.contentDocument.readyState === 'complete'
+      && frame.contentWindow.formatContent) start();
+  else frame.addEventListener('load', start, { once: true });
+});
+
+function run() {
+  w = document.getElementById('app').contentWindow;
+  const out = document.getElementById('out');
+  let pass = 0, fail = 0;
+  for (const item of TESTS) {
+    if (item.group) {
+      const tr = document.createElement('tr');
+      tr.className = 'group';
+      tr.innerHTML = '<td colspan="3"></td>';
+      tr.firstChild.textContent = item.group;
+      out.appendChild(tr);
+      continue;
+    }
+    const tr = document.createElement('tr');
+    const st = document.createElement('td'); st.className = 'st';
+    const name = document.createElement('td'); name.textContent = item.name;
+    const msg = document.createElement('td'); msg.className = 'msg';
+    try {
+      item.fn();
+      tr.className = 'pass'; st.textContent = '✓'; pass++;
+    } catch (e) {
+      tr.className = 'fail'; st.textContent = '✕'; msg.textContent = e.message; fail++;
+    }
+    tr.appendChild(st); tr.appendChild(name); tr.appendChild(msg);
+    out.appendChild(tr);
+  }
+  const s = document.getElementById('summary');
+  s.textContent = fail === 0 ? `All ${pass} tests pass` : `${fail} of ${pass + fail} tests FAILED`;
+  s.className = fail === 0 ? 'ok' : 'bad';
+  document.title = (fail === 0 ? '✓ ' : '✕ ') + document.title;
+}
+</script>
+</body>
+</html>
