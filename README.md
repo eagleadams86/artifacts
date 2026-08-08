@@ -27,7 +27,7 @@ Card headers are real buttons, so the whole dashboard works by keyboard: Tab to 
 | 💻 macOS Beta Check | Every Wednesday at 12:30 AM | Go/no-go recommendation for Apple Silicon MacBook Pro |
 | 📱 iOS Beta Check | Every Wednesday at 12:45 AM | Go/no-go recommendation for iPhone 15 Pro Max |
 | 📲 iPhone Rumors | Every Monday at 1:00 AM | Next-iPhone rumor roundup, grouped by confidence level |
-| 💉 GLP-1 News | Every day at 1:15 AM | GLP-1 drug news — trials, FDA actions, and industry developments |
+| 💉 GLP-1 News | Every Saturday at 1:15 AM | GLP-1 drug news from the past week — trials, FDA actions, and industry developments |
 | 🤖 Claude and Other AI News | Every day at 1:30 AM | Latest Anthropic, Claude, and AI industry news from the past 24 hours |
 | 🗞️ Daily News Briefing | Every day at 1:45 AM | Local Pendleton/Buffalo/WNY, US, and global headlines |
 
