@@ -39,7 +39,8 @@
   <div id="summary">Loading dashboard…</div>
   <table><tbody id="out"></tbody></table>
 </div>
-<iframe id="app" src="claude.html" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" title="dashboard under test"></iframe>
+<!-- The frame is built in script, not here: it boots the real dashboard, so it
+     must not exist until the localhost gate at the foot of this file has passed. -->
 
 <script>
 'use strict';
@@ -109,13 +110,59 @@ t('parseStamp rejects junk instead of NaN-ing the sort', () => {
 });
 
 /* ── Runner ───────────────────────────────────────────────────────────────── */
+/* ── The localhost gate ─────────────────────────────────────────────────────
+   The family rule, applied here too: the published page should not boot a live
+   copy of anything. This suite is read-only about storage, but the principle is
+   the same one the sibling apps enforce — a test page on the public site should
+   test a copy you are serving, not the copy someone is looking at.
+
+   file:// is NOT in this list, deliberately: it has no hostname, and treating
+   it as local would build a frame a browser then blocks, leaving the page to
+   blame the code for what is a setup problem.
+─────────────────────────────────────────────────────────────────────────── */
+const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
+
 window.addEventListener('load', () => {
-  const frame = document.getElementById('app');
+  if (!LOCAL_HOSTS.includes(location.hostname)) return refuse();
+  const frame = document.createElement('iframe');
+  frame.id = 'app';
+  frame.src = 'claude.html';
+  frame.title = 'dashboard under test';
+  frame.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
+  document.body.appendChild(frame);
   const start = () => setTimeout(run, 150);
   if (frame.contentDocument && frame.contentDocument.readyState === 'complete'
       && frame.contentWindow.formatContent) start();
   else frame.addEventListener('load', start, { once: true });
 });
+
+/* Two reasons to land here, needing different sentences: the published site and
+   a file:// copy off disk (where it cannot work at all — browsers block file://
+   frames). Both end at the same instruction. */
+function refuse() {
+  const onDisk = location.protocol === 'file:';
+  const s = document.getElementById('summary');
+  s.className = 'bad';
+  s.textContent = onDisk
+    ? 'Not run from a file — this page needs a local server.'
+    : 'Not run here — this page boots a live copy of the dashboard.';
+  const tr = document.createElement('tr');
+  const td = document.createElement('td');
+  td.colSpan = 3;
+  td.style.cssText = 'font-size:13px;line-height:1.6';
+  td.innerHTML = (onDisk
+    ? 'The suite loads the dashboard in a hidden frame to test it, and a browser blocks that '
+      + 'frame when the page is opened straight off disk — so the tests would have nothing to '
+      + 'run against. Serve the folder instead:'
+    : 'The suite loads the dashboard in a hidden frame to test it, which on the published site '
+      + 'means booting a live copy. It runs on <code>localhost</code> only, against a copy '
+      + 'served from the repo folder:') +
+    '<br><br><code>cd ~/claude-dashboard &amp;&amp; python3 -m http.server 8013</code><br>' +
+    'then open <code>http://localhost:8013/tests.html</code>.<br><br>' +
+    'Nothing has been changed by opening this page — <a href="claude.html">back to the dashboard</a>.';
+  tr.appendChild(td);
+  document.getElementById('out').appendChild(tr);
+}
 
 function run() {
   w = document.getElementById('app').contentWindow;
