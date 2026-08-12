@@ -119,6 +119,20 @@ window.addEventListener('load', () => {
 
 function run() {
   w = document.getElementById('app').contentWindow;
+  /* A frame that never got claude.html is a SETUP problem — opened off disk, or
+     with nothing serving the folder — and without this every test throws
+     "Cannot read properties of undefined" in turn, which reads like the
+     sanitizer is broken. Say the one thing that fixes it instead. */
+  if (!w || typeof w.formatContent !== 'function') {
+    const s = document.getElementById('summary');
+    s.className = 'bad';
+    s.textContent = 'The hidden frame never loaded claude.html — is this folder being served?';
+    document.getElementById('out').innerHTML =
+      '<tr><td class="msg" style="white-space:normal;font-family:inherit;font-size:13px">' +
+      'Run <code>cd ~/claude-dashboard &amp;&amp; python3 -m http.server 8013</code> and open ' +
+      '<code>http://localhost:8013/tests.html</code>.</td></tr>';
+    return;
+  }
   const out = document.getElementById('out');
   let pass = 0, fail = 0;
   for (const item of TESTS) {
