@@ -10,7 +10,18 @@
 <meta http-equiv="Content-Security-Policy"
       content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Claude Task Dashboard</title>
-<link rel="icon" href="favicon.ico">
+<!-- The mark is what this page is: a stack of task cards, the front one carrying two
+     lines of its content, on the tile the rest of the app family wears — midnight
+     page, soft disc in the corner. The SVG is what every current browser shows;
+     favicon.ico is the fallback a browser fetches from the site root on its own, and
+     what a bookmark uses. The two are the same picture — make_favicon.py draws this
+     geometry — so keep them in step. The cards are flat fills, not a gradient: the
+     front one has to be the LIGHTER tone or the stack reads inside out, and the
+     page-coloured rect between them is the gap that stops two overlapping indigo
+     rectangles reading as one odd polygon. img-src allows data: URIs, so no extra
+     request. -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'> <rect width='64' height='64' rx='14' fill='%230a0e1a'/> <circle cx='14' cy='52' r='20' fill='%23141c33'/> <rect x='13' y='10' width='30' height='26' rx='6' fill='%23818cf8'/> <rect x='16.5' y='23.5' width='35' height='31' rx='8.5' fill='%230a0e1a'/> <rect x='19' y='26' width='30' height='26' rx='6' fill='%23a5b4fc'/> <path d='M25 34H43M25 44H37' stroke='%230a0e1a' stroke-width='4' stroke-linecap='round'/> </svg>">
+<link rel="alternate icon" href="favicon.ico?v=1">
 <script>
   // Apply saved theme and text size before render to avoid a flash of the defaults.
   // Both are validated against the known sets so a stale or hand-edited
@@ -78,6 +89,13 @@
   :root { --scale: 1; }
   body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; padding: 32px 24px; transition: background 0.15s, color 0.15s; }
   h1 { font-size: calc(28px * var(--scale)); font-weight: 600; margin-bottom: 6px; color: var(--heading); }
+  /* The mark from the browser tab, worn beside the title. Sized in em rather than
+     px so it follows the text-size preference the whole heading already scales
+     with — a fixed icon looks lost beside the XXL heading. The width/height
+     attributes on the element are the normal-size equivalent, so the row is laid
+     out before the icon arrives. It sits in the heading's own flow; making h1 a
+     flex row would stop the title wrapping on a narrow screen. */
+  h1 img { width: .82em; height: .82em; vertical-align: -.1em; margin-right: 10px; }
   .subtitle { color: var(--muted); font-size: calc(14px * var(--scale)); margin-bottom: 36px; }
   .grid { display: flex; flex-direction: column; gap: 24px; }
   .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
@@ -143,7 +161,10 @@
 <body>
 <div class="header-row">
   <div>
-    <h1>Claude Task Dashboard</h1>
+    <!-- ?v= is not decoration: a browser holds on to a favicon for a long time, and
+         without it this would keep showing whatever icon it cached the first time.
+         Bump it on both references when make_favicon.py is re-run. -->
+    <h1><img src="favicon.ico?v=1" width="23" height="23" alt="">Claude Task Dashboard</h1>
   </div>
   <div class="controls">
     <select class="ctl" id="textsize" aria-label="Text size">

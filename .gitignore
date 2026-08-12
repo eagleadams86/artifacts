@@ -8,6 +8,7 @@
 !/README.md
 !/LICENSE
 !/favicon.ico
+!/make_favicon.py
 !/data/
 /data/*
 !/data/data-*.js
