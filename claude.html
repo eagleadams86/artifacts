@@ -56,8 +56,12 @@
      monochrome, so its chips/links use the pack's err/errBg pair instead —
      the same warm red the old sepia used, and AA-verified by the pack's gate.
      Don't retune values here; change the pack and re-transcribe. */
+  /* --select-chevron is each theme's --muted transcribed into a data URI (CSS
+     variables cannot reach inside url()), so the dropdown arrow keeps 3:1
+     contrast on the control background in every theme. */
   :root, [data-theme="midnight"] {
     --bg: #0a0e1a; --text: #e7eaf6; --heading: #e7eaf6; --muted: #838cab;
+    --select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%23838cab' stroke-width='1.5'/></svg>");
     --card-bg: #121829; --border: #374163; --header-hover: #1b2238; --divider: #262f4a;
     --chip-text: #818cf8; --chip-bg: #242b4a; --chip-stale-text: #838cab; --chip-stale-bg: #1b2238;
     --faint: #7f88a9; --body-text: #aab2d0; --link: #818cf8; --ctl-border: #536396;
@@ -65,6 +69,7 @@
   }
   [data-theme="dark"] {
     --bg: #13151b; --text: #eef0f5; --heading: #eef0f5; --muted: #9396a3;
+    --select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%239396a3' stroke-width='1.5'/></svg>");
     --card-bg: #1c1f27; --border: #3d424e; --header-hover: #262a33; --divider: #2d313b;
     --chip-text: #eef0f5; --chip-bg: #3c3e46; --chip-stale-text: #9396a3; --chip-stale-bg: #262a33;
     --faint: #8c909d; --body-text: #adb1bd; --link: #eef0f5; --ctl-border: #626a7d;
@@ -72,6 +77,7 @@
   }
   [data-theme="light"] {
     --bg: #f5f5f3; --text: #111110; --heading: #111110; --muted: #656562;
+    --select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%23656562' stroke-width='1.5'/></svg>");
     --card-bg: #ffffff; --border: #c8c8c4; --header-hover: #f0f0ee; --divider: #e0e0dd;
     --chip-text: #266dc3; --chip-bg: #e9f0f9; --chip-stale-text: #656562; --chip-stale-bg: #f0f0ee;
     --faint: #6d6d6d; --body-text: #111110; --link: #266dc3; --ctl-border: #8e8e86;
@@ -79,6 +85,7 @@
   }
   [data-theme="sepia"] {
     --bg: #f3ead7; --text: #3a3020; --heading: #3a3020; --muted: #6a5e46;
+    --select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%236a5e46' stroke-width='1.5'/></svg>");
     --card-bg: #fbf5e7; --border: #cbb992; --header-hover: #eee2c9; --divider: #e0d3b4;
     --chip-text: #8b232d; --chip-bg: #ffc9bf; --chip-stale-text: #6a5e46; --chip-stale-bg: #eee2c9;
     --faint: #71644b; --body-text: #3a3020; --link: #8b232d; --ctl-border: #9c824b;
@@ -138,7 +145,7 @@
   .ctl:hover { color: var(--heading); }
   .ctl:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
   a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 2px; }
-  select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%238b949e' stroke-width='1.5'/></svg>"); background-repeat: no-repeat; background-position: right 9px center; }
+  select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px; background-image: var(--select-chevron); background-repeat: no-repeat; background-position: right 9px center; }
 
   /* ---- Narrow screens: let the header and card headers wrap instead of squeezing/clipping ---- */
   @media (max-width: 640px) {
@@ -199,7 +206,8 @@ themeSelect.addEventListener('change', () => {
 
 // ---- Text size picker ----
 const sizeSelect = document.getElementById('textsize');
-sizeSelect.value = localStorage.getItem('dashboard-textsize') || '1';
+const savedSize = localStorage.getItem('dashboard-textsize');
+sizeSelect.value = SIZES.indexOf(savedSize) > -1 ? savedSize : '1';
 sizeSelect.addEventListener('change', () => {
   document.documentElement.style.setProperty('--scale', sizeSelect.value);
   localStorage.setItem('dashboard-textsize', sizeSelect.value);
@@ -321,7 +329,10 @@ TASKS.forEach(task => {
   try {
     const d = data[task.id];
     const stamp = parseStamp(d?.updatedAt);
-    const isStale = stamp === null;
+    // The longest schedule is weekly, so a stamp older than 8 days means the
+    // task has stopped running — that gets the muted "stale" chip too, not
+    // just a missing/unreadable stamp.
+    const isStale = stamp === null || Date.now() - stamp > 8 * 24 * 60 * 60 * 1000;
     const agoLabel = stamp !== null ? `Updated ${timeAgo(stamp)}`
                    : d?.updatedAt ? 'Timestamp unreadable' : 'No data yet';
     const fullLabel = stamp !== null ? new Date(stamp).toLocaleString()
@@ -335,8 +346,9 @@ TASKS.forEach(task => {
     const card = document.createElement('div');
     card.className = 'card';
     // The header is a <button> inside an <h2>: keyboard-focusable, announced as
-    // an expandable control, and Enter/Space work natively. Every interpolated
-    // value is escaped even where it is currently a hard-coded constant.
+    // an expandable control, and Enter/Space work natively. Every value that
+    // can carry task output is escaped; the ids and the stale class are built
+    // from the hard-coded TASKS constants, trusted by construction.
     card.innerHTML = `
       <h2 class="card-header-h">
         <button type="button" class="card-header" aria-expanded="false" aria-controls="${bodyId}">
