@@ -47,6 +47,13 @@ Task output is written by scheduled tasks that summarise pages from the open web
 
 If a task ever needs a new tag (a list, a heading), add it to the allowlist in `formatContent` rather than removing the escaping.
 
+## Privacy Policy
+
+[`privacy.html`](privacy.html) is linked from the dashboard's footer. The page keeps a theme
+and a text size in localStorage and makes no network requests at all (`connect-src 'none'`),
+so the policy is short — but every public page in this family carries one. It is a named
+public file in the whitelist `.gitignore`, like `claude.html` itself, and is pushed by hand.
+
 ## Ownership and Licence
 
 The Claude Task Dashboard is an independent personal project by Charles Adams — built on

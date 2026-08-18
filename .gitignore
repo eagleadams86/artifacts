@@ -9,6 +9,9 @@
 # loosening of the /* rule above. claude.html links it, so it must ship.
 !/theme.css
 !/tests.html
+# privacy.html: the dashboard's privacy policy, linked from its footer. Another
+# named public file, same pattern as the ones above — not a loosening of /*.
+!/privacy.html
 !/README.md
 !/LICENSE
 # NOTICE: the authorship/provenance statement that sits beside LICENSE. Another

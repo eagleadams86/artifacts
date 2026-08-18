@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Task Dashboard — Privacy Policy</title>
+<link rel="icon" href="favicon.ico?v=1">
+<script>
+  /* The same pre-paint boot as claude.html: honour the saved theme, so this page
+     doesn't open midnight on someone who chose Light. Keep the list in step with
+     the dashboard's. */
+  try {
+    var t = localStorage.getItem('dashboard-theme');
+    var ok = ['midnight','dark','light','sepia'];
+    document.documentElement.setAttribute('data-theme',
+      ok.indexOf(t) === -1 ? 'midnight' : t);
+  } catch (e) {}
+</script>
+<link rel="stylesheet" href="theme.css">
+<style>
+  body { margin: 0; background: var(--bg); color: var(--text-primary);
+         font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 44px 20px 80px; }
+  h1 { font-size: 22px; margin: 0 0 2px; }
+  .meta { color: var(--text-muted); font-size: 13px; margin: 0 0 26px; }
+  h2 { font-size: 17px; margin: 30px 0 8px; }
+  p, li { color: var(--text-secondary); }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--focus-border); outline-offset: 2px; border-radius: 3px; }
+  .card { background: var(--surface); border: 1px solid var(--border);
+          border-radius: 12px; padding: 16px 20px; margin: 14px 0; }
+  .card p { margin: 0; }
+  .card strong { color: var(--text-primary); }
+  ul { padding-left: 20px; }
+  .back { display: inline-block; margin-bottom: 26px; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="claude.html">← Back to the dashboard</a>
+  <h1>Claude Task Dashboard — Privacy Policy</h1>
+  <p class="meta">Effective August 18, 2026</p>
+
+  <p>This page is a static dashboard that displays the output of the author's own scheduled
+  tasks. It has no account, no sign-in, no server of its own and nothing to collect from a
+  visitor.</p>
+
+  <h2>What It Stores</h2>
+  <p>Two preferences, in your browser's local storage: the theme you picked and the text size
+  you picked. Nothing else is written, and neither one leaves your device. Clearing the site's
+  browser data deletes both.</p>
+
+  <h2>What Leaves Your Browser</h2>
+  <div class="card">
+    <p><strong>Nothing.</strong> The page makes no network requests of its own — its
+    Content-Security-Policy sets <code>connect-src 'none'</code>, so it cannot. The task
+    output it displays is published in this repository and loaded with the page itself.
+    GitHub Pages serves it and, like any web host, sees the ordinary request information
+    involved in serving a page.</p>
+  </div>
+
+  <h2>What It Does Not Do</h2>
+  <ul>
+    <li>No analytics or usage-tracking scripts</li>
+    <li>No advertising or ad networks</li>
+    <li>No cookies, no accounts, no sign-in</li>
+    <li>No third-party code of any kind</li>
+  </ul>
+
+  <h2>Changes to This Policy</h2>
+  <p>If this policy changes, the updated version will be posted here with a new effective
+  date.</p>
+
+  <h2>Contact</h2>
+  <p><a href="mailto:eagleadams86@gmail.com">eagleadams86@gmail.com</a></p>
+</div>
+</body>
+</html>
