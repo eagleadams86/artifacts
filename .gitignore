@@ -4,6 +4,10 @@
 /*
 !/.gitignore
 !/claude.html
+# theme.css: the shared palette, copied from the private theme pack. A named
+# public file, the same pattern tests.html and make_favicon.py follow — NOT a
+# loosening of the /* rule above. claude.html links it, so it must ship.
+!/theme.css
 !/tests.html
 !/README.md
 !/LICENSE

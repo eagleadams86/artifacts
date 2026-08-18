@@ -42,6 +42,9 @@
 <script src="data/data-iphone-rumors-daily.js"></script>
 <script src="data/data-macos-beta-weekly-check.js"></script>
 <script src="data/data-glp1-daily-news.js"></script>
+<!-- The palette, LINKED — the pack's generated file, before the page's own
+     <style> so the app tokens below can build on it. -->
+<link rel="stylesheet" href="theme.css">
 <style>
   /* ---- Themes ---- */
   /* Values transcribed from the unified theme pack (tokens.json in the private
@@ -56,46 +59,62 @@
      monochrome, so its chips/links use the pack's err/errBg pair instead —
      the same warm red the old sepia used, and AA-verified by the pack's gate.
      Don't retune values here; change the pack and re-transcribe. */
-  /* --select-chevron is each theme's --muted transcribed into a data URI (CSS
-     variables cannot reach inside url()), so the dropdown arrow keeps 3:1
-     contrast on the control background in every theme. */
+  /* ── Palette ──────────────────────────────────────────────────────────────
+     LINKED as `theme.css` in the <head> — the pack's generated file, copied
+     byte-for-byte, the same one every app in the family reads. Until
+     2026-08-18 all four themes were transcribed into this block under this
+     page's own names; both are gone, so this file and the pack can be diffed
+     directly. The names that simply moved: text/heading→text-primary,
+     muted→text-muted, card-bg→surface, header-hover→surface-alt,
+     chip-stale-text→text-muted, chip-stale-bg→surface-alt, faint→text-hint,
+     ctl-border→border-control. TWO SWAPPED PLACES and are the reason this was
+     not a blind rename: this page's `--border-strong` was #374163, which is the pack's
+     **--border-strong**, while its `--border` was the pack's `--border-strong`.
+     Linking without catching that would have quietly lightened every card edge
+     and darkened every divider.
+
+     Below are the tokens that genuinely DIVERGE from a straight pack mapping,
+     kept as app tokens so the page looks exactly as it did, and written in
+     terms of pack tokens so the divergence is visible rather than a hex nobody
+     can trace:
+       • --body-text is text-SECONDARY in the dark themes but text-PRIMARY in
+         light and sepia — this page runs body copy at full strength there.
+       • in SEPIA, --chip-text/--chip-bg/--link are the ERROR red, not the
+         accent. Every other theme uses the accent. That is worth a decision
+         rather than a silent inheritance: a link the same colour as an error
+         is a questionable signal, and the pack's colour-vision rules care about
+         exactly this pairing. Left as it was, on purpose, pending that call.
+  ─────────────────────────────────────────────────────────────────────────── */
+  :root { --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
   :root, [data-theme="midnight"] {
-    --bg: #0a0e1a; --text: #e7eaf6; --heading: #e7eaf6; --muted: #838cab;
+    --body-text: var(--text-secondary);
+    --chip-text: var(--accent); --chip-bg: var(--accent-bg);
+    --link: var(--accent);
     --select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%23838cab' stroke-width='1.5'/></svg>");
-    --card-bg: #121829; --border: #374163; --header-hover: #1b2238; --divider: #262f4a;
-    --chip-text: #818cf8; --chip-bg: #242b4a; --chip-stale-text: #838cab; --chip-stale-bg: #1b2238;
-    --faint: #7f88a9; --body-text: #aab2d0; --link: #818cf8; --ctl-border: #536396;
-    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   [data-theme="dark"] {
-    --bg: #13151b; --text: #eef0f5; --heading: #eef0f5; --muted: #9396a3;
+    --body-text: var(--text-secondary);
+    --chip-text: var(--accent); --chip-bg: var(--accent-bg);
+    --link: var(--accent);
     --select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%239396a3' stroke-width='1.5'/></svg>");
-    --card-bg: #1c1f27; --border: #3d424e; --header-hover: #262a33; --divider: #2d313b;
-    --chip-text: #eef0f5; --chip-bg: #3c3e46; --chip-stale-text: #9396a3; --chip-stale-bg: #262a33;
-    --faint: #8c909d; --body-text: #adb1bd; --link: #eef0f5; --ctl-border: #626a7d;
-    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   [data-theme="light"] {
-    --bg: #f5f5f3; --text: #111110; --heading: #111110; --muted: #656562;
+    --body-text: var(--text-primary);
+    --chip-text: var(--accent); --chip-bg: var(--accent-bg);
+    --link: var(--accent);
     --select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%23656562' stroke-width='1.5'/></svg>");
-    --card-bg: #ffffff; --border: #c8c8c4; --header-hover: #f0f0ee; --divider: #e0e0dd;
-    --chip-text: #266dc3; --chip-bg: #e9f0f9; --chip-stale-text: #656562; --chip-stale-bg: #f0f0ee;
-    --faint: #6d6d6d; --body-text: #111110; --link: #266dc3; --ctl-border: #8e8e86;
-    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   [data-theme="sepia"] {
-    --bg: #f3ead7; --text: #3a3020; --heading: #3a3020; --muted: #6a5e46;
+    --body-text: var(--text-primary);
+    --chip-text: var(--err); --chip-bg: var(--err-bg);
+    --link: var(--err);
     --select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%236a5e46' stroke-width='1.5'/></svg>");
-    --card-bg: #fbf5e7; --border: #cbb992; --header-hover: #eee2c9; --divider: #e0d3b4;
-    --chip-text: #8b232d; --chip-bg: #ffc9bf; --chip-stale-text: #6a5e46; --chip-stale-bg: #eee2c9;
-    --faint: #71644b; --body-text: #3a3020; --link: #8b232d; --ctl-border: #9c824b;
-    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root { --scale: 1; }
-  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; padding: 32px 24px; transition: background 0.15s, color 0.15s; }
-  h1 { font-size: calc(28px * var(--scale)); font-weight: 600; margin-bottom: 6px; color: var(--heading); }
+  body { background: var(--bg); color: var(--text-primary); font-family: var(--font); min-height: 100vh; padding: 32px 24px; transition: background 0.15s, color 0.15s; }
+  h1 { font-size: calc(28px * var(--scale)); font-weight: 600; margin-bottom: 6px; color: var(--text-primary); }
   /* The mark from the browser tab, worn beside the title. Sized in em rather than
      px so it follows the text-size preference the whole heading already scales
      with — a fixed icon looks lost beside the XXL heading. The width/height
@@ -103,34 +122,34 @@
      out before the icon arrives. It sits in the heading's own flow; making h1 a
      flex row would stop the title wrapping on a narrow screen. */
   h1 img { width: .82em; height: .82em; vertical-align: -.1em; margin-right: 10px; }
-  .subtitle { color: var(--muted); font-size: calc(14px * var(--scale)); margin-bottom: 36px; }
+  .subtitle { color: var(--text-muted); font-size: calc(14px * var(--scale)); margin-bottom: 36px; }
   .grid { display: flex; flex-direction: column; gap: 24px; }
-  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .card { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px; overflow: hidden; }
   /* The header is a real <button> (inside an <h2>) so it is keyboard-reachable
      and announced as an expandable control. These rules undo the UA button
      styling; the layout below is unchanged. */
   .card-header-h { font-size: inherit; font-weight: inherit; }
   .card-header { width: 100%; font: inherit; color: inherit; background: none; border: none; border-bottom: 1px solid transparent; text-align: left;
                  padding: 18px 20px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; cursor: pointer; user-select: none; -webkit-user-select: none; transition: background 0.12s; }
-  .card-header:hover { background: var(--header-hover); }
+  .card-header:hover { background: var(--surface-alt); }
   .card-header:focus-visible { outline: 2px solid var(--link); outline-offset: -3px; }
-  .card.expanded .card-header { border-bottom-color: var(--divider); padding-bottom: 14px; }
-  .card-title { display: block; font-size: calc(16px * var(--scale)); font-weight: 600; color: var(--heading); }
-  .chevron { display: inline-block; width: 12px; color: var(--muted); margin-right: 8px; transition: transform 0.15s; font-size: calc(11px * var(--scale)); }
+  .card.expanded .card-header { border-bottom-color: var(--border); padding-bottom: 14px; }
+  .card-title { display: block; font-size: calc(16px * var(--scale)); font-weight: 600; color: var(--text-primary); }
+  .chevron { display: inline-block; width: 12px; color: var(--text-muted); margin-right: 8px; transition: transform 0.15s; font-size: calc(11px * var(--scale)); }
   .card.expanded .chevron { transform: rotate(90deg); }
   .card-headline { display: block; }
   .card-updated { display: block; text-align: right; flex-shrink: 0; }
   .updated-ago { font-size: calc(12px * var(--scale)); color: var(--chip-text); background: var(--chip-bg); border-radius: 6px; padding: 3px 8px; white-space: nowrap; display: inline-block; }
-  .updated-ago.stale { color: var(--chip-stale-text); background: var(--chip-stale-bg); }
-  .updated-full { display: block; font-size: calc(11px * var(--scale)); color: var(--faint); margin-top: 5px; white-space: nowrap; }
-  .card-meta { display: block; font-size: calc(12px * var(--scale)); color: var(--muted); margin-top: 4px; font-weight: 400; }
+  .updated-ago.stale { color: var(--text-muted); background: var(--surface-alt); }
+  .updated-full { display: block; font-size: calc(11px * var(--scale)); color: var(--text-hint); margin-top: 5px; white-space: nowrap; }
+  .card-meta { display: block; font-size: calc(12px * var(--scale)); color: var(--text-muted); margin-top: 4px; font-weight: 400; }
   /* Same size/token as .updated-full: the two are a matched pair — when the
      card is due on the left, when it last ran on the right. */
-  .card-schedule { display: block; font-size: calc(11px * var(--scale)); color: var(--faint); margin-top: 5px; font-weight: 400; }
+  .card-schedule { display: block; font-size: calc(11px * var(--scale)); color: var(--text-hint); margin-top: 5px; font-weight: 400; }
   .sched-icon { margin-right: 6px; }
   .card-body { display: none; padding: 20px; font-size: calc(14px * var(--scale)); line-height: 1.7; color: var(--body-text); white-space: pre-wrap; word-break: break-word; }
   .card.expanded .card-body { display: block; }
-  .empty { color: var(--faint); font-style: italic; }
+  .empty { color: var(--text-hint); font-style: italic; }
   a { color: var(--link); text-decoration: none; }
   a:hover { text-decoration: underline; }
   /* Citation links sit inside body text, where colour alone does not separate
@@ -141,8 +160,8 @@
   .card-body a:hover { text-decoration-thickness: 2px; }
   .header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
   .controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-  .ctl { font-size: calc(12px * var(--scale)); color: var(--muted); background: var(--chip-stale-bg); border: 1px solid var(--ctl-border); border-radius: 6px; padding: 5px 10px; cursor: pointer; font-family: var(--font); }
-  .ctl:hover { color: var(--heading); }
+  .ctl { font-size: calc(12px * var(--scale)); color: var(--text-muted); background: var(--surface-alt); border: 1px solid var(--border-control); border-radius: 6px; padding: 5px 10px; cursor: pointer; font-family: var(--font); }
+  .ctl:hover { color: var(--text-primary); }
   .ctl:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
   a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 2px; }
   select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px; background-image: var(--select-chevron); background-repeat: no-repeat; background-position: right 9px center; }
