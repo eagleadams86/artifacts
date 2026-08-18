@@ -44,3 +44,16 @@ Each scheduled Claude task writes its output to a local `data/data-*.js` file, w
 Task output is written by scheduled tasks that summarise pages from the open web, so the dashboard treats it as untrusted. Content is HTML-escaped before rendering, then a small allowlist is re-enabled: bare `<strong>`, `<em>`, `<b>`, `<i>`, `<br>` (no attributes) and `[label](https://…)` markdown links, which become `rel="noopener noreferrer"` anchors. Anything else — script tags, event-handler attributes, `javascript:` URLs — stays inert as visible text. A Content-Security-Policy meta tag backs this up, and a malformed data file degrades to a single "could not be displayed" card instead of blanking the dashboard.
 
 If a task ever needs a new tag (a list, a heading), add it to the allowlist in `formatContent` rather than removing the escaping.
+
+## Ownership and Licence
+
+The Claude Task Dashboard is an independent personal project by Charles Adams — built on
+personally owned hardware, with a personally paid-for Claude subscription, in a personal
+GitHub account. No employer equipment, funding or code went into it, and it carries no
+employer information: the cards are the output of his own scheduled personal-interest
+tasks, summarising public pages from the open web. The whitelist `.gitignore` keeps
+everything else in the working folder local-only.
+
+It is [MIT licensed](LICENSE), so anyone may use, modify and redistribute it. Running it
+inside an organisation conveys no ownership of it; permission comes from that licence,
+granted by the author as copyright holder. [NOTICE](NOTICE) records this in full.

@@ -11,6 +11,9 @@
 !/tests.html
 !/README.md
 !/LICENSE
+# NOTICE: the authorship/provenance statement that sits beside LICENSE. Another
+# named public file, same as the ones above — not a loosening of the /* rule.
+!/NOTICE
 !/favicon.ico
 !/make_favicon.py
 !/data/

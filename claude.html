@@ -150,6 +150,11 @@
   .card-body { display: none; padding: 20px; font-size: calc(14px * var(--scale)); line-height: 1.7; color: var(--body-text); white-space: pre-wrap; word-break: break-word; }
   .card.expanded .card-body { display: block; }
   .empty { color: var(--text-hint); font-style: italic; }
+  /* Authorship line under the cards. Muted like .subtitle — it is a statement of
+     provenance, not something to read before the dashboard itself. */
+  .site-footer { color: var(--text-muted); font-size: calc(12px * var(--scale)); margin-top: 36px; }
+  .site-footer a { color: var(--text-muted); }
+  .site-footer a:hover { color: var(--text-primary); }
   a { color: var(--link); text-decoration: none; }
   a:hover { text-decoration: underline; }
   /* Citation links sit inside body text, where colour alone does not separate
@@ -213,6 +218,9 @@
   <p>This dashboard needs JavaScript to display your scheduled-task output.</p>
 </noscript>
 <main class="grid" id="grid"></main>
+<footer class="site-footer">&copy; 2026 Charles Adams — an independent personal project,
+  <a href="https://github.com/eagleadams86/artifacts/blob/main/NOTICE"
+     target="_blank" rel="noopener noreferrer">MIT licensed</a>.</footer>
 
 <script>
 // ---- Theme picker ----
