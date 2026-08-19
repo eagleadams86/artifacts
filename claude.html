@@ -47,18 +47,6 @@
 <link rel="stylesheet" href="theme.css">
 <style>
   /* ---- Themes ---- */
-  /* Values transcribed from the unified theme pack (tokens.json in the private
-     claude-theme-pack repo — the source of truth for every app's palette; this
-     page keeps them inline because it is a single self-contained file). Token
-     mapping: bg←bg, card-bg←surface, header-hover & chip-stale-bg←surfaceAlt,
-     divider←border, border←borderStrong (decorative), ctl-border←borderControl
-     (3:1 on page and card), text & heading←textPrimary, muted &
-     chip-stale-text←textMuted, faint←textHint, chip-text & link←accent,
-     chip-bg←accentBg; body-text←textSecondary on the dark themes (the old
-     dimmed-body look), textPrimary on the light ones. Sepia's accent is
-     monochrome, so its chips/links use the pack's err/errBg pair instead —
-     the same warm red the old sepia used, and AA-verified by the pack's gate.
-     Don't retune values here; change the pack and re-transcribe. */
   /* ── Palette ──────────────────────────────────────────────────────────────
      LINKED as `theme.css` in the <head> — the pack's generated file, copied
      byte-for-byte, the same one every app in the family reads. Until
@@ -68,8 +56,8 @@
      muted→text-muted, card-bg→surface, header-hover→surface-alt,
      chip-stale-text→text-muted, chip-stale-bg→surface-alt, faint→text-hint,
      ctl-border→border-control. TWO SWAPPED PLACES and are the reason this was
-     not a blind rename: this page's `--border-strong` was #374163, which is the pack's
-     **--border-strong**, while its `--border` was the pack's `--border-strong`.
+     not a blind rename: this page's old `--border` (#374163) is the pack's
+     --border-strong, and its old `--divider` is the pack's --border.
      Linking without catching that would have quietly lightened every card edge
      and darkened every divider.
 
@@ -141,11 +129,11 @@
   .card-updated { display: block; text-align: right; flex-shrink: 0; }
   .updated-ago { font-size: calc(12px * var(--scale)); color: var(--chip-text); background: var(--chip-bg); border-radius: 6px; padding: 3px 8px; white-space: nowrap; display: inline-block; }
   .updated-ago.stale { color: var(--text-muted); background: var(--surface-alt); }
-  .updated-full { display: block; font-size: calc(11px * var(--scale)); color: var(--text-hint); margin-top: 5px; white-space: nowrap; }
+  .updated-full { display: block; font-size: calc(12px * var(--scale)); color: var(--text-hint); margin-top: 5px; white-space: nowrap; }
   .card-meta { display: block; font-size: calc(12px * var(--scale)); color: var(--text-muted); margin-top: 4px; font-weight: 400; }
   /* Same size/token as .updated-full: the two are a matched pair — when the
      card is due on the left, when it last ran on the right. */
-  .card-schedule { display: block; font-size: calc(11px * var(--scale)); color: var(--text-hint); margin-top: 5px; font-weight: 400; }
+  .card-schedule { display: block; font-size: calc(12px * var(--scale)); color: var(--text-hint); margin-top: 5px; font-weight: 400; }
   .sched-icon { margin-right: 6px; }
   .card-body { display: none; padding: 20px; font-size: calc(14px * var(--scale)); line-height: 1.7; color: var(--body-text); white-space: pre-wrap; word-break: break-word; }
   .card.expanded .card-body { display: block; }

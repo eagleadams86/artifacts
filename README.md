@@ -12,9 +12,9 @@ A theme picker in the top-right switches between the four unified themes shared 
 
 The icon is a stack of task cards — what the page is — on the midnight tile the whole app family wears; the heading shows the same mark, sized in `em` so it follows the text-size picker. `make_favicon.py` (Pillow) keeps `favicon.ico` and the page's inline SVG the same picture, rather than leaving a binary nobody can review in a diff. Re-run it with `python3 make_favicon.py`, then bump the `?v=` on both `favicon.ico` references in `claude.html` — browsers hold on to an icon for a long time.
 
-The palettes are transcribed from the private `claude-theme-pack` repo — the source of truth for the colours of every app in this family — whose script verifies every colour pair at WCAG AA. The token mapping is documented in the comment above the theme blocks in `claude.html`.
+The palette is `theme.css` — the generated file from the private `claude-theme-pack` repo, the source of truth for the colours of every app in this family, whose script verifies every colour pair at WCAG AA. It is linked in the `<head>`, copied byte-for-byte from the pack; `claude.html`'s own theme blocks hold only the handful of app-specific tokens, documented in the comment above them.
 
-Adding a theme starts in the theme pack (new themes need its contrast gate to pass), then four edits in `claude.html`: a `[data-theme="…"]` block, an `<option>` in the picker (kept alphabetical), the `THEMES` validation array in the `<head>` script, and this list.
+Adding a theme starts in the theme pack (new themes need its contrast gate to pass): regenerate and re-copy the pack's `theme.css`, then four edits in `claude.html` — a `[data-theme="…"]` block for the app tokens, an `<option>` in the picker (kept alphabetical), the `THEMES` validation array in the `<head>` script — and this list.
 
 ### Accessibility
 
