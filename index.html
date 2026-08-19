@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight">
+<head>
+<meta charset="utf-8">
+<!-- This page exists to stop GitHub Pages serving something else here. With no
+     index.html, Pages rendered README.md through Jekyll and served that as
+     /artifacts/ — a page on the family's shared origin with NO
+     Content-Security-Policy that pulled a script from cdnjs.cloudflare.com.
+     Every page on eagleadams86.github.io shares one browser origin with the
+     apps that hold work data, so a third-party script on any of them is a hole
+     in all of them. `.nojekyll` beside this file stops that rendering for good;
+     this file is what the address now serves.
+
+     A redirect rather than a second dashboard: claude.html is the page, its URL
+     is the one written down in the README and the sync notes, and a copy of its
+     markup here would be one more thing to keep in step. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="refresh" content="0; url=claude.html">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Scheduled Task Dashboard</title>
+<link rel="icon" href="favicon.ico?v=1">
+<link rel="canonical" href="https://eagleadams86.github.io/artifacts/claude.html">
+<link rel="stylesheet" href="theme.css">
+<style>
+  /* No script here at all — `script-src` is absent from the CSP above, so the
+     redirect is the meta refresh and the link below is the fallback for anyone
+     whose browser ignores it. A page this small has no business needing JS, and
+     not having any is one less thing on the origin to reason about. */
+  body { margin: 0; background: var(--bg); color: var(--text-primary);
+         font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 60px 20px; text-align: center; }
+  h1 { font-size: 20px; margin: 0 0 8px; }
+  p { color: var(--text-secondary); margin: 0 0 20px; }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--focus-border); outline-offset: 2px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Claude Scheduled Task Dashboard</h1>
+  <p>Taking you to the dashboard&hellip;</p>
+  <p><a href="claude.html">Open the dashboard</a></p>
+</div>
+</body>
+</html>

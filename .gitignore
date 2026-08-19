@@ -9,6 +9,15 @@
 # loosening of the /* rule above. claude.html links it, so it must ship.
 !/theme.css
 !/tests.html
+# index.html: what /artifacts/ serves. Without it GitHub Pages rendered
+# README.md through Jekyll and served THAT as the index — no CSP, and a script
+# from cdnjs, on the origin every app shares. Another named public file, same
+# pattern as the ones above, not a loosening of /*.
+!/index.html
+# .nojekyll: an empty file whose presence turns off the Jekyll pass entirely, so
+# no markdown in this repo can ever be published as a page again. Named for the
+# same reason as everything else here — it must ship, and nothing else may.
+!/.nojekyll
 # privacy.html: the dashboard's privacy policy, linked from its footer. Another
 # named public file, same pattern as the ones above — not a loosening of /*.
 !/privacy.html
