@@ -61,17 +61,22 @@
      Linking without catching that would have quietly lightened every card edge
      and darkened every divider.
 
-     Below are the tokens that genuinely DIVERGE from a straight pack mapping,
-     kept as app tokens so the page looks exactly as it did, and written in
-     terms of pack tokens so the divergence is visible rather than a hex nobody
-     can trace:
+     One token still DIVERGES from a straight pack mapping, kept as an app token
+     and written in terms of pack tokens so the divergence is visible rather
+     than a hex nobody can trace:
        • --body-text is text-SECONDARY in the dark themes but text-PRIMARY in
          light and sepia — this page runs body copy at full strength there.
-       • in SEPIA, --chip-text/--chip-bg/--link are the ERROR red, not the
-         accent. Every other theme uses the accent. That is worth a decision
-         rather than a silent inheritance: a link the same colour as an error
-         is a questionable signal, and the pack's colour-vision rules care about
-         exactly this pairing. Left as it was, on purpose, pending that call.
+
+     SEPIA used to be a second one: --chip-text/--chip-bg/--link were the ERROR
+     red while every other theme used the accent, because sepia's accent IS its
+     text colour (#3a3020 both) — the theme is monochrome by design, so "use the
+     accent" means "look exactly like body text". Settled 2026-08-19 in favour of
+     the accent anyway, and the reasons are worth keeping so nobody re-reds it:
+     this page has no error states at all, so the red signalled nothing; only two
+     things read --link (task-output links, which are underlined regardless, and
+     the focus ring), so no link became unidentifiable; the badge stopped reading
+     as an alert on every card; and all three contrast figures improved — link
+     8.1→11.9, focus ring 7.4→10.8, badge text on its fill 6.0→9.4.
   ─────────────────────────────────────────────────────────────────────────── */
   :root { --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
   :root, [data-theme="midnight"] {
@@ -94,8 +99,8 @@
   }
   [data-theme="sepia"] {
     --body-text: var(--text-primary);
-    --chip-text: var(--err); --chip-bg: var(--err-bg);
-    --link: var(--err);
+    --chip-text: var(--accent); --chip-bg: var(--accent-bg);
+    --link: var(--accent);
     --select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%236a5e46' stroke-width='1.5'/></svg>");
   }
 
