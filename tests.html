@@ -10,7 +10,7 @@
      that decides what untrusted scheduled-task output may render as HTML — plus
      its timestamp helpers. Loads the real dashboard in a hidden same-origin
      iframe and calls its functions directly, so what's tested is what ships.
-     Serve over http://localhost (python3 -m http.server 8013); file:// iframes
+     Serve over http://localhost (python3 -m http.server 8015); file:// iframes
      are blocked in some browsers. Read-only: nothing here writes localStorage.
      Colours are the Midnight palette from the theme pack (dev page, hardcoded). */
   body { background: #0a0e1a; color: #e7eaf6; margin: 0;
@@ -158,8 +158,8 @@ function refuse() {
     : 'The suite loads the dashboard in a hidden frame to test it, which on the published site '
       + 'means booting a live copy. It runs on <code>localhost</code> only, against a copy '
       + 'served from the repo folder:') +
-    '<br><br><code>cd ~/claude-dashboard &amp;&amp; python3 -m http.server 8013</code><br>' +
-    'then open <code>http://localhost:8013/tests.html</code>.<br><br>' +
+    '<br><br><code>cd ~/claude-dashboard &amp;&amp; python3 -m http.server 8015</code><br>' +
+    'then open <code>http://localhost:8015/tests.html</code>.<br><br>' +
     'Nothing has been changed by opening this page — <a href="claude.html">back to the dashboard</a>.';
   tr.appendChild(td);
   document.getElementById('out').appendChild(tr);
@@ -177,8 +177,8 @@ function run() {
     s.textContent = 'The hidden frame never loaded claude.html — is this folder being served?';
     document.getElementById('out').innerHTML =
       '<tr><td class="msg" style="white-space:normal;font-family:inherit;font-size:13px">' +
-      'Run <code>cd ~/claude-dashboard &amp;&amp; python3 -m http.server 8013</code> and open ' +
-      '<code>http://localhost:8013/tests.html</code>.</td></tr>';
+      'Run <code>cd ~/claude-dashboard &amp;&amp; python3 -m http.server 8015</code> and open ' +
+      '<code>http://localhost:8015/tests.html</code>.</td></tr>';
     return;
   }
   const out = document.getElementById('out');

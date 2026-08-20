@@ -28,6 +28,16 @@
 !/NOTICE
 !/favicon.ico
 !/make_favicon.py
+# The workflows. Named file by named file, like everything above: the directory
+# is re-allowed, then re-emptied, then each workflow is named. A new workflow
+# needs its own line here or it silently won't be committed — which is how
+# tests.html sat here for weeks with nothing running it.
+!/.github/
+/.github/*
+!/.github/workflows/
+/.github/workflows/*
+!/.github/workflows/tests.yml
+!/.github/workflows/codeql.yml
 !/data/
 /data/*
 !/data/data-*.js

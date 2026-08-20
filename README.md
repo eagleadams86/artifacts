@@ -39,7 +39,9 @@ The dashboard's footer links to this README as **How it works**.
 
 Each scheduled Claude task writes its output to a local `data/data-*.js` file, which a file watcher pushes to this repo within moments of the task finishing. The `claude.html` dashboard loads all the data files as scripts and renders them as cards — no server required, works as a plain `file://` page or via GitHub Pages.
 
-`tests.html` pins the dashboard's sanitizer — the function that decides what a task's untrusted output may render as HTML — and its timestamp helpers. Open it via a local server (`python3 -m http.server 8013`, then http://localhost:8013/tests.html): it loads the real `claude.html` in a hidden iframe and either reports "All N tests pass" or lists what broke.
+`tests.html` pins the dashboard's sanitizer — the function that decides what a task's untrusted output may render as HTML — and its timestamp helpers. Open it via a local server (`python3 -m http.server 8015`, then http://localhost:8015/tests.html): it loads the real `claude.html` in a hidden iframe and either reports "All N tests pass" or lists what broke.
+
+GitHub Actions runs the same page headless on every push to `main` (`.github/workflows/tests.yml`), so the sanitizer can't quietly break. Before 2026-08-20 it only ever ran when somebody opened it by hand.
 
 ### Handling Task Content Safely
 
