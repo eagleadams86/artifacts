@@ -30,7 +30,7 @@ Each open card carries **Copy** and **Print**. Copy puts the task's raw output o
 
 ### Staying Current
 
-The dashboard is a snapshot of the moment it loaded. The relative timestamps tick, so a tab left open overnight no longer insists a card was updated five minutes ago, and once the page has been open longer than the hourly push cycle it says so and offers a reload. It cannot check whether newer output exists — the page's CSP is `connect-src 'none'` and it has no service worker — so it says the one thing it does know, which is how long ago this copy arrived.
+The dashboard is a snapshot of the moment it loaded. The relative timestamps tick, so a tab left open overnight no longer insists a card was updated five minutes ago, and once the page has been open longer than the hourly push cycle it says so and offers a reload. It cannot check whether newer output exists — the page's CSP is `connect-src 'none'` — so it says the one thing it does know, which is how long ago this copy arrived. That matters more now that it works offline, not less: it is what makes a copy served from the cache honest about its age.
 
 The page is capped at 2400px wide — Money Map's `--page-w`, deliberately the same number rather than the 1500px Sprint Predictability and Flow Metrics use. That narrower cap is for pages of charts and short tables, which do not grow with the window; a card body here is a whole briefing, and it uses whatever width there is. The cap exists at all so the page still has a shape on an ultrawide screen instead of running to both bezels, and it sits on the row inside the header rather than on the bar itself, so the bar's background still reaches the window edges while its contents line up with the cards.
 
@@ -46,7 +46,9 @@ Every option in the theme picker is written into the markup at its final size, a
 - **`make_favicon.py` writes the install icons** — `icon-192.png`, `icon-512.png` and `icon-512-maskable.png` — from the same drawing as `favicon.ico` and the inline SVG.
 - **Each of those four files needs its own line in the whitelist `.gitignore`.** An unnamed file here is silently never committed.
 
-**Unlike the sibling apps this does NOT bring offline with it.** Those have a service worker; this page has none and should not — what it displays is task output rewritten hourly, and a cached copy of that presented as current is a wrong answer rather than an old page. Installed, it still needs the network, and that is the right trade for what it shows.
+**It works offline too, since 2026-08-22.** This was the one page in the family without a service worker, on the argument that what it displays is task output rewritten hourly and a cached copy of that presented as current is a wrong answer rather than an old page. That argument was right — and it is not what the worker does. `sw.js` is **network-first**: the cache only ever answers a network that actually failed, so a newer briefing landing while you are online is impossible to miss. Offline, you get the last copy, and every card states its own age from its data file's own timestamp, so a stale briefing says so rather than passing itself off as this morning's.
+
+`sw-kill.js` sits beside it unused, which is deliberate: a service worker is resident and can keep serving itself, so the way out has to already be in the repo. `cp sw-kill.js sw.js`, commit, push, and every installed copy uninstalls itself on the next load.
 
 The icon is a stack of task cards — what the page is — on the midnight tile the whole app family wears; the heading shows the same mark, sized in `em` so it follows the text-size picker. `make_favicon.py` (Pillow) keeps `favicon.ico` and the page's inline SVG the same picture, rather than leaving a binary nobody can review in a diff. Re-run it with `python3 make_favicon.py`, then bump the `?v=` on both `favicon.ico` references in `claude.html` — browsers hold on to an icon for a long time.
 

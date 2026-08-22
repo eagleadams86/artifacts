@@ -303,6 +303,111 @@ function stripHtmlComments(str) {
   return out;
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   The offline worker (2026-08-22). This page was the one in the family without
+   one, on the argument that a cached copy of hourly task output presented as
+   current is a wrong answer rather than an old page. That objection is right,
+   and network-first is what answers it — which is what the five siblings were
+   doing all along.
+   ══════════════════════════════════════════════════════════════════════════ */
+group('sw.js — the offline shell');
+
+const swStrip = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+
+t('sw.js and its kill switch both exist', () => {
+  ok(SW_SRC, 'sw.js is missing');
+  ok(KILL_SRC, 'sw-kill.js is missing — the escape hatch has to exist BEFORE it is needed');
+});
+/* Exact equality, not "contains". A new entry has to be added here too, which
+   is the moment to ask whether the file is genuinely public. */
+t('caches only files that are already public in this repo', () => {
+  const list = (SW_SRC.match(/const SHELL = \[([\s\S]*?)\]/) || [null, ''])[1];
+  const shell = [...list.matchAll(/'([^']+)'/g)].map((x) => x[1]).sort();
+  eq(shell, ['./', 'claude.html', 'favicon.ico', 'icon-192.png', 'icon-512-maskable.png',
+             'icon-512.png', 'manifest.webmanifest', 'privacy.html', 'theme.css']);
+});
+/* The one pattern, and the only place this worker differs from its siblings.
+   It has to stay tight: the drafts sit in the same directory as the task
+   output, and they are NOT public content this page ever shows. */
+t('the data pattern reaches the task output and nothing beside it', () => {
+  const re = (SW_SRC.match(/const DATA_RE = (\/.*\/);/) || [])[1];
+  ok(re, 'DATA_RE is missing — the task output would not be cached at all');
+  const m = new RegExp(re.slice(1, -1));
+  for (const good of ['data/data-daily-news-briefing.js', 'data/data-glp1-daily-news.js'])
+    ok(m.test(good), good + ' should be cached — it is what the page shows');
+  for (const bad of ['data/briefing.md', 'data/data-daily-news-briefing-draft.md',
+                     'data/../CLAUDE.md', 'data/sync.log', 'tests.html'])
+    ok(!m.test(bad), bad + ' must never be cached');
+});
+t('never caches the notes, the suite or the sync machinery', () => {
+  const list = (SW_SRC.match(/const SHELL = \[([\s\S]*?)\]/) || [null, ''])[1];
+  const shell = [...list.matchAll(/'([^']+)'/g)].map((x) => x[1]);
+  /* Anchored on the whole entry, not a substring: this page's own file is
+     claude.html, so a bare /CLAUDE/i — which is what the sibling suites use,
+     where the app is index.html — bans the app itself. */
+  const banned = [/^tests\.html$/, /\.py$/, /\.sh$/, /\.log$/, /\.md$/i,
+                  /^CLAUDE\.md$/i, /^README/i];
+  for (const entry of shell)
+    for (const pat of banned) ok(!pat.test(entry), '"' + entry + '" must never be cached');
+});
+t('touches nothing cross-origin, and has no eval', () => {
+  const SW = swStrip(SW_SRC);
+  ok(!/https?:\/\//.test(SW), 'sw.js names an off-origin URL in executable code');
+  /* A worker on Pages runs with NO CSP at all, so these are not merely untidy. */
+  ok(!SW.includes('eval(') && !SW.includes('importScripts(') && !SW.includes('new Function('),
+     'sw.js must have no eval, importScripts or new Function');
+});
+t('deletes only its own caches — the origin is shared', () => {
+  ok(/startsWith\(PREFIX\)/.test(swStrip(SW_SRC)), 'activate must guard caches.delete with the prefix');
+  ok(/const PREFIX = 'dash-shell-';/.test(SW_SRC), 'and the prefix must be this page\u2019s');
+});
+/* THE test on this page, and the whole reason it is allowed to have a worker. */
+t('is network-first, so a cached briefing needs a network that actually failed', () => {
+  const SW = swStrip(SW_SRC);
+  ok(/Promise\.race/.test(SW) && /cache\.match/.test(SW), 'expected the network-first race');
+  ok(!/caches\.match\(req\)\s*\.then\(\s*\(?r\)?\s*=>\s*r\s*\|\|/.test(SW),
+     'this looks cache-first — a stale briefing shown as current is the thing this page ruled out');
+  ok(/!res\.ok && cached/.test(SW),
+     'a same-origin error reply with a cached copy in hand must serve the cache');
+});
+t('can repair its cache without a new worker version', () => {
+  const SW = swStrip(SW_SRC);
+  ok(/addEventListener\(\s*'message'/.test(SW) && /'shell-check'/.test(SW),
+     'the worker must accept a shell-check message');
+  ok(/if \(reg\.active\) reg\.active\.postMessage\(\{ type: 'shell-check' \}\)/.test(APP_SRC),
+     'and the page must ask for one on load');
+  ok(!/addAll/.test(SW), 'addAll rejects the whole precache on a single 404, silently');
+});
+t('accepts only its own signal, and reads nothing out of it', () => {
+  const SW = swStrip(SW_SRC);
+  ok(/e\.data\.type !== 'shell-check'\) return;/.test(SW),
+     'the message handler must reject anything but shell-check');
+  ok(!/e\.data\.(url|urls|path|cache|key)/.test(SW),
+     'and must never take a URL or cache name out of a message');
+});
+t('the kill switch stays a pure uninstaller', () => {
+  const KILL = swStrip(KILL_SRC);
+  ok(/unregister\(\)/.test(KILL), 'sw-kill.js must unregister itself');
+  ok(!/addEventListener\(\s*'fetch'/.test(KILL), 'and intercept nothing — inert is the point');
+  ok(!/cache\.put|addAll/.test(KILL), 'and never cache anything');
+  ok(/startsWith\('dash-shell-'\)/.test(KILL), 'and clear only this page\u2019s caches');
+});
+t('the page declares worker-src and guards registration', () => {
+  /* \\s+ between the attributes: this page wraps the meta tag across two lines,
+     so the single-space form the sibling suites use matches nothing here and
+     the check passes vacuously — which is worse than failing. */
+  const csp = (APP_SRC.match(/http-equiv="Content-Security-Policy"\s+content="([^"]+)"/) || [])[1] || '';
+  ok(csp, 'no CSP found in claude.html — the regex below would pass on an empty string');
+  ok(/worker-src 'self'/.test(csp),
+     "the CSP must spell out worker-src 'self', not lean on the fallback chain");
+  ok(!/worker-src[^;]*https?:/.test(csp), 'and admit no off-origin host there');
+  ok(/window\.top !== window\.self/.test(APP_SRC),
+     'registration must skip frames, or this suite would install a worker on itself');
+  ok(/window\.addEventListener\('load', function \(\) \{/.test(APP_SRC),
+     'and wait for load rather than compete with first paint');
+});
+
+
 /* ── Runner ───────────────────────────────────────────────────────────────── */
 /* ── The localhost gate ─────────────────────────────────────────────────────
    The family rule, applied here too: the published page should not boot a live
@@ -316,7 +421,7 @@ function stripHtmlComments(str) {
 ─────────────────────────────────────────────────────────────────────────── */
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
 
-let PRIVACY_SRC = '';
+let PRIVACY_SRC = '', SW_SRC = '', KILL_SRC = '', APP_SRC = '';
 
 window.addEventListener('load', () => {
   if (!LOCAL_HOSTS.includes(location.hostname)) return refuse();
@@ -324,6 +429,13 @@ window.addEventListener('load', () => {
      once it starts, so anything a test reads has to be in hand before then. */
   fetch('privacy.html').then((r) => (r.ok ? r.text() : '')).then((t) => { PRIVACY_SRC = t; })
     .catch(() => {});
+  /* The offline worker is read as TEXT rather than exercised as a live one, and
+     that is the point rather than a shortcut: registration is frame-guarded, so
+     this suite never installs a worker — one that did would be testing whatever
+     it had cached instead of the files on disk. */
+  fetch('sw.js').then((r) => (r.ok ? r.text() : '')).then((t) => { SW_SRC = t; }).catch(() => {});
+  fetch('sw-kill.js').then((r) => (r.ok ? r.text() : '')).then((t) => { KILL_SRC = t; }).catch(() => {});
+  fetch('claude.html').then((r) => (r.ok ? r.text() : '')).then((t) => { APP_SRC = t; }).catch(() => {});
   const frame = document.createElement('iframe');
   frame.id = 'app';
   frame.src = 'claude.html';

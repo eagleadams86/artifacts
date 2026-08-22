@@ -7,6 +7,11 @@
      this CSP means even a sanitiser bug cannot execute injected script. Inline
      <script>/<style> here are covered by 'unsafe-inline' (no build step to hash
      against), but external and eval'd script are blocked outright. -->
+<!-- worker-src is 'self' for sw.js, and like manifest-src below it has to be
+     SPELLED OUT: it falls back to default-src, which is 'none' here, so without
+     the directive the worker registration is refused and offline silently stops
+     working with nothing but a console line to say so. Suspect this first.
+     A worker is same-origin script from this repo and nothing else. -->
 <!-- manifest-src is 'self' for the install manifest, and it has to be spelled
      out: it falls back to default-src, which is 'none' here, so without this the
      fetch of manifest.webmanifest is refused and "Install app" silently stops
@@ -14,7 +19,7 @@
      static JSON file on this origin and nothing else; a manifest executes nothing
      and reads no data. Same line, same reasoning, in every sibling app. -->
 <meta http-equiv="Content-Security-Policy"
-      content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+      content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Claude Task Dashboard</title>
 <!-- The mark is what this page is: a stack of task cards, the front one carrying two
      lines of its content, on the tile the rest of the app family wears — midnight
@@ -1170,5 +1175,46 @@ document.getElementById('agenotice-refresh').addEventListener('click', () => loc
 syncExpandBtn();
 openFromHash(true);
 </script>
+
+<!-- ── Offline ──────────────────────────────────────────────────────────────
+     Registered in its own script block, and guarded three ways, the same as the
+     five sibling apps:
+
+     • ONLY THE TOP WINDOW. tests.html frames this page, and a suite that
+       installed a worker on itself would be a suite with side effects.
+
+     • ONLY ON localhost OR THE REAL ORIGIN, which is what `scope: './'` and a
+       relative script give for free — the worker can never reach past
+       /artifacts/, because widening scope needs a header Pages cannot send.
+
+     • AFTER LOAD. Registration competes with the page's own first paint
+       otherwise, and offline is worth nothing on the visit where you are online
+       anyway.
+
+     No `updatefound` prompt, deliberately. Under network-first there is nothing
+     to prompt about: the page you are reading came off the network, so it is
+     already current, and the worker only ever matters on a visit where the
+     network failed. -->
+<script>
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  if (window.top !== window.self) return;
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js', { scope: './' })
+      .then(function () { return navigator.serviceWorker.ready; })
+      .then(function (reg) {
+        /* Ask the worker to repair any missing shell file. The install event
+           that first filled the cache fires ONCE per script version, so if the
+           cache is later evicted nothing would ever rebuild it — offline would
+           quietly rot to "whatever the last visit happened to request". This
+           runs while we are demonstrably online, which is the only time the
+           repair can work. */
+        if (reg.active) reg.active.postMessage({ type: 'shell-check' });
+      })
+      .catch(function (e) { console.warn('Offline unavailable:', e); });
+  });
+})();
+</script>
+
 </body>
 </html>

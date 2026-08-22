@@ -40,6 +40,14 @@
 !/icon-512.png
 !/icon-512-maskable.png
 !/make_favicon.py
+# The offline worker and its escape hatch, added 2026-08-22 when the dashboard
+# stopped being the one page in the family with no offline. Two more NAMED
+# public files, the same pattern as everything above — not a loosening of the
+# /* rule. sw-kill.js must ship even though nothing registers it: it is the only
+# way to uninstall a worker that has gone wrong, and a worker is resident, so
+# the moment it is needed is the moment it has to already be in the repo.
+!/sw.js
+!/sw-kill.js
 # The workflows. Named file by named file, like everything above: the directory
 # is re-allowed, then re-emptied, then each workflow is named. A new workflow
 # needs its own line here or it silently won't be committed — which is how
