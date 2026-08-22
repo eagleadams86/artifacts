@@ -493,7 +493,7 @@
            eight disclosures rather than one, and "Expand all, collapsed" would be
            a plain lie on a page where seven of the eight are already open. The
            label always names what the press will do. -->
-      <button class="ctl" type="button" id="expandall"><span aria-hidden="true">&#8661;</span> <span class="label">Expand all</span></button>
+      <button class="ctl" type="button" id="expandall"><span aria-hidden="true">&#8661;</span> <span class="label">Expand All</span></button>
       <!-- The glyph is a plain text character, aria-hidden, in front of the word —
            the family's header pattern. It was already carried inline in the label,
            where a screen reader read it out as part of the button's name. -->
@@ -1015,7 +1015,7 @@ function allVisibleOpen() {
 
 function syncExpandBtn() {
   const open = allVisibleOpen();
-  expandBtn.querySelector('.label').textContent = open ? 'Collapse all' : 'Expand all';
+  expandBtn.querySelector('.label').textContent = open ? 'Collapse All' : 'Expand All';
   expandBtn.disabled = visibleCards().length === 0;
 }
 
