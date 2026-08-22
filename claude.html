@@ -55,7 +55,7 @@
   // Both are validated against the known sets so a stale or hand-edited
   // localStorage value falls back cleanly instead of leaving the pickers blank.
   // Keep in sync with the [data-theme=...] blocks and the picker's <option>s.
-  var THEMES = ['midnight','dark','light','sepia']; // retired themes fall back to midnight below
+  var THEMES = ['auto','midnight','dark','light','sepia']; // retired themes fall back to midnight below
   var SIZES = ['0.85','1','1.15','1.3','1.5'];
   var t = localStorage.getItem('dashboard-theme');
   var s = localStorage.getItem('dashboard-textsize');
@@ -149,6 +149,11 @@
   :root, [data-theme="midnight"] { color-scheme: dark; }
   [data-theme="dark"]  { color-scheme: dark; }
   [data-theme="light"] { color-scheme: light; }
+  /* Auto has no palette of its own — theme.css resolves it to Light or, under
+     prefers-color-scheme: dark, to Midnight. `light dark` is the honest answer: the
+     page works either way, and the browser should draw its own controls to match the
+     system, which is what the palette above it is doing. */
+  [data-theme="auto"]  { color-scheme: light dark; }
   [data-theme="sepia"] { color-scheme: light; }
   /* No side or top padding on the body any more — the header is a full-width bar
      that has to reach the window edges, so the gutters moved onto the bar's own
@@ -457,6 +462,7 @@
         <option value="1.5">🔠 XXL</option>
       </select>
       <select class="ctl" id="theme" aria-label="Theme">
+        <option value="auto">◐ Auto</option>
         <option value="dark">☾ Dark</option>
         <option value="light">☀ Light</option>
         <!-- selected, because the boot script in <head> has ALREADY applied
@@ -523,6 +529,14 @@ function applyThemeColor() {
   if (bar && bg) bar.setAttribute('content', bg);
 }
 applyThemeColor();
+/* On Auto the palette can change while the page is open — the reader switches their
+   phone to dark at sunset and theme.css follows on its own. The theme-color meta tag
+   does not: it was written once from the computed --bg, and it is what paints an
+   installed window's title bar and Android's address bar. This re-reads it, and only
+   it; the theme itself is still resolved entirely by CSS. */
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (document.documentElement.getAttribute('data-theme') === 'auto') applyThemeColor();
+});
 
 const themeSelect = document.getElementById('theme');
 themeSelect.value = document.documentElement.getAttribute('data-theme');

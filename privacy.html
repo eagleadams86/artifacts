@@ -12,7 +12,7 @@
      the dashboard's. */
   try {
     var t = localStorage.getItem('dashboard-theme');
-    var ok = ['midnight','dark','light','sepia'];
+    var ok = ['auto','midnight','dark','light','sepia'];
     document.documentElement.setAttribute('data-theme',
       ok.indexOf(t) === -1 ? 'midnight' : t);
   } catch (e) {}
