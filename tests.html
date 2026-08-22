@@ -116,6 +116,113 @@ t('parseStamp rejects junk instead of NaN-ing the sort', () => {
   ok(typeof w.parseStamp('2026-08-03T12:00:00Z') === 'number');
 });
 
+group('Staleness — read from each task’s own schedule');
+/* Added 2026-08-22. Until then this was ONE flat 8-day threshold for every card,
+   which only ever caught the weeklies: the daily briefing could stop for three
+   days and still wear an ordinary badge. */
+t('a daily schedule is a day, a named weekday is a week', () => {
+  eq(w.expectedIntervalMs('Every day at 1:45 AM'), 86400000);
+  eq(w.expectedIntervalMs('Every Friday at 12:00 AM'), 7 * 86400000);
+  eq(w.expectedIntervalMs('Every Wednesday at 12:30 AM'), 7 * 86400000);
+  eq(w.expectedIntervalMs('Weekly'), 7 * 86400000);
+});
+t('and an explicit count is read as written', () => {
+  eq(w.expectedIntervalMs('Every 6 hours'), 6 * 3600000);
+  eq(w.expectedIntervalMs('Every 3 days'), 3 * 86400000);
+});
+t('a wording it does not know returns null, NOT a guess', () => {
+  eq(w.expectedIntervalMs('When the mood takes it'), null);
+  eq(w.expectedIntervalMs(undefined), null);
+  // …and that null must fall back to the old flat rule rather than calling a
+  // healthy task late, which is the whole reason it is null and not zero.
+  eq(w.overdueAfterMs('When the mood takes it'), 8 * 86400000);
+});
+t('the grace is six hours, or the interval itself if that is shorter', () => {
+  eq(w.overdueAfterMs('Every day at 1:45 AM'), 30 * 3600000);
+  eq(w.overdueAfterMs('Every Friday at 12:00 AM'), (7 * 24 + 6) * 3600000);
+  eq(w.overdueAfterMs('Every 2 hours'), 4 * 3600000);
+});
+t('a task that has missed its own slot reads overdue, and one that has not does not', () => {
+  const daily = 'Every day at 1:45 AM';
+  eq(w.stampState(Date.now() - 20 * 3600000, daily), 'fresh');
+  eq(w.stampState(Date.now() - 40 * 3600000, daily), 'overdue');
+  // The same 40 hours is nowhere near late for a weekly task.
+  eq(w.stampState(Date.now() - 40 * 3600000, 'Every Friday at 12:00 AM'), 'fresh');
+});
+t('no readable stamp is UNKNOWN, a different state from overdue', () => {
+  eq(w.stampState(null, 'Every day at 1:45 AM'), 'unknown');
+});
+
+group('Search — highlighting goes in and comes back out again');
+t('matches are wrapped in <mark>, and the text is unchanged when they are removed', () => {
+  const d = w.document;
+  const box = d.createElement('div');
+  box.innerHTML = 'Beta 6 and beta 7 <strong>and beta 8</strong>';
+  const before = box.textContent;
+  eq(w.markMatches(box, 'beta'), 3, 'case-insensitive, across an element boundary');
+  eq(box.querySelectorAll('mark.hit').length, 3);
+  ok(box.querySelector('strong'), 'the sanitizer’s own markup must survive being marked');
+  w.clearMarks(box);
+  eq(box.querySelectorAll('mark.hit').length, 0);
+  eq(box.textContent, before, 'the text must come back exactly as it was');
+});
+t('and a cleared search leaves no seam the next one cannot match across', () => {
+  const box = w.document.createElement('div');
+  box.textContent = 'beta 6 is a polish release';
+  w.markMatches(box, 'beta');
+  w.clearMarks(box);
+  /* Without normalize() the text is still split where the old mark was, and
+     "beta 6" — a phrase spanning that seam — silently matches nothing. */
+  eq(w.markMatches(box, 'beta 6'), 1, 'normalize() must have re-joined the text');
+});
+t('the needle is matched literally — a regex character is not a wildcard', () => {
+  const box = w.document.createElement('div');
+  box.textContent = 'a+b and axb';
+  eq(w.markMatches(box, 'a+b'), 1, 'if this is 2, the needle reached a RegExp');
+});
+
+group('The controls the cards are driven by');
+t('there is a search box, and it is labelled', () => {
+  const box = w.document.getElementById('search');
+  ok(box, 'no search box');
+  eq(box.getAttribute('type'), 'search', 'type=search gets the browser’s clear button');
+  ok(box.getAttribute('aria-label'), 'a placeholder is not a label');
+});
+t('the result count is an EMPTY live region, not a hidden one', () => {
+  const note = w.document.getElementById('searchnote');
+  ok(note, 'no result count element');
+  eq(note.getAttribute('role'), 'status');
+  /* Toggling a status region out of `hidden` is announced unreliably; one that
+     is present and empty, and then gains text, is not. */
+  ok(!note.hasAttribute('hidden'), 'it must not be hidden — `:empty` hides it instead');
+});
+t('Expand all carries its state in its own label', () => {
+  const btn = w.document.getElementById('expandall');
+  ok(btn, 'no expand-all button');
+  const label = btn.querySelector('.label');
+  ok(label, 'the label is a span the script rewrites — without it the state never changes');
+  ok(/expand all|collapse all/i.test(label.textContent), 'unexpected label: ' + label.textContent);
+});
+t('every card offers Copy and Print', () => {
+  const card = w.document.querySelector('.card');
+  ok(card, 'no cards rendered');
+  ok(card.querySelector('.act-copy'), 'no Copy button on the card');
+  ok(card.querySelector('.act-print'), 'no Print button on the card');
+});
+t('the page-age notice is present, hidden, and wired to a refresh', () => {
+  const d = w.document;
+  ok(d.getElementById('agenotice'), 'no page-age notice');
+  ok(d.getElementById('agenotice').hasAttribute('hidden'), 'it must start hidden');
+  ok(d.getElementById('agenotice-age'), 'nothing for the script to write the age into');
+  ok(d.getElementById('agenotice-refresh'), 'the notice has to offer the reload it asks for');
+});
+t('an unknown permalink opens nothing rather than throwing', () => {
+  /* The hash is a card id. Anything else — a stale link, a typo, the skip
+     link's own #grid — must simply not match. */
+  eq(typeof w.openFromHash, 'function');
+  eq(w.openFromHash(false), false, 'nothing should match with no task hash set');
+});
+
 group('Landmarks — the keyboard’s way past the header');
 /* Added 2026-08-21, when the dashboard grew the family header: a brand, two
    pickers and a Refresh button, all before the first card. Every sibling app

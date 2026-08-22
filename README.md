@@ -8,6 +8,30 @@ A personal dashboard that displays the live outputs of scheduled Claude tasks.
 
 Cards are sorted by most recently updated and collapse by default — click a card header to expand it (and collapse any other). Refresh the page to see the latest outputs. Each card header shows when the task is due (🕐 line, left) next to when it actually last ran (right), so a task that has missed its slot is visible at a glance.
 
+### Finding Things
+
+**The search box searches every card's output at once**, not just the one that happens to be open. Type two characters or more and the grid filters to the tasks that match, expands them and highlights every hit; a line under the header says how many matched. Clearing the box (or pressing Escape in it) puts the page back exactly as it was, including whichever card was open before you started. **⌘K / Ctrl+K** jumps to it from anywhere on the page — Money Map's shortcut for the same job.
+
+This is not a convenience the browser's own Ctrl+F could have covered. Card bodies are `display: none` while collapsed and only one card opens at a time, so until 2026-08-22 a browser find reached exactly one card's text: eight tasks' worth of output with no way to search across it.
+
+**⇕ Expand all** opens every card at once — or every *matching* card during a search — and turns into Collapse all once they are. While more than one card is open, clicking a card header closes only that one; the one-card-at-a-time habit applies when one card is open, which is the case it was written for.
+
+### Overdue Tasks
+
+A task that has missed its own slot wears an amber **overdue** badge, in words as well as colour. The threshold is read from the same schedule string the card shows — a day for "Every day", a week for "Every Friday" — plus six hours' grace for a task that starts late and the push that carries its output here. A schedule phrased in some way the page does not recognise falls back to the flat 8-day rule this used to apply to everything, which is why a daily task could previously stop for three days without anything being said.
+
+A card with no readable timestamp at all is a different state and keeps the muted badge it always had: that is a task that has never run, or a data file that is wrong.
+
+### Links, Copying and Printing
+
+Opening a card puts its id in the address bar, so a card can be bookmarked or sent to someone — `claude.html#daily-news-briefing` opens on that card. The hash comes off again when several cards are open, since there is no single card to name. It uses `replaceState`, so Back still means the page you came from rather than the last card you closed.
+
+Each open card carries **Copy** and **Print**. Copy puts the task's raw output on the clipboard — markdown link syntax and all, which survives being pasted into a note better than a stripped-out link would. Print prints that one card; printing the page itself prints every card's output, expanded, in black on white with the header and footer left off.
+
+### Staying Current
+
+The dashboard is a snapshot of the moment it loaded. The relative timestamps tick, so a tab left open overnight no longer insists a card was updated five minutes ago, and once the page has been open longer than the hourly push cycle it says so and offers a reload. It cannot check whether newer output exists — the page's CSP is `connect-src 'none'` and it has no service worker — so it says the one thing it does know, which is how long ago this copy arrived.
+
 The page wears the app family's header: a sticky bar with the mark, the name and its strapline on the left, and the controls on the right. A theme picker switches between the four unified themes shared by all my apps, listed alphabetically — ☾ Dark, ☀ Light, ✦ Midnight (the default) and 📜 Sepia. (Dracula, Nord, Sakura, Synthwave and Terminal were retired in August 2026; a saved choice of one of them falls back to Midnight.) A text size picker next to it offers Small / Normal / Large / XL / XXL, and a ↻ Refresh button reloads the cards. Both picker choices are saved in the browser and persist across visits.
 
 Every option in the theme picker is written into the markup at its final size, and **Midnight carries `selected`** — the header paints long before the script at the foot of the page runs, so without it the row reads "Dark" over a midnight page for a moment on every load. The sun is `☀`, the plain text character, not the emoji-presentation `☀️`: the colour-font variant is a different weight and baseline from the `☾` and `✦` beside it. Every sibling app follows both rules.
@@ -30,7 +54,7 @@ Adding a theme starts in the theme pack (new themes need its contrast gate to pa
 
 ### Accessibility
 
-Card headers are real buttons, so the whole dashboard works by keyboard: Tab to a card, Enter or Space to expand it. Each card is a labelled region with `aria-expanded`, and the page uses a proper heading outline (`h1` → `h2` per card). All four themes meet WCAG AA contrast (4.5:1 for text, 3:1 for control borders) on every surface, links inside body text are underlined so colour is never the only cue, and the OS "reduce motion" setting disables the smooth scroll and transitions.
+Card headers are real buttons, so the whole dashboard works by keyboard: Tab to a card, Enter or Space to expand it. The search box is labelled rather than relying on its placeholder, its result count is a live region so the number of matches is announced, and filtered-out cards are `hidden` rather than merely invisible, so nothing off-screen is still in the tab order. Expand all carries its state in its own label — it controls eight cards, and an `aria-expanded` on one button cannot honestly describe eight. Each card is a labelled region with `aria-expanded`, and the page uses a proper heading outline (`h1` → `h2` per card). All four themes meet WCAG AA contrast (4.5:1 for text, 3:1 for control borders) on every surface, links inside body text are underlined so colour is never the only cue, and the OS "reduce motion" setting disables the smooth scroll and transitions.
 
 **A skip link is the first thing in the tab order**, added 2026-08-21 — every sibling app had one from 2026-08-20 and this page was the last without. Without it a keyboard or screen-reader user tabbed the whole header — brand, two pickers, Refresh — before reaching the first card. It lands on `<main id="grid" tabindex="-1">`; the `tabindex` is what lets focus actually move there rather than the page merely scrolling, and `main:focus { outline: none }` stops the browser then ringing the entire card grid. `tests.html` pins all three parts, and that the skip link comes first.
 
@@ -55,7 +79,7 @@ The dashboard's footer links to this README as **How it works**.
 
 Each scheduled Claude task writes its output to a local `data/data-*.js` file, which a file watcher pushes to this repo within moments of the task finishing. The `claude.html` dashboard loads all the data files as scripts and renders them as cards — no server required, works as a plain `file://` page or via GitHub Pages.
 
-`tests.html` pins the dashboard's sanitizer — the function that decides what a task's untrusted output may render as HTML — its timestamp helpers, and since 2026-08-21 the page's landmarks and both footers. Open it via a local server (`python3 -m http.server 8015`, then http://localhost:8015/tests.html): it loads the real `claude.html` in a hidden iframe and either reports "All N tests pass" or lists what broke. Its CSP spells out `connect-src 'self'` for the one file it reads as text (`privacy.html`) — without it that fetch is refused by `default-src 'none'` and three tests fail about a file that is plainly there.
+`tests.html` pins the dashboard's sanitizer — the function that decides what a task's untrusted output may render as HTML — its timestamp helpers, the page's landmarks and both footers, and since 2026-08-22 the schedule parsing behind the overdue badge (including that an unrecognised wording falls back rather than guessing) and the search highlighting (that marks come out leaving the text exactly as it was, and that the needle is matched literally rather than as a pattern). Open it via a local server (`python3 -m http.server 8015`, then http://localhost:8015/tests.html): it loads the real `claude.html` in a hidden iframe and either reports "All N tests pass" or lists what broke. Its CSP spells out `connect-src 'self'` for the one file it reads as text (`privacy.html`) — without it that fetch is refused by `default-src 'none'` and three tests fail about a file that is plainly there.
 
 GitHub Actions runs the same page headless on every push to `main` (`.github/workflows/tests.yml`), so the sanitizer can't quietly break. Before 2026-08-20 it only ever ran when somebody opened it by hand.
 

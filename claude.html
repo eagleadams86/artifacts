@@ -268,6 +268,52 @@
      in every theme; hover thickens it. */
   .card-body a { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
   .card-body a:hover { text-decoration-thickness: 2px; }
+  /* ── Overdue ───────────────────────────────────────────────────────────────
+     A THIRD badge state, added 2026-08-22 with the schedule-aware check in the
+     script. The muted `.stale` chip stays what it always was — a card with no
+     readable timestamp — and this one is a card that HAS one and has missed its
+     own slot.
+
+     `--warn` on `--warn-bg` is the theme pack's own gated pair (its contrast
+     script checks every status colour against its tint at 4.5:1), so this
+     introduces no colour of its own. Amber rather than the error red for two
+     reasons: a late task is not an error, and amber sits off the red/green axis,
+     which is the one Charles cannot read. The word "overdue" is written into the
+     chip as well, so the state never depends on the colour being seen. */
+  .updated-ago.overdue { color: var(--warn); background: var(--warn-bg); }
+
+  /* ── Search ────────────────────────────────────────────────────────────────
+     The highlight. Same gated pair as the overdue chip — the two never mean the
+     same thing but they never share a place on the card either: one is a pill in
+     the header, the other is a word inside the body text. */
+  mark.hit { background: var(--warn-bg); color: var(--warn); border-radius: 3px; padding: 0 1px; }
+  /* Filtered-out cards. The UA sheet already does this; saying it here means a
+     later `display:` on .card cannot quietly bring them back. */
+  .card[hidden] { display: none; }
+  /* The result count. Empty rather than hidden between searches — see the note
+     on the element — so `:empty` is what keeps it out of the layout. */
+  .searchnote { margin: 0; font-size: calc(13px * var(--scale)); color: var(--text-muted); }
+  .searchnote:empty { display: none; }
+
+  /* ── The page-age notice ───────────────────────────────────────────────────
+     Sits in the card flow as the first item, so it arrives where the eye already
+     is. The warn-coloured edge is the only colour on it: it is a nudge, not a
+     failure. */
+  .notice { display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+            background: var(--surface); border: 1px solid var(--border-strong);
+            border-left: 3px solid var(--warn); border-radius: 12px;
+            padding: 12px 16px; font-size: calc(13px * var(--scale)); color: var(--text-secondary); }
+  /* `display: flex` beats the UA sheet's [hidden] rule, so it has to be said. */
+  .notice[hidden] { display: none; }
+  .notice b { color: var(--text-primary); font-weight: 600; }
+
+  /* ── Per-card actions ──────────────────────────────────────────────────────
+     A footer row on the card, visible only while it is open — the buttons are
+     about the content, and there is no content on screen to copy or print until
+     the card is expanded. */
+  .card-actions { display: none; gap: 8px; padding: 0 20px 16px; flex-wrap: wrap; }
+  .card.expanded .card-actions { display: flex; }
+
   /* ── Header ────────────────────────────────────────────────────────────────
      The app family's shape: a bar the full width of the window that STAYS at the
      top of the screen, with the row inside it held to the same gutters as the
@@ -309,6 +355,24 @@
          border: 1px solid var(--border-strong); border-radius: 6px; padding: 4px 10px;
          min-height: var(--chrome-h); cursor: pointer; font-family: var(--font); }
   .ctl:hover { border-color: var(--text-muted); }
+  /* The same control one step down, for the card's own buttons and the notice —
+     they sit inside the content rather than in the chrome, so they should not
+     compete with the card title. The touch height is unchanged. */
+  .ctl.small { font-size: calc(12px * var(--scale)); padding: 3px 9px; }
+  .ctl:disabled { opacity: .5; cursor: default; }
+  .ctl:disabled:hover { border-color: var(--border-strong); }
+  /* An input is not a button: it takes a text cursor, and unlike the pickers
+     beside it there is no label inside to give it a width.
+
+     A FIXED width, deliberately, and not `flex: 1 1 170px` — a flex BASIS a few
+     pixels wider than the field's own content width makes the row's intrinsic
+     width and its line-breaking disagree, and the header bar wrapped Refresh
+     onto a second row at 1280px over a 3px difference. Width and flex base are
+     the same number this way. It still shrinks on a narrow window (flex-shrink
+     is 1 by default) down to the min, and wraps below that like everything
+     else in the row. */
+  input.ctl { cursor: text; width: 210px; min-width: 120px; box-sizing: border-box; }
+  input.ctl::placeholder { color: var(--text-hint); opacity: 1; }
   .ctl:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
   a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 2px; }
   select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px; background-image: var(--select-chevron); background-repeat: no-repeat; background-position: right 9px center; }
@@ -319,10 +383,42 @@
        and `body` has no padding of its own any more, nor an `h1` or a
        `.header-row` to restyle. All four rules went with the header rewrite. */
     .grid { gap: 16px; }
+    /* Two control rows on a phone, which is what this bar had before it gained
+       a search box and an Expand all — a third row of sticky header is a lot of
+       a phone screen to give up. The search stretches into whatever the row has
+       spare beside Expand all rather than sitting at its wide-window width with
+       a hand's width of empty bar beside it; the three that were here already
+       stay together on the row below. */
+    .controls { width: 100%; }
+    input.ctl { flex: 1 1 auto; width: auto; min-width: 120px; }
     .card-header { flex-wrap: wrap; }
     .card-updated { width: 100%; text-align: left; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
     .updated-full { margin-top: 0; }
     .card-body { padding: 16px; }
+    .card-actions { padding: 0 16px 14px; }
+  }
+
+  /* ── Print ─────────────────────────────────────────────────────────────────
+     Printing this page means printing the OUTPUT, so every card body is opened
+     for the printer whatever the screen is showing, and the chrome that cannot
+     be used on paper comes off. `.printing-one` is set by a card's own Print
+     button for the length of the dialog: same sheet, one card.
+
+     Deliberately black on white rather than the theme: a midnight card is a
+     page of ink, and no browser prints backgrounds by default anyway — which
+     would have left `--text-secondary` body copy on the paper's own white. */
+  @media print {
+    header, .skip, .notice, .searchnote, .card-actions, .site-footer, .chevron { display: none !important; }
+    body { background: #fff; color: #000; }
+    .wrap { padding: 0; }
+    .grid { gap: 16px; }
+    .card { border: 1px solid #999; break-inside: auto; }
+    .card-body { display: block !important; color: #000; }
+    .card-header { border-bottom: 1px solid #999; }
+    .card-title, .card-meta, .card-schedule, .updated-ago, .updated-full { color: #000; }
+    .updated-ago { background: none; padding: 0; }
+    mark.hit { background: none; color: #000; font-weight: 700; }
+    body.printing-one .card:not(.print-target) { display: none; }
   }
 
   /* Respect the OS "reduce motion" setting. */
@@ -341,6 +437,18 @@
     <h1 class="brand"><img src="favicon.ico?v=1" width="23" height="23" alt=""
       >Task&nbsp;Dashboard <span>&middot; Charlie&rsquo;s Epic Information Roundup</span></h1>
     <div class="controls">
+      <!-- Search first in the row because it is the one control that changes what
+           the page SHOWS; the two pickers change how it looks and Refresh reloads
+           it. type="search" gets the browser's own clear button, and the theme
+           pack already floors it at 16px on a touch screen (iOS zooms the page in
+           on any focused field under that). -->
+      <input class="ctl" id="search" type="search" autocomplete="off"
+             placeholder="Search all tasks" aria-label="Search every task&rsquo;s output" aria-describedby="searchnote">
+      <!-- The state lives in the LABEL, not in aria-expanded: this button controls
+           eight disclosures rather than one, and "Expand all, collapsed" would be
+           a plain lie on a page where seven of the eight are already open. The
+           label always names what the press will do. -->
+      <button class="ctl" type="button" id="expandall"><span aria-hidden="true">&#8661;</span> <span class="label">Expand all</span></button>
       <select class="ctl" id="textsize" aria-label="Text size">
         <option value="0.85">🔠 Small</option>
         <option value="1">🔠 Normal</option>
@@ -371,7 +479,21 @@
 <noscript>
   <p>This dashboard needs JavaScript to display your scheduled-task output.</p>
 </noscript>
-<main class="grid" id="grid" tabindex="-1"></main>
+<main class="grid" id="grid" tabindex="-1">
+  <!-- Both live INSIDE the main landmark, so the skip link lands above them
+       rather than past them, and the cards render after them. -->
+  <!-- This page has no service worker and no network of its own, so it cannot
+       ask whether newer output exists. What it can say is how long ago this copy
+       was loaded, which is the thing a tab left open overnight hides. -->
+  <div class="notice" id="agenotice" hidden>
+    <span>This page was loaded <b id="agenotice-age">an hour ago</b> and does not update itself.</span>
+    <button class="ctl small" type="button" id="agenotice-refresh"><span aria-hidden="true">&#8635;</span> Refresh</button>
+  </div>
+  <!-- A live region that is EMPTY rather than hidden: a role="status" toggled
+       out of `hidden` is announced unreliably, an empty one that gains text is
+       not. `:empty` keeps it out of the layout in the meantime. -->
+  <p class="searchnote" id="searchnote" role="status"></p>
+</main>
 <!-- Two links, not one: "independent personal project" points at NOTICE and
      "MIT licensed" points at LICENSE. They were one link reading "MIT licensed"
      and landing on NOTICE — a licence is the terms, NOTICE is who owns it, so
@@ -517,30 +639,171 @@ function timeAgo(t) {
   return future ? `${out} from now` : `${out} ago`;
 }
 
+/* ── Cards ──────────────────────────────────────────────────────────────────
+   Everything below works off ONE array of card entries — the element, its
+   buttons, the timestamp chip and a lowercased haystack of everything the card
+   says. Five features read the same set (search, expand all, the permalink
+   hash, the ticking timestamps, per-card copy and print), and each of them
+   re-deriving it from the DOM would be five slightly different answers to the
+   same question. */
 const grid = document.getElementById('grid');
 const data = window.taskData || {};
+const cards = [];
 
 TASKS.sort((a, b) => (parseStamp(data[b.id]?.updatedAt) || 0) - (parseStamp(data[a.id]?.updatedAt) || 0));
 
-function collapseAll() {
-  document.querySelectorAll('.card.expanded').forEach(c => {
-    c.classList.remove('expanded');
-    c.querySelector('.card-header').setAttribute('aria-expanded', 'false');
+const HOUR_MS = 60 * 60 * 1000;
+const DAY_MS = 24 * HOUR_MS;
+
+/* How often a task is EXPECTED to run, read from the same schedule string the
+   card already shows — so there is no second place to keep it in step.
+
+   Until 2026-08-22 staleness was ONE FLAT 8-DAY THRESHOLD for every card, which
+   only ever caught the weeklies: the daily briefing could stop for three days
+   and still wear a perfectly ordinary badge, while the README claimed a task
+   that had missed its slot was visible at a glance.
+
+   Returns null for a wording it does not know. That is deliberate and the
+   fallback below is the old flat rule: a schedule phrased in some new way must
+   degrade to what this page did yesterday, never to calling a healthy task
+   late. */
+function expectedIntervalMs(schedule) {
+  if (typeof schedule !== 'string') return null;
+  const s = schedule.toLowerCase();
+  const hours = s.match(/\bevery\s+(\d+)\s*hours?\b/);
+  if (hours) return Number(hours[1]) * HOUR_MS;
+  const days = s.match(/\bevery\s+(\d+)\s*days?\b/);
+  if (days) return Number(days[1]) * DAY_MS;
+  if (/\b(every day|daily)\b/.test(s)) return DAY_MS;
+  if (/\bevery\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)s?\b/.test(s)) return 7 * DAY_MS;
+  if (/\b(every week|weekly)\b/.test(s)) return 7 * DAY_MS;
+  return null;
+}
+
+/* The grace on top of that interval — enough to absorb a task that starts late
+   and the hourly push that carries its output here, without waiting a whole
+   extra cycle before anything is said. Six hours, or the interval itself if that
+   is shorter: a fixed six would be most of a day's slack for an hourly task,
+   and a PROPORTIONAL grace would be the opposite mistake, giving a weekly task
+   most of a day before anything was said about a slot it had already missed.
+
+   So: a task reads overdue about six hours after the slot it missed. */
+function overdueAfterMs(schedule) {
+  const interval = expectedIntervalMs(schedule);
+  if (interval === null) return 8 * DAY_MS;
+  return interval + Math.min(6 * HOUR_MS, interval);
+}
+
+/* Three states, not two: a card with no readable stamp is UNKNOWN and stays the
+   muted chip it always was, while a card that has a stamp and has missed its own
+   slot is OVERDUE and says so. They are different problems — one is a task that
+   has never run or a data file that is wrong, the other is a task that stopped. */
+function stampState(stamp, schedule) {
+  if (stamp === null) return 'unknown';
+  return Date.now() - stamp > overdueAfterMs(schedule) ? 'overdue' : 'fresh';
+}
+
+/* Written on every tick, not once at render. The label is relative ("Updated 5m
+   ago"), and it used to be computed exactly once — so a tab left open overnight
+   went on saying "5m ago" until somebody reloaded it. That is the same wrong
+   answer this page refuses a service worker to avoid, arriving through a
+   different door. */
+function paintStamp(entry) {
+  const state = stampState(entry.stamp, entry.task.schedule);
+  const base = entry.stamp !== null ? `Updated ${timeAgo(entry.stamp)}`
+             : entry.badStamp ? 'Timestamp unreadable' : 'No data yet';
+  entry.ago.textContent = state === 'overdue' ? `${base} · overdue` : base;
+  entry.ago.classList.toggle('stale', state === 'unknown');
+  entry.ago.classList.toggle('overdue', state === 'overdue');
+}
+
+/* Bring the top of an expanded card to just under the header bar — NOT to the
+   top of the viewport, which is where the bar is. The header went sticky on
+   2026-08-21 and this scroll did not know about it, so opening a card slid its
+   own title underneath the bar and you landed on the second line of the
+   description.
+
+   MEASURED rather than assumed: the bar's height moves with the text-size
+   preference and wraps to two or three rows on a narrow window, so a constant
+   would be wrong in most of the cases that matter. Read at the moment of the
+   scroll, which is when it is correct. */
+function scrollCardIntoView(card) {
+  requestAnimationFrame(() => {
+    const bar = document.querySelector('header');
+    const clearance = (bar ? bar.getBoundingClientRect().height : 0) + 16;
+    const top = card.getBoundingClientRect().top + window.scrollY - clearance;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: Math.max(0, top), behavior: reduce ? 'auto' : 'smooth' });
   });
 }
 
+function isOpen(entry) { return entry.card.classList.contains('expanded'); }
+function visibleCards() { return cards.filter(e => !e.card.hidden); }
+function openCards() { return cards.filter(isOpen); }
+
+function setOpen(entry, open, scroll) {
+  entry.card.classList.toggle('expanded', open);
+  entry.btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (open && scroll) scrollCardIntoView(entry.card);
+}
+
+function collapseAll() { cards.forEach(e => setOpen(e, false)); }
+
+/* ── Highlighting ───────────────────────────────────────────────────────────
+   Marks are put in and taken out through TEXT NODES, never by rewriting a
+   card's innerHTML. Two reasons, and both matter here: the body's markup is the
+   output of formatContent — the sanitizer — and re-parsing its own output on
+   every keystroke is a round trip this page has no reason to take; and the card
+   header carries the button every other feature has listeners on, which an
+   innerHTML rewrite would silently throw away.
+
+   The needle is compared with indexOf, not a RegExp, so a search for "a+b" or
+   "(1)" is a search for those characters and nothing has to be escaped. */
+function markMatches(root, needle) {
+  if (!root || !needle) return 0;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  let hits = 0;
+  nodes.forEach(node => {
+    const text = node.nodeValue, lower = text.toLowerCase();
+    let at = 0, i = lower.indexOf(needle);
+    if (i === -1) return;
+    const frag = document.createDocumentFragment();
+    while (i !== -1) {
+      if (i > at) frag.appendChild(document.createTextNode(text.slice(at, i)));
+      const m = document.createElement('mark');
+      m.className = 'hit';
+      m.textContent = text.slice(i, i + needle.length);
+      frag.appendChild(m);
+      hits++;
+      at = i + needle.length;
+      i = lower.indexOf(needle, at);
+    }
+    if (at < text.length) frag.appendChild(document.createTextNode(text.slice(at)));
+    node.parentNode.replaceChild(frag, node);
+  });
+  return hits;
+}
+
+/* normalize() is not tidiness: without it every cleared search leaves the text
+   split at the old match boundaries, and the next search cannot match across a
+   seam it created itself. */
+function clearMarks(root) {
+  if (!root) return;
+  root.querySelectorAll('mark.hit').forEach(m => {
+    m.replaceWith(document.createTextNode(m.textContent));
+  });
+  root.normalize();
+}
+
+/* ── Cards ──────────────────────────────────────────────────────────────── */
 TASKS.forEach(task => {
   // One malformed data file must not blank the rest of the dashboard, so each
   // card renders independently and failures degrade to a visible notice.
   try {
     const d = data[task.id];
     const stamp = parseStamp(d?.updatedAt);
-    // The longest schedule is weekly, so a stamp older than 8 days means the
-    // task has stopped running — that gets the muted "stale" chip too, not
-    // just a missing/unreadable stamp.
-    const isStale = stamp === null || Date.now() - stamp > 8 * 24 * 60 * 60 * 1000;
-    const agoLabel = stamp !== null ? `Updated ${timeAgo(stamp)}`
-                   : d?.updatedAt ? 'Timestamp unreadable' : 'No data yet';
     const fullLabel = stamp !== null ? new Date(stamp).toLocaleString()
                     : d?.updatedAt ? String(d.updatedAt) : 'waiting for first run';
     const raw = typeof d?.content === 'string' ? d.content : '';
@@ -553,7 +816,7 @@ TASKS.forEach(task => {
     card.className = 'card';
     // The header is a <button> inside an <h2>: keyboard-focusable, announced as
     // an expandable control, and Enter/Space work natively. Every value that
-    // can carry task output is escaped; the ids and the stale class are built
+    // can carry task output is escaped; the ids and the class names are built
     // from the hard-coded TASKS constants, trusted by construction.
     card.innerHTML = `
       <h2 class="card-header-h">
@@ -564,40 +827,50 @@ TASKS.forEach(task => {
             ${task.schedule ? `<span class="card-schedule"><span class="sched-icon" aria-hidden="true">🕐</span>${escapeHtml(task.schedule)}</span>` : ''}
           </span>
           <span class="card-updated">
-            <span class="updated-ago ${isStale ? 'stale' : ''}">${escapeHtml(agoLabel)}</span>
+            <span class="updated-ago"></span>
             <span class="updated-full">${escapeHtml(fullLabel)}</span>
           </span>
         </button>
       </h2>
       <div class="card-body" id="${bodyId}" role="region" aria-labelledby="${titleId}">${bodyHtml}</div>
+      <div class="card-actions">
+        <button type="button" class="ctl small act-copy"><span aria-hidden="true">📋</span> <span class="label">Copy</span></button>
+        <button type="button" class="ctl small act-print"><span aria-hidden="true">🖨</span> <span class="label">Print</span></button>
+      </div>
     `;
 
-    const btn = card.querySelector('.card-header');
-    btn.addEventListener('click', () => {
-      const wasExpanded = card.classList.contains('expanded');
-      collapseAll();
-      if (!wasExpanded) {
-        card.classList.add('expanded');
-        btn.setAttribute('aria-expanded', 'true');
-        /* Bring the top of the expanded card to just under the header bar — NOT
-           to the top of the viewport, which is where the bar is. The header went
-           sticky on 2026-08-21 and this scroll did not know about it, so opening
-           a card slid its own title underneath the bar and you landed on the
-           second line of the description.
+    const entry = {
+      task, card,
+      btn: card.querySelector('.card-header'),
+      ago: card.querySelector('.updated-ago'),
+      full: card.querySelector('.updated-full'),
+      body: card.querySelector('.card-body'),
+      title: card.querySelector('.card-title'),
+      meta: card.querySelector('.card-meta'),
+      stamp,
+      badStamp: stamp === null && !!d?.updatedAt,
+      raw,
+      // Title and description included on purpose: searching for "beta" should
+      // find the two beta-check cards even on a week when neither ran.
+      haystack: `${task.title} ${task.description} ${task.schedule || ''} ${raw}`.toLowerCase()
+    };
+    paintStamp(entry);
 
-           MEASURED rather than assumed: the bar's height moves with the text-size
-           preference and wraps to two or three rows on a narrow window, so a
-           constant would be wrong in most of the cases that matter. Read at the
-           moment of the scroll, which is when it is correct. */
-        requestAnimationFrame(() => {
-          const bar = document.querySelector('header');
-          const clearance = (bar ? bar.getBoundingClientRect().height : 0) + 16;
-          const top = card.getBoundingClientRect().top + window.scrollY - clearance;
-          const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          window.scrollTo({ top: Math.max(0, top), behavior: reduce ? 'auto' : 'smooth' });
-        });
-      }
+    entry.btn.addEventListener('click', () => {
+      /* One card at a time is this page's habit — but only while ONE is open.
+         Search and Expand all both leave several open, and closing the rest
+         because you clicked one of them would undo what you just asked for. */
+      const wasOpen = isOpen(entry);
+      if (openCards().length <= 1) collapseAll();
+      setOpen(entry, !wasOpen, !wasOpen);
+      syncHash();
+      syncExpandBtn();
     });
+
+    card.querySelector('.act-copy').addEventListener('click', ev => copyCard(entry, ev.currentTarget));
+    card.querySelector('.act-print').addEventListener('click', () => printCard(entry));
+
+    cards.push(entry);
     grid.appendChild(card);
   } catch (err) {
     console.error(`Failed to render task "${task.id}":`, err);
@@ -609,6 +882,239 @@ TASKS.forEach(task => {
     grid.appendChild(card);
   }
 });
+
+/* ── Copy and print ─────────────────────────────────────────────────────────
+   What is copied is the RAW text, not what the sanitizer rendered: the point of
+   the button is to paste a briefing into a note or a message, and markdown link
+   syntax survives that better than a link whose href has been dropped on the
+   floor. */
+function flash(btn, word) {
+  const label = btn.querySelector('.label');
+  if (!label || btn.dataset.flashing) return;
+  const original = label.textContent;
+  btn.dataset.flashing = '1';
+  label.textContent = word;
+  setTimeout(() => { label.textContent = original; delete btn.dataset.flashing; }, 1600);
+}
+
+function cardAsText(entry) {
+  const head = [entry.task.title, entry.task.schedule, entry.full.textContent]
+    .filter(Boolean).join(' — ');
+  return `${head}\n\n${entry.raw.trim() || 'No output yet.'}\n`;
+}
+
+function copyCard(entry, btn) {
+  const text = cardAsText(entry);
+  const done = () => flash(btn, 'Copied');
+  /* The clipboard API needs a secure context, which this page has on GitHub
+     Pages and on localhost — but NOT when it is opened straight off disk, which
+     the README says it supports. The textarea fallback is what covers that. */
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done, () => legacyCopy(text, btn, done));
+  } else {
+    legacyCopy(text, btn, done);
+  }
+}
+
+function legacyCopy(text, btn, done) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.cssText = 'position:fixed;top:0;left:-9999px;opacity:0';
+  document.body.appendChild(ta);
+  ta.select();
+  let okay = false;
+  try { okay = document.execCommand('copy'); } catch (e) { okay = false; }
+  ta.remove();
+  okay ? done() : flash(btn, 'Copy failed');
+}
+
+/* Printing ONE card, from a page that prints all of them. The body class hides
+   every other card for the duration; afterprint is what puts them back, and it
+   fires whether the dialog was accepted or cancelled. */
+function printCard(entry) {
+  setOpen(entry, true);
+  document.body.classList.add('printing-one');
+  entry.card.classList.add('print-target');
+  const restore = () => {
+    document.body.classList.remove('printing-one');
+    entry.card.classList.remove('print-target');
+  };
+  window.addEventListener('afterprint', restore, { once: true });
+  window.print();
+}
+
+/* ── Expand all ─────────────────────────────────────────────────────────────
+   The escape hatch from one-card-at-a-time. It acts on the VISIBLE cards, so
+   during a search it expands the matches and nothing else. */
+const expandBtn = document.getElementById('expandall');
+
+function allVisibleOpen() {
+  const vis = visibleCards();
+  return vis.length > 0 && vis.every(isOpen);
+}
+
+function syncExpandBtn() {
+  const open = allVisibleOpen();
+  expandBtn.querySelector('.label').textContent = open ? 'Collapse all' : 'Expand all';
+  expandBtn.disabled = visibleCards().length === 0;
+}
+
+expandBtn.addEventListener('click', () => {
+  const closing = allVisibleOpen();
+  visibleCards().forEach(e => setOpen(e, !closing));
+  syncHash();
+  syncExpandBtn();
+});
+
+/* ── The permalink ──────────────────────────────────────────────────────────
+   The URL carries whichever single card is open, so one can be bookmarked or
+   sent to somebody. replaceState rather than pushState: opening a card is
+   reading, not navigating, and a history entry per click would turn Back into
+   "close the card you just opened" for as long as you kept clicking.
+
+   With several cards open — a search, or Expand all — there is no single card
+   to name, so the hash comes off rather than naming an arbitrary one.
+
+   try/catch because the README means it when it says this page works as a plain
+   file:// document: some browsers throw a SecurityError on replaceState there,
+   and losing the permalink is not a reason to lose the click that triggered it. */
+function syncHash() {
+  const open = openCards();
+  const hash = open.length === 1 ? '#' + encodeURIComponent(open[0].task.id) : '';
+  try {
+    history.replaceState(null, '', location.pathname + location.search + hash);
+  } catch (e) { /* file:// — the card is open either way */ }
+}
+
+function openFromHash(scroll) {
+  let id = '';
+  try { id = decodeURIComponent(location.hash.slice(1)); } catch (e) { return false; }
+  const entry = cards.find(e => e.task.id === id);
+  if (!entry) return false;
+  collapseAll();
+  setOpen(entry, true, scroll);
+  syncExpandBtn();
+  return true;
+}
+
+window.addEventListener('hashchange', () => openFromHash(true));
+
+/* ── Search ─────────────────────────────────────────────────────────────────
+   Until 2026-08-22 nothing on this page was findable. Card bodies are
+   `display: none` while collapsed and only one card opens at a time, so the
+   browser's own Ctrl+F reached exactly one card's text — eight tasks' worth of
+   output with no way to search across it.
+
+   Two characters is the floor: one letter matches most of the English language
+   and would mark several thousand nodes per keystroke to say nothing. */
+const searchBox = document.getElementById('search');
+const searchNote = document.getElementById('searchnote');
+const MIN_QUERY = 2;
+let openBeforeSearch = null;
+let wasSearching = false;
+
+function currentQuery() { return searchBox.value.trim().toLowerCase(); }
+
+function applySearch() {
+  const q = currentQuery();
+  const on = q.length >= MIN_QUERY;
+
+  /* Remember what was open the moment a search starts, so clearing the box puts
+     the page back where it was rather than dumping you on a collapsed grid. */
+  if (on && !wasSearching) {
+    const open = openCards();
+    openBeforeSearch = open.length === 1 ? open[0].task.id : null;
+  }
+
+  let hits = 0;
+  cards.forEach(e => {
+    clearMarks(e.card);
+    const hit = !on || e.haystack.includes(q);
+    e.card.hidden = on && !hit;
+    if (on && hit) {
+      hits++;
+      setOpen(e, true);
+      markMatches(e.title, q);
+      markMatches(e.meta, q);
+      markMatches(e.body, q);
+    }
+  });
+
+  if (on) {
+    const shown = searchBox.value.trim();
+    searchNote.textContent = hits === 0
+      ? `No task mentions “${shown}”.`
+      : `${hits} of ${cards.length} tasks match “${shown}” — expanded and highlighted below.`;
+  } else {
+    searchNote.textContent = '';
+    if (wasSearching) {
+      collapseAll();
+      const back = openBeforeSearch && cards.find(e => e.task.id === openBeforeSearch);
+      if (back) setOpen(back, true);
+      openBeforeSearch = null;
+    }
+  }
+
+  wasSearching = on;
+  syncHash();
+  syncExpandBtn();
+}
+
+/* Debounced: a card body is one long text node, and re-marking eight of them on
+   every keystroke is work nobody sees the result of until you stop typing. */
+let searchTimer = null;
+searchBox.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(applySearch, 120);
+});
+searchBox.addEventListener('keydown', ev => {
+  if (ev.key === 'Escape' && searchBox.value !== '') {
+    ev.preventDefault();          // don't let the browser's own search-field clear beat us to it
+    searchBox.value = '';
+    clearTimeout(searchTimer);
+    applySearch();
+  }
+});
+/* ⌘K / Ctrl+K — Money Map's shortcut for the same job, so the family agrees. */
+document.addEventListener('keydown', ev => {
+  if ((ev.metaKey || ev.ctrlKey) && !ev.altKey && ev.key.toLowerCase() === 'k') {
+    ev.preventDefault();
+    searchBox.focus();
+    searchBox.select();
+  }
+});
+
+/* ── The clock ──────────────────────────────────────────────────────────────
+   Repaints every relative timestamp, and once the page has been open longer
+   than the hourly push cycle, says so. This page has no service worker and no
+   network of its own (`connect-src 'none'`), so it cannot check whether newer
+   output exists — the notice says what it actually knows, which is how long ago
+   this copy was loaded.
+
+   Everything here is decided from wall-clock arithmetic rather than by counting
+   ticks: a background tab's timers are throttled and may not fire at all, so an
+   interval that had to run 60 times to be right would be wrong on every tab
+   anyone left open. The visibility listener is what makes coming back to a tab
+   immediate rather than up to a minute late. */
+const LOADED_AT = Date.now();
+const NUDGE_AFTER_MS = 65 * 60 * 1000;
+const ageNotice = document.getElementById('agenotice');
+const ageNoticeAge = document.getElementById('agenotice-age');
+
+function tick() {
+  cards.forEach(paintStamp);
+  if (Date.now() - LOADED_AT >= NUDGE_AFTER_MS) {
+    ageNoticeAge.textContent = timeAgo(LOADED_AT);
+    ageNotice.hidden = false;
+  }
+}
+setInterval(tick, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+document.getElementById('agenotice-refresh').addEventListener('click', () => location.reload());
+
+syncExpandBtn();
+openFromHash(true);
 </script>
 </body>
 </html>
