@@ -464,18 +464,40 @@
     <h1 class="brand"><img src="favicon.ico?v=1" width="23" height="23" alt=""
       >Task&nbsp;Dashboard <span>&middot; Charlie&rsquo;s Epic Information Roundup</span></h1>
     <div class="controls">
-      <!-- Search first in the row because it is the one control that changes what
-           the page SHOWS; the two pickers change how it looks and Refresh reloads
-           it. type="search" gets the browser's own clear button, and the theme
-           pack already floors it at 16px on a touch screen (iOS zooms the page in
-           on any focused field under that). -->
-      <input class="ctl" id="search" type="search" autocomplete="off"
-             placeholder="Search all tasks" aria-label="Search every task&rsquo;s output" aria-describedby="searchnote">
+      <!-- ── The family's header order ─────────────────────────────────────────
+           Every app in the family lays this row out the same way, so a control
+           is in the same place whichever one you have open. Right to left,
+           because the row is right-aligned and the right-hand end is the fixed
+           one:
+
+             theme · Share · Back up · ⚙ settings · ☰ manage · the record
+             picker · zoom · find · everything else
+
+           An app skips whatever it hasn't got and the rest close up. This page
+           has three of them — find, zoom and the theme — plus two of its own,
+           which go in "everything else" at the left-hand end.
+
+           Search led this row until 2026-08-22, on the argument that it is the
+           one control that changes what the page SHOWS while the rest only
+           change how it looks. That is still true and it is still why search
+           sits ahead of the two pickers; what changed is that the family fixes
+           where the pair of them go, and the THEME PICKER IS ALWAYS LAST — it
+           is the one control in any of these apps that changes nothing but the
+           page's colours. -->
       <!-- The state lives in the LABEL, not in aria-expanded: this button controls
            eight disclosures rather than one, and "Expand all, collapsed" would be
            a plain lie on a page where seven of the eight are already open. The
            label always names what the press will do. -->
       <button class="ctl" type="button" id="expandall"><span aria-hidden="true">&#8661;</span> <span class="label">Expand all</span></button>
+      <!-- The glyph is a plain text character, aria-hidden, in front of the word —
+           the family's header pattern. It was already carried inline in the label,
+           where a screen reader read it out as part of the button's name. -->
+      <button class="ctl" onclick="location.reload()"><span aria-hidden="true">↻</span> Refresh</button>
+      <!-- type="search" gets the browser's own clear button, and the theme pack
+           already floors it at 16px on a touch screen (iOS zooms the page in on
+           any focused field under that). -->
+      <input class="ctl" id="search" type="search" autocomplete="off"
+             placeholder="Search all tasks" aria-label="Search every task&rsquo;s output" aria-describedby="searchnote">
       <select class="ctl" id="textsize" aria-label="Text size">
         <option value="0.85">🔠 Small</option>
         <option value="1">🔠 Normal</option>
@@ -495,10 +517,6 @@
         <option value="midnight" selected>✦ Midnight</option>
         <option value="sepia">📜 Sepia</option>
       </select>
-      <!-- The glyph is a plain text character, aria-hidden, in front of the word —
-           the family's header pattern. It was already carried inline in the label,
-           where a screen reader read it out as part of the button's name. -->
-      <button class="ctl" onclick="location.reload()"><span aria-hidden="true">↻</span> Refresh</button>
     </div>
   </div>
 </header>
