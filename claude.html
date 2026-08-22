@@ -107,7 +107,7 @@
      8.1→11.9, focus ring 7.4→10.8, badge text on its fill 6.0→9.4.
   ─────────────────────────────────────────────────────────────────────────── */
   :root {
-    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font: var(--font-sans);   /* the pack's stack — this page defined its own four times over */
     /* ── Page width ─────────────────────────────────────────────────────────
        Money Map's cap, deliberately the same number rather than the family's
        usual 1500px: that one is for pages of charts and short tables, which do
@@ -188,7 +188,7 @@
      attributes on the element are the normal-size equivalent, so the row is laid
      out before the icon arrives. */
   .brand img { width: 1.3em; height: 1.3em; vertical-align: -.22em; margin-right: 9px; }
-  .subtitle { color: var(--text-muted); font-size: calc(14px * var(--scale)); margin-bottom: 36px; }
+  .subtitle { color: var(--text-muted); font-size: calc(var(--fs-sm) * var(--scale)); margin-bottom: 36px; }
   .grid { display: flex; flex-direction: column; gap: 24px; }
   .card { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px; overflow: hidden; }
   /* The header is a real <button> (inside an <h2>) so it is keyboard-reachable
@@ -200,18 +200,18 @@
   .card-header:hover { background: var(--surface-alt); }
   .card-header:focus-visible { outline: 2px solid var(--link); outline-offset: -3px; }
   .card.expanded .card-header { border-bottom-color: var(--border); padding-bottom: 14px; }
-  .card-title { display: block; font-size: calc(16px * var(--scale)); font-weight: 600; color: var(--text-primary); }
-  .chevron { display: inline-block; width: 12px; color: var(--text-muted); margin-right: 8px; transition: transform 0.15s; font-size: calc(11px * var(--scale)); }
+  .card-title { display: block; font-size: calc(var(--fs-base) * var(--scale)); font-weight: 600; color: var(--text-primary); }
+  .chevron { display: inline-block; width: 12px; color: var(--text-muted); margin-right: 8px; transition: transform 0.15s; font-size: calc(var(--fs-xs) * var(--scale)); }
   .card.expanded .chevron { transform: rotate(90deg); }
   .card-headline { display: block; }
   .card-updated { display: block; text-align: right; flex-shrink: 0; }
-  .updated-ago { font-size: calc(12px * var(--scale)); color: var(--chip-text); background: var(--chip-bg); border-radius: 6px; padding: 3px 8px; white-space: nowrap; display: inline-block; }
+  .updated-ago { font-size: calc(var(--fs-xs) * var(--scale)); color: var(--chip-text); background: var(--chip-bg); border-radius: 6px; padding: 3px 8px; white-space: nowrap; display: inline-block; }
   .updated-ago.stale { color: var(--text-muted); background: var(--surface-alt); }
-  .updated-full { display: block; font-size: calc(12px * var(--scale)); color: var(--text-hint); margin-top: 5px; white-space: nowrap; }
-  .card-meta { display: block; font-size: calc(12px * var(--scale)); color: var(--text-muted); margin-top: 4px; font-weight: 400; }
+  .updated-full { display: block; font-size: calc(var(--fs-xs) * var(--scale)); color: var(--text-hint); margin-top: 5px; white-space: nowrap; }
+  .card-meta { display: block; font-size: calc(var(--fs-xs) * var(--scale)); color: var(--text-muted); margin-top: 4px; font-weight: 400; }
   /* Same size/token as .updated-full: the two are a matched pair — when the
      card is due on the left, when it last ran on the right. */
-  .card-schedule { display: block; font-size: calc(12px * var(--scale)); color: var(--text-hint); margin-top: 5px; font-weight: 400; }
+  .card-schedule { display: block; font-size: calc(var(--fs-xs) * var(--scale)); color: var(--text-hint); margin-top: 5px; font-weight: 400; }
   .sched-icon { margin-right: 6px; }
 
   /* ── One row, once there is room ────────────────────────────────────────────
@@ -249,7 +249,7 @@
     .updated-ago { flex: 0 0 auto; }
     .updated-full { flex: 0 0 auto; margin-top: 0; margin-left: auto; }
   }
-  .card-body { display: none; padding: 20px; font-size: calc(14px * var(--scale)); line-height: 1.7; color: var(--body-text); white-space: pre-wrap; word-break: break-word; }
+  .card-body { display: none; padding: 20px; font-size: calc(var(--fs-sm) * var(--scale)); line-height: 1.7; color: var(--body-text); white-space: pre-wrap; word-break: break-word; }
   .card.expanded .card-body { display: block; }
   .empty { color: var(--text-hint); font-style: italic; }
   /* Authorship line under the cards. Muted like .subtitle — it is a statement of
@@ -277,7 +277,7 @@
      where focus went. */
   main:focus { outline: none; }
 
-  .site-footer { color: var(--text-muted); font-size: calc(12px * var(--scale)); margin-top: 36px; }
+  .site-footer { color: var(--text-muted); font-size: calc(var(--fs-xs) * var(--scale)); margin-top: 36px; }
   .site-footer a { color: var(--text-muted); }
   .site-footer a:hover { color: var(--text-primary); }
   a { color: var(--link); text-decoration: none; }
@@ -312,7 +312,7 @@
   .card[hidden] { display: none; }
   /* The result count. Empty rather than hidden between searches — see the note
      on the element — so `:empty` is what keeps it out of the layout. */
-  .searchnote { margin: 0; font-size: calc(13px * var(--scale)); color: var(--text-muted); }
+  .searchnote { margin: 0; font-size: calc(var(--fs-xs) * var(--scale)); color: var(--text-muted); }
   .searchnote:empty { display: none; }
 
   /* ── The page-age notice ───────────────────────────────────────────────────
@@ -322,7 +322,7 @@
   .notice { display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
             background: var(--surface); border: 1px solid var(--border-strong);
             border-left: 3px solid var(--warn); border-radius: 12px;
-            padding: 12px 16px; font-size: calc(13px * var(--scale)); color: var(--text-secondary); }
+            padding: 12px 16px; font-size: calc(var(--fs-xs) * var(--scale)); color: var(--text-secondary); }
   /* `display: flex` beats the UA sheet's [hidden] rule, so it has to be said. */
   .notice[hidden] { display: none; }
   .notice b { color: var(--text-primary); font-weight: 600; }
@@ -363,7 +363,7 @@
      flex row — the mark sits in the heading's own text flow, so a strapline that
      wraps on a phone runs on below the name rather than being laid out as a
      second narrow column beside it. */
-  .brand { font-size: calc(17px * var(--scale)); font-weight: 600; margin: 0 auto 0 0;
+  .brand { font-size: calc(var(--fs-md) * var(--scale)); font-weight: 600; margin: 0 auto 0 0;
            color: var(--text-primary); letter-spacing: -0.01em; }
   .brand span { color: var(--text-muted); font-weight: 400; }
   .controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
@@ -372,14 +372,14 @@
      close, but a shade quieter than the same row in the sibling apps, and sized
      at 12px against their 13. The height is the shared `--chrome-h`, which is
      scaled here (see the token) because this page's text size is a preference. */
-  .ctl { font-size: calc(13px * var(--scale)); color: var(--text-primary); background: var(--surface-alt);
+  .ctl { font-size: calc(var(--fs-xs) * var(--scale)); color: var(--text-primary); background: var(--surface-alt);
          border: 1px solid var(--border-strong); border-radius: 6px; padding: 4px 10px;
          min-height: var(--chrome-h); cursor: pointer; font-family: var(--font); }
   .ctl:hover { border-color: var(--text-muted); }
   /* The same control one step down, for the card's own buttons and the notice —
      they sit inside the content rather than in the chrome, so they should not
      compete with the card title. The touch height is unchanged. */
-  .ctl.small { font-size: calc(12px * var(--scale)); padding: 3px 9px; }
+  .ctl.small { font-size: calc(var(--fs-xs) * var(--scale)); padding: 3px 9px; }
   .ctl:disabled { opacity: .5; cursor: default; }
   .ctl:disabled:hover { border-color: var(--border-strong); }
   /* An input is not a button: it takes a text cursor, and unlike the pickers
