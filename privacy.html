@@ -34,11 +34,28 @@
   .card strong { color: var(--text-primary); }
   ul { padding-left: 20px; }
   .back { display: inline-block; margin-bottom: 26px; font-size: 14px; }
+  /* The footer every public page in this account carries. `margin`, not
+     `margin-top`: it is a real <footer> landmark, so the rule is spelled out
+     rather than left to depend on the element it happens to sit on. */
+  .foot { color: var(--text-muted); font-size: 12.5px; margin: 34px 0 0; }
+  .foot a { color: inherit; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <a class="back" href="claude.html">← Back to the dashboard</a>
+  <!-- The back link stays OUTSIDE <main> — it is navigation, not the document —
+       but "outside main" is not the same as "outside every landmark", which is
+       where it sat until 2026-08-21: axe-core's `region` rule found it on all
+       six privacy pages at once. A <nav> is what it always was; now it says so,
+       and a reader moving by landmark can find the way back. -->
+  <nav aria-label="Back to the dashboard"><a class="back" href="claude.html">← Back to the dashboard</a></nav>
+
+  <!-- A real <main>, so the policy itself is a landmark a screen reader can jump
+       straight to — and so the <footer> below is genuinely the OTHER end of the
+       document rather than the only landmark on a page with no main content.
+       A <footer> nested in main/article/section is not contentinfo at all, which
+       is why this closes before it and why .wrap stays an ordinary <div>. -->
+  <main>
   <h1>Claude Task Dashboard — Privacy Policy</h1>
   <p class="meta">Effective August 18, 2026</p>
 
@@ -74,6 +91,17 @@
 
   <h2>Contact</h2>
   <p><a href="mailto:eagleadams86@gmail.com">eagleadams86@gmail.com</a></p>
+  </main>
+
+  <!-- The footer every public page in this account carries. No "Privacy policy"
+       link in it, unlike the dashboard's own: you are standing on that page.
+       The repo link is labelled "How it works" family-wide, and "independent
+       personal project" points at NOTICE — a LICENSE is the terms, NOTICE is
+       who owns it — exactly as the dashboard's footer does. -->
+  <footer class="foot"><a href="https://github.com/eagleadams86/artifacts" target="_blank" rel="noopener noreferrer">How it works</a><br>
+    &copy; 2026 Charles Adams — an
+    <a href="https://github.com/eagleadams86/artifacts/blob/main/NOTICE" target="_blank" rel="noopener noreferrer">independent personal project</a>,
+    <a href="https://github.com/eagleadams86/artifacts/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT licensed</a>.</footer>
 </div>
 </body>
 </html>

@@ -234,6 +234,29 @@
   .empty { color: var(--text-hint); font-style: italic; }
   /* Authorship line under the cards. Muted like .subtitle — it is a statement of
      provenance, not something to read before the dashboard itself. */
+  /* ── Skip to content ────────────────────────────────────────────────────
+     Visually gone until it takes focus, then the first thing on the page.
+     Without it a keyboard or screen-reader user tabs the whole header — brand,
+     two pickers, Refresh — on every load before reaching a single card. Every
+     sibling app has had one since 2026-08-20; this page was the last without.
+     Uses the pack's own tokens, so it follows the theme like everything else. */
+  .skip { position: absolute; left: -9999px; top: 0; z-index: 100; }
+  .skip:focus {
+    /* FIXED, not absolute: absolute positions against the document, so a reader
+       who shift-tabs back from halfway down the page would send the link to the
+       top of the document and the browser would scroll the whole page to follow
+       it. Fixed puts it at the top of the VIEWPORT, where it was aimed. */
+    position: fixed;
+    left: 8px; top: 8px; padding: 8px 14px;
+    background: var(--surface); color: var(--text-primary);
+    border: 2px solid var(--focus-border); border-radius: var(--radius-sm);
+    text-decoration: none; font-weight: 600;
+  }
+  /* Focus lands on <main id="grid" tabindex="-1">, which must not then draw a
+     focus ring around the whole card grid — the link itself already showed
+     where focus went. */
+  main:focus { outline: none; }
+
   .site-footer { color: var(--text-muted); font-size: calc(12px * var(--scale)); margin-top: 36px; }
   .site-footer a { color: var(--text-muted); }
   .site-footer a:hover { color: var(--text-primary); }
@@ -309,6 +332,7 @@
 </style>
 </head>
 <body>
+<a class="skip" href="#grid">Skip to content</a>
 <header>
   <div class="headbar">
     <!-- ?v= is not decoration: a browser holds on to a favicon for a long time, and
@@ -326,8 +350,13 @@
       </select>
       <select class="ctl" id="theme" aria-label="Theme">
         <option value="dark">☾ Dark</option>
-        <option value="light">☀️ Light</option>
-        <option value="midnight">✦ Midnight</option>
+        <option value="light">☀ Light</option>
+        <!-- selected, because the boot script in <head> has ALREADY applied
+             midnight by the time this row paints. Without it the browser
+             pre-selects the first option and the picker reads "Dark" over a
+             midnight page until the script at the foot sets .value — the same
+             reason every sibling app writes this attribute in. -->
+        <option value="midnight" selected>✦ Midnight</option>
         <option value="sepia">📜 Sepia</option>
       </select>
       <!-- The glyph is a plain text character, aria-hidden, in front of the word —
@@ -342,9 +371,16 @@
 <noscript>
   <p>This dashboard needs JavaScript to display your scheduled-task output.</p>
 </noscript>
-<main class="grid" id="grid"></main>
-<footer class="site-footer">&copy; 2026 Charles Adams — an independent personal project,
+<main class="grid" id="grid" tabindex="-1"></main>
+<!-- Two links, not one: "independent personal project" points at NOTICE and
+     "MIT licensed" points at LICENSE. They were one link reading "MIT licensed"
+     and landing on NOTICE — a licence is the terms, NOTICE is who owns it, so
+     the label and the destination disagreed. Sprint Velocity and Flow Metrics
+     have carried the split pair since 2026-08-21; this matches them. -->
+<footer class="site-footer">&copy; 2026 Charles Adams — an
   <a href="https://github.com/eagleadams86/artifacts/blob/main/NOTICE"
+     target="_blank" rel="noopener noreferrer">independent personal project</a>,
+  <a href="https://github.com/eagleadams86/artifacts/blob/main/LICENSE"
      target="_blank" rel="noopener noreferrer">MIT licensed</a> &middot;
   <a href="https://github.com/eagleadams86/artifacts"
      target="_blank" rel="noopener noreferrer">How it works</a> &middot;

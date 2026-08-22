@@ -2,7 +2,13 @@
 <html lang="en" data-theme="midnight">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self'; frame-src 'self'; base-uri 'none'; form-action 'none'">
+<!-- frame-src 'self' is the hidden iframe this suite boots claude.html in.
+     connect-src 'self' is the fetch of privacy.html, which the landmark group
+     below reads as text — it has to be spelled out, because it falls back to
+     default-src, which is 'none' here, and a refused fetch shows up as three
+     tests failing about a file that is plainly present. Same origin only:
+     nothing external is named here, as on every page in this family. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self'; connect-src 'self'; frame-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — Tests</title>
 <style>
@@ -110,6 +116,86 @@ t('parseStamp rejects junk instead of NaN-ing the sort', () => {
   ok(typeof w.parseStamp('2026-08-03T12:00:00Z') === 'number');
 });
 
+group('Landmarks — the keyboard’s way past the header');
+/* Added 2026-08-21, when the dashboard grew the family header: a brand, two
+   pickers and a Refresh button, all before the first card. Every sibling app
+   has had a skip link since 2026-08-20 and this page was the last without one,
+   so a keyboard or screen-reader user tabbed the whole row on every load. */
+t('there is a skip link, and it points at the main landmark', () => {
+  const d = w.document;
+  const skip = d.querySelector('a.skip');
+  ok(skip, 'no skip link on the dashboard');
+  eq(skip.getAttribute('href'), '#grid', 'the skip link must land on <main id="grid">');
+  ok(/skip to content/i.test(skip.textContent), 'and say so: ' + skip.textContent);
+});
+t('and it is the FIRST thing in the tab order', () => {
+  const d = w.document;
+  const first = d.querySelector('body a[href], body button, body select, body input');
+  ok(first && first.classList.contains('skip'),
+     'something else comes before the skip link: ' + (first ? first.outerHTML.slice(0, 80) : 'nothing'));
+});
+t('main can take focus, so the skip link actually moves it', () => {
+  const main = w.document.getElementById('grid');
+  ok(main, 'no #grid element');
+  eq(main.tagName, 'MAIN', 'the skip target must be the main landmark itself');
+  eq(main.getAttribute('tabindex'), '-1',
+     'without tabindex="-1" focus never lands and the link only scrolls');
+});
+t('the footer names NOTICE and LICENSE separately, as the family does', () => {
+  const foot = w.document.querySelector('footer.site-footer');
+  ok(foot, 'no contentinfo footer on the dashboard');
+  const byLabel = {};
+  foot.querySelectorAll('a[href]').forEach((a) => { byLabel[a.textContent.trim()] = a.href; });
+  /* They were ONE link, reading "MIT licensed" and landing on NOTICE. A licence
+     is the terms; NOTICE is who owns it. A link whose words and destination
+     disagree is the kind of thing nobody checks twice. */
+  ok(/NOTICE$/.test(byLabel['independent personal project'] || ''),
+     '"independent personal project" must point at NOTICE');
+  ok(/LICENSE$/.test(byLabel['MIT licensed'] || ''),
+     '"MIT licensed" must point at LICENSE, not NOTICE');
+  ok(byLabel['How it works'], 'the repo link is labelled "How it works" family-wide');
+  ok(byLabel['Privacy policy'], 'and the policy is linked from here');
+});
+
+group('privacy.html — the family footer and its landmarks');
+t('the privacy page exists — the dashboard footer links straight at it', () => {
+  ok(PRIVACY_SRC, 'privacy.html is missing');
+});
+t('it carries How it works and the authorship line, but not a link to itself', () => {
+  ok(/>How it works</.test(PRIVACY_SRC),
+     'the repo link is labelled "How it works" family-wide');
+  ok(/MIT licensed/.test(PRIVACY_SRC), 'and the authorship line every public page has');
+  ok(/blob\/main\/NOTICE/.test(PRIVACY_SRC),
+     '"independent personal project" must point at NOTICE, as the dashboard footer does');
+  ok(!/href="privacy\.html"/.test(PRIVACY_SRC),
+     'and NOT a privacy link, which on the privacy page points at itself');
+});
+t('the policy sits in <main>, and the footer comes after it', () => {
+  /* Comments stripped FIRST, and looped rather than a single pass — the notes
+     beside both elements name them in prose, so a page that had lost the
+     element and kept the note would otherwise still pass. */
+  const bare = stripHtmlComments(PRIVACY_SRC);
+  ok(/<main>/.test(bare),
+     'no main landmark, so contentinfo would be the only one on the page');
+  ok(/<footer class="foot">/.test(bare),
+     'the footer is a real <footer> — a contentinfo landmark, not a styled paragraph');
+  ok(bare.indexOf('</main>') < bare.indexOf('<footer class="foot"'),
+     'with main CLOSED before it: a <footer> inside main is not contentinfo at all');
+});
+
+/* HTML comments explain things by naming them — including the very elements the
+   assertions above look for. Looped until the string stops changing rather than
+   a single .replace(): one pass over a multi-character delimiter can leave a NEW
+   opener behind that the pass already went past, so a single pass is only as
+   good as the input is well-formed. CodeQL's
+   js/incomplete-multi-character-sanitization flags the single-pass form; the
+   same helper, with the same wording, is in every sibling repo's suite. */
+function stripHtmlComments(str) {
+  let out = String(str), prev;
+  do { prev = out; out = out.replace(/<!--[\s\S]*?-->/g, ''); } while (out !== prev);
+  return out;
+}
+
 /* ── Runner ───────────────────────────────────────────────────────────────── */
 /* ── The localhost gate ─────────────────────────────────────────────────────
    The family rule, applied here too: the published page should not boot a live
@@ -123,15 +209,21 @@ t('parseStamp rejects junk instead of NaN-ing the sort', () => {
 ─────────────────────────────────────────────────────────────────────────── */
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
 
+let PRIVACY_SRC = '';
+
 window.addEventListener('load', () => {
   if (!LOCAL_HOSTS.includes(location.hostname)) return refuse();
+  /* Read alongside the frame rather than after it: the runner is synchronous
+     once it starts, so anything a test reads has to be in hand before then. */
+  fetch('privacy.html').then((r) => (r.ok ? r.text() : '')).then((t) => { PRIVACY_SRC = t; })
+    .catch(() => {});
   const frame = document.createElement('iframe');
   frame.id = 'app';
   frame.src = 'claude.html';
   frame.title = 'dashboard under test';
   frame.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
   document.body.appendChild(frame);
-  const start = () => setTimeout(run, 150);
+  const start = () => setTimeout(run, 250); // also lets the privacy.html fetch above land
   if (frame.contentDocument && frame.contentDocument.readyState === 'complete'
       && frame.contentWindow.formatContent) start();
   else frame.addEventListener('load', start, { once: true });
