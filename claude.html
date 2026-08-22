@@ -193,6 +193,42 @@
      card is due on the left, when it last ran on the right. */
   .card-schedule { display: block; font-size: calc(12px * var(--scale)); color: var(--text-hint); margin-top: 5px; font-weight: 400; }
   .sched-icon { margin-right: 6px; }
+
+  /* ── One row, once there is room ────────────────────────────────────────────
+     The card header is two stacks — title/description/schedule on the left, the
+     updated badge and its timestamp on the right — pushed apart by
+     `space-between`. On a narrow window that is right. On a wide one it left a
+     hand's width of empty card between them while every line stayed squeezed into
+     its own column, which is the shape a phone layout takes on a desktop.
+
+     `display: contents` on the two wrappers, so their children become direct flex
+     items of the header and can be spread across it individually. The wrappers
+     are plain <span>s carrying no meaning of their own — they exist to stack
+     things — so dissolving them costs the accessibility tree nothing.
+
+     The DESCRIPTION is the only flexible one: it is the sentence, and it is the
+     one that should absorb whatever the window has spare. Everything else is a
+     fixed phrase — a title, a schedule, a badge, a timestamp — and each gets its
+     natural width. The timestamp is pushed to the far edge with an auto margin
+     rather than another `space-between`, so the gap lands in ONE place instead of
+     four, which is what keeps the row reading left to right.
+
+     Baseline alignment, not centre: five pieces at three different sizes sit on
+     one line only if they share a baseline.
+
+     1100px, not the breakpoint the rest of the page uses: this is about whether
+     five things fit across a card, and below it they simply do not. */
+  @media (min-width: 1100px) {
+    .card-headline, .card-updated { display: contents; }
+    .card-header { align-items: baseline; gap: 20px; }
+    .card-title { flex: 0 0 auto; }
+    /* The stacked layout's top margins are what separated these as rows; on one
+       line they would just push each item off the baseline. */
+    .card-meta { flex: 1 1 auto; margin-top: 0; min-width: 0; }
+    .card-schedule { flex: 0 0 auto; margin-top: 0; }
+    .updated-ago { flex: 0 0 auto; }
+    .updated-full { flex: 0 0 auto; margin-top: 0; margin-left: auto; }
+  }
   .card-body { display: none; padding: 20px; font-size: calc(14px * var(--scale)); line-height: 1.7; color: var(--body-text); white-space: pre-wrap; word-break: break-word; }
   .card.expanded .card-body { display: block; }
   .empty { color: var(--text-hint); font-style: italic; }
