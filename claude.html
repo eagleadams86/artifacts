@@ -7,8 +7,14 @@
      this CSP means even a sanitiser bug cannot execute injected script. Inline
      <script>/<style> here are covered by 'unsafe-inline' (no build step to hash
      against), but external and eval'd script are blocked outright. -->
+<!-- manifest-src is 'self' for the install manifest, and it has to be spelled
+     out: it falls back to default-src, which is 'none' here, so without this the
+     fetch of manifest.webmanifest is refused and "Install app" silently stops
+     being offered — no error anywhere except the console. What it allows is a
+     static JSON file on this origin and nothing else; a manifest executes nothing
+     and reads no data. Same line, same reasoning, in every sibling app. -->
 <meta http-equiv="Content-Security-Policy"
-      content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+      content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Claude Task Dashboard</title>
 <!-- The mark is what this page is: a stack of task cards, the front one carrying two
      lines of its content, on the tile the rest of the app family wears — midnight
@@ -22,6 +28,28 @@
      request. -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'> <rect width='64' height='64' rx='14' fill='%230a0e1a'/> <circle cx='14' cy='52' r='20' fill='%23141c33'/> <rect x='13' y='10' width='30' height='26' rx='6' fill='%23818cf8'/> <rect x='16.5' y='23.5' width='35' height='31' rx='8.5' fill='%230a0e1a'/> <rect x='19' y='26' width='30' height='26' rx='6' fill='%23a5b4fc'/> <path d='M25 34H43M25 44H37' stroke='%230a0e1a' stroke-width='4' stroke-linecap='round'/> </svg>">
 <link rel="alternate icon" href="favicon.ico?v=1">
+<!-- Installing the dashboard. The manifest is what turns Chrome's "Install page
+     as app…" into a real install: its own window with no browser chrome, its own
+     icon in the Dock or on the taskbar, opening straight on this page.
+
+     UNLIKE the sibling apps, this does NOT bring offline with it. Those have a
+     service worker; this page has none, and it should not — what it displays is
+     task output that is rewritten hourly, and a cached copy of that presented as
+     current is a wrong answer rather than an old page. Installed, it still needs
+     the network, and that is the right trade for what it shows.
+
+     `start_url` is claude.html rather than "./": the directory index is a
+     redirect stub, and a standalone window should not open on a meta-refresh.
+
+     The icons it names are FILES rather than the inline data URI above, because a
+     manifest's icons are fetched by URL. make_favicon.py writes them from the
+     same drawing. Each is named in .gitignore's whitelist — a new file here
+     without a line there is silently never committed. -->
+<link rel="manifest" href="manifest.webmanifest">
+<!-- The colour of the window's title bar in an installed app. Midnight's page
+     colour to start with, because that is the default theme; the theme picker
+     rewrites it, so an installed window follows the theme. -->
+<meta name="theme-color" content="#0a0e1a">
 <script>
   // Apply saved theme and text size before render to avoid a flash of the defaults.
   // Both are validated against the known sets so a stale or hand-edited
@@ -197,8 +225,13 @@
     border-bottom: 1px solid var(--border-strong);
     padding: 10px 0; margin-bottom: 24px;
   }
-  .headbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 0 24px; }
-  .wrap { padding: 0 24px 32px; }
+  /* 16px, the family's gutter — the bar and the content take the SAME number, or
+     the brand stops lining up with the left edge of the first card. This page
+     opened at 24px, carried over from the body padding it used to have, which
+     left its header row visibly inset compared with the sibling apps: their
+     controls reach to 16px of the window edge and these stopped at 24px. */
+  .headbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 0 16px; }
+  .wrap { padding: 0 16px 32px; }
   /* The family's brand line: mark, name, then the strapline muted behind a middle
      dot. The auto right margin pushes the controls to the far edge. It is NOT a
      flex row — the mark sits in the heading's own text flow, so a strapline that
@@ -223,10 +256,9 @@
 
   /* ---- Narrow screens: let the header and card headers wrap instead of squeezing/clipping ---- */
   @media (max-width: 640px) {
-    .headbar, .wrap { padding-left: 16px; padding-right: 16px; }
-    body { padding: 20px 12px; }
-    h1 { font-size: calc(22px * var(--scale)); }
-    .header-row { flex-wrap: wrap; }
+    /* The gutter is 16px everywhere now, so there is nothing to narrow here —
+       and `body` has no padding of its own any more, nor an `h1` or a
+       `.header-row` to restyle. All four rules went with the header rewrite. */
     .grid { gap: 16px; }
     .card-header { flex-wrap: wrap; }
     .card-updated { width: 100%; text-align: left; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -285,11 +317,25 @@
 
 <script>
 // ---- Theme picker ----
+/* Keeps the installed app window's title bar with the theme. Read back out of the
+   pack's `--bg` rather than listed here, so a palette change in the theme pack
+   carries across without a second place to remember it. Only an installed window
+   and mobile browser chrome read it; in an ordinary tab it does nothing. Same
+   function, same reasoning, in every sibling app. */
+function applyThemeColor() {
+  const bar = document.querySelector('meta[name="theme-color"]');
+  const bg = getComputedStyle(document.documentElement)
+    .getPropertyValue('--bg').trim();
+  if (bar && bg) bar.setAttribute('content', bg);
+}
+applyThemeColor();
+
 const themeSelect = document.getElementById('theme');
 themeSelect.value = document.documentElement.getAttribute('data-theme');
 themeSelect.addEventListener('change', () => {
   document.documentElement.setAttribute('data-theme', themeSelect.value);
   localStorage.setItem('dashboard-theme', themeSelect.value);
+  applyThemeColor();
 });
 
 // ---- Text size picker ----
@@ -461,11 +507,22 @@ TASKS.forEach(task => {
       if (!wasExpanded) {
         card.classList.add('expanded');
         btn.setAttribute('aria-expanded', 'true');
-        // Bring the top of the expanded card to the top of the viewport.
+        /* Bring the top of the expanded card to just under the header bar — NOT
+           to the top of the viewport, which is where the bar is. The header went
+           sticky on 2026-08-21 and this scroll did not know about it, so opening
+           a card slid its own title underneath the bar and you landed on the
+           second line of the description.
+
+           MEASURED rather than assumed: the bar's height moves with the text-size
+           preference and wraps to two or three rows on a narrow window, so a
+           constant would be wrong in most of the cases that matter. Read at the
+           moment of the scroll, which is when it is correct. */
         requestAnimationFrame(() => {
-          const top = card.getBoundingClientRect().top + window.scrollY - 16;
+          const bar = document.querySelector('header');
+          const clearance = (bar ? bar.getBoundingClientRect().height : 0) + 16;
+          const top = card.getBoundingClientRect().top + window.scrollY - clearance;
           const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          window.scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' });
+          window.scrollTo({ top: Math.max(0, top), behavior: reduce ? 'auto' : 'smooth' });
         });
       }
     });

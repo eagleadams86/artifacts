@@ -54,34 +54,63 @@ LINE_W = 4
 SCALE = 8                       # supersample, then reduce
 SIZES = [16, 32, 48, 64, 128, 256]
 
+# The INSTALL icons, named by manifest.webmanifest AND by the whitelist in
+# .gitignore — a new file here needs a line there too or it silently will not be
+# committed. 192 and 512 are the two sizes Chrome asks for when it offers
+# "Install app"; they are the same drawing as favicon.ico, ROUNDED, because
+# nothing masks a `purpose: any` icon so the corners have to be in the file.
+PWA_ICONS = [(192, 'icon-192.png'), (512, 'icon-512.png')]
 
-def rect(d, box, r, fill, grow=0):
+# The maskable one is a DIFFERENT drawing, and this mark is the one in the family
+# that genuinely needs it. A launcher crops to whatever outline it likes — a
+# circle on many Android ones — so only the middle 80% survives: a disc of radius
+# 25.6 in this 64 viewport. The card stack's far corner sits at 29.07 from the
+# centre, outside it, where the lottery ball (21.1) and the golf flag (21.1) both
+# fit as drawn. So here the foreground is scaled about the centre while the
+# background stays full bleed. 0.85 brings 29.07 to 24.7, inside with a little to
+# spare. Move the cards and re-check that number.
+MASKABLE = (512, 'icon-512-maskable.png')
+MASKABLE_SCALE = 0.85
+
+
+def rect(d, box, r, fill, grow=0, k=1.0):
     x0, y0, x1, y1 = box
-    d.rounded_rectangle([(x0 - grow) * SCALE, (y0 - grow) * SCALE,
-                         (x1 + grow) * SCALE, (y1 + grow) * SCALE],
-                        radius=(r + grow) * SCALE, fill=fill)
+    d.rounded_rectangle([p(x0 - grow, k) * SCALE, p(y0 - grow, k) * SCALE,
+                         p(x1 + grow, k) * SCALE, p(y1 + grow, k) * SCALE],
+                        radius=(r + grow) * k * SCALE, fill=fill)
 
 
-def build():
+def p(v, k):
+    """A coordinate, scaled about the tile's own centre. `k` is 1 everywhere but
+    the maskable icon, where the foreground is pulled in to clear the crop."""
+    return 32 + (v - 32) * k
+
+
+def build(rounded=True, k=1.0):
     n = 64 * SCALE
     img = Image.new('RGBA', (n, n), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
 
+    # The background is NOT scaled: it has to reach the edges whatever `k` is, or
+    # the maskable icon would be a shrunken tile floating on nothing.
     d.rectangle([0, 0, n, n], fill=BG)
     # the soft disc bottom-left, the way the SVG has it
-    d.ellipse([(14 - 20) * SCALE, (52 - 20) * SCALE,
-               (14 + 20) * SCALE, (52 + 20) * SCALE], fill=GLOW)
+    d.ellipse([p(14 - 20, k) * SCALE, p(52 - 20, k) * SCALE,
+               p(14 + 20, k) * SCALE, p(52 + 20, k) * SCALE], fill=GLOW)
 
-    rect(d, CARD_BACK, CARD_R, BACK)
-    rect(d, CARD_FRONT, CARD_R, BG, grow=GAP)     # the separating hairline
-    rect(d, CARD_FRONT, CARD_R, FRONT)
+    rect(d, CARD_BACK, CARD_R, BACK, k=k)
+    rect(d, CARD_FRONT, CARD_R, BG, grow=GAP, k=k)     # the separating hairline
+    rect(d, CARD_FRONT, CARD_R, FRONT, k=k)
 
     r = LINE_W / 2
     for (x0, y0), (x1, y1) in LINES:
-        d.rounded_rectangle([(x0 - r) * SCALE, (y0 - r) * SCALE,
-                             (x1 + r) * SCALE, (y1 + r) * SCALE],
-                            radius=r * SCALE, fill=BG)
+        d.rounded_rectangle([p(x0 - r, k) * SCALE, p(y0 - r, k) * SCALE,
+                             p(x1 + r, k) * SCALE, p(y1 + r, k) * SCALE],
+                            radius=r * k * SCALE, fill=BG)
 
+    if not rounded:
+        # Full bleed, for the maskable icon — the launcher supplies the shape.
+        return img.convert('RGB')
     # Round the corners with an alpha mask. The SVG leaves the disc square at
     # the edges; an icon reads better rounded, and this is the file that ends
     # up on a bookmarks bar.
@@ -98,6 +127,17 @@ def main():
     frames[-1].save('favicon.ico', format='ICO',
                     sizes=[(s, s) for s in SIZES])
     print('favicon.ico written at ' + ', '.join(f'{s}px' for s in SIZES))
+
+    for size, name in PWA_ICONS:
+        art.resize((size, size), Image.LANCZOS).save(name, format='PNG',
+                                                     optimize=True)
+        print(f'{name} written (rounded — nothing masks a `purpose: any` icon)')
+
+    size, name = MASKABLE
+    build(rounded=False, k=MASKABLE_SCALE).resize(
+        (size, size), Image.LANCZOS).save(name, format='PNG', optimize=True)
+    print(f'{name} written (full bleed, cards at {MASKABLE_SCALE:.0%})')
+
     print('Now bump the ?v= on both favicon.ico references in claude.html — '
           'browsers cache an icon for a long time and will keep showing the old '
           'one otherwise. favicon.ico and claude.html are pushed BY HAND; the '
