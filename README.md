@@ -26,7 +26,7 @@ A card with no readable timestamp at all is a different state and keeps the mute
 
 Opening a card puts its id in the address bar, so a card can be bookmarked or sent to someone — `claude.html#daily-news-briefing` opens on that card. The hash comes off again when several cards are open, since there is no single card to name. It uses `replaceState`, so Back still means the page you came from rather than the last card you closed.
 
-Each open card carries **Copy** and **Print**. Copy puts the task's raw output on the clipboard — markdown link syntax and all, which survives being pasted into a note better than a stripped-out link would. Print prints that one card; printing the page itself prints every card's output, expanded, in black on white with the header and footer left off.
+Each open card carries **Copy** and **Print**. Copy puts the task's raw output on the clipboard — markdown link syntax and all, which survives being pasted into a note better than a stripped-out link would. Print prints that one card; printing the page itself prints every card's output, expanded, with the header and footer left off. The page names no colour for paper: the theme pack's own print rule swaps the dark themes to the Light palette when printing, so a midnight card prints as ink on white without this page inventing a print palette of its own.
 
 ### Staying Current
 

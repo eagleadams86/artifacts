@@ -425,20 +425,26 @@
      be used on paper comes off. `.printing-one` is set by a card's own Print
      button for the length of the dialog: same sheet, one card.
 
-     Deliberately black on white rather than the theme: a midnight card is a
-     page of ink, and no browser prints backgrounds by default anyway — which
-     would have left `--text-secondary` body copy on the paper's own white. */
+     NO COLOUR IS NAMED HERE. It was black on white in hardcoded hexes for a few
+     hours, which was this page inventing a print palette — the exact thing the
+     theme pack exists to stop. The pack's own print rule now swaps the dark
+     themes to the Light palette on paper, so every token below already resolves
+     to ink-on-white and the app has nothing left to say about colour. All that
+     is left is what to SHOW, which is genuinely this page's business.
+
+     The header's rule is asked for by name because a card printed while
+     collapsed on screen never gets `.card.expanded`, and it is the only thing
+     separating its title from the output underneath. */
   @media print {
     header, .skip, .notice, .searchnote, .card-actions, .site-footer, .chevron { display: none !important; }
-    body { background: #fff; color: #000; }
     .wrap { padding: 0; }
     .grid { gap: 16px; }
-    .card { border: 1px solid #999; break-inside: auto; }
-    .card-body { display: block !important; color: #000; }
-    .card-header { border-bottom: 1px solid #999; }
-    .card-title, .card-meta, .card-schedule, .updated-ago, .updated-full { color: #000; }
-    .updated-ago { background: none; padding: 0; }
-    mark.hit { background: none; color: #000; font-weight: 700; }
+    .card { break-inside: auto; }
+    .card-body { display: block !important; }
+    .card-header { border-bottom-color: var(--border); }
+    /* The highlight's tint is a background, and a browser drops those on paper
+       unless asked otherwise. Bold is the cue that survives either way. */
+    mark.hit { font-weight: 700; }
     body.printing-one .card:not(.print-target) { display: none; }
   }
 
