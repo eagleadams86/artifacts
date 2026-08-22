@@ -105,16 +105,41 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  :root { --scale: 1; }
-  body { background: var(--bg); color: var(--text-primary); font-family: var(--font); min-height: 100vh; padding: 32px 24px; transition: background 0.15s, color 0.15s; }
-  h1 { font-size: calc(28px * var(--scale)); font-weight: 600; margin-bottom: 6px; color: var(--text-primary); }
+  /* `--chrome-h` is the app family's one height for everything in the header row —
+     a native <select> ignores line-height, so it sizes shorter than a button with
+     identical padding, and pinning both is the only way to keep the row even.
+     30px is the siblings' number, but it is SCALED here and nowhere else: this
+     page has a text-size preference the others do not, and a control fixed at
+     30px would clip its own label at XL and XXL. */
+  :root { --scale: 1; --chrome-h: calc(30px * var(--scale)); }
+  /* `color-scheme` tells the browser which way round the page is, so the parts of
+     a control it draws itself — the select chevrons this page overrides, but also
+     scrollbars and any focus ring it supplies — follow the theme instead of always
+     being drawn light. It is not one of our colours and overrides nothing in the
+     pack. The pairing follows the PALETTE, not the theme's name: sepia is a warm
+     LIGHT theme and takes `light`. Every app in the family carries this block. */
+  :root, [data-theme="midnight"] { color-scheme: dark; }
+  [data-theme="dark"]  { color-scheme: dark; }
+  [data-theme="light"] { color-scheme: light; }
+  [data-theme="sepia"] { color-scheme: light; }
+  /* No side or top padding on the body any more — the header is a full-width bar
+     that has to reach the window edges, so the gutters moved onto the bar's own
+     row and onto `.wrap` below it. */
+  body { background: var(--bg); color: var(--text-primary); font-family: var(--font); min-height: 100vh; transition: background 0.15s, color 0.15s; }
+  /* The 28px page title this page opened with is gone: it is a header bar now, and
+     the family's is one line of 17px with the strapline beside it. */
   /* The mark from the browser tab, worn beside the title. Sized in em rather than
      px so it follows the text-size preference the whole heading already scales
      with — a fixed icon looks lost beside the XXL heading. The width/height
      attributes on the element are the normal-size equivalent, so the row is laid
      out before the icon arrives. It sits in the heading's own flow; making h1 a
      flex row would stop the title wrapping on a narrow screen. */
-  h1 img { width: .82em; height: .82em; vertical-align: -.1em; margin-right: 10px; }
+  /* Sized in em rather than px so it follows the text-size preference the heading
+     already scales with — a fixed 22px mark looks lost beside the XXL heading, and
+     this is the one page in the family with that setting. The width/height
+     attributes on the element are the normal-size equivalent, so the row is laid
+     out before the icon arrives. */
+  .brand img { width: 1.3em; height: 1.3em; vertical-align: -.22em; margin-right: 9px; }
   .subtitle { color: var(--text-muted); font-size: calc(14px * var(--scale)); margin-bottom: 36px; }
   .grid { display: flex; flex-direction: column; gap: 24px; }
   .card { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px; overflow: hidden; }
@@ -156,16 +181,49 @@
      in every theme; hover thickens it. */
   .card-body a { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
   .card-body a:hover { text-decoration-thickness: 2px; }
-  .header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
-  .controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-  .ctl { font-size: calc(12px * var(--scale)); color: var(--text-muted); background: var(--surface-alt); border: 1px solid var(--border-control); border-radius: 6px; padding: 5px 10px; cursor: pointer; font-family: var(--font); }
-  .ctl:hover { color: var(--text-primary); }
+  /* ── Header ────────────────────────────────────────────────────────────────
+     The app family's shape: a bar the full width of the window that STAYS at the
+     top of the screen, with the row inside it held to the same gutters as the
+     content below. It was an ordinary block that scrolled away, taking the text
+     size and theme pickers with it — on a dashboard you scroll to read, which is
+     the case those two controls are most wanted in.
+
+     Sticky rather than fixed: fixed leaves the flow and the page then has to be
+     padded by hand to make room, which goes wrong the moment the row wraps on a
+     phone. z-index 20 is the siblings' number. */
+  header {
+    position: sticky; top: 0; z-index: 20;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border-strong);
+    padding: 10px 0; margin-bottom: 24px;
+  }
+  .headbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 0 24px; }
+  .wrap { padding: 0 24px 32px; }
+  /* The family's brand line: mark, name, then the strapline muted behind a middle
+     dot. The auto right margin pushes the controls to the far edge. It is NOT a
+     flex row — the mark sits in the heading's own text flow, so a strapline that
+     wraps on a phone runs on below the name rather than being laid out as a
+     second narrow column beside it. */
+  .brand { font-size: calc(17px * var(--scale)); font-weight: 600; margin: 0 auto 0 0;
+           color: var(--text-primary); letter-spacing: -0.01em; }
+  .brand span { color: var(--text-muted); font-weight: 400; }
+  .controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  /* The family's button: `--surface-alt` on `--border-strong` at 6px, darkening its
+     border on hover. It was the same fill on `--border-control` with muted text —
+     close, but a shade quieter than the same row in the sibling apps, and sized
+     at 12px against their 13. The height is the shared `--chrome-h`, which is
+     scaled here (see the token) because this page's text size is a preference. */
+  .ctl { font-size: calc(13px * var(--scale)); color: var(--text-primary); background: var(--surface-alt);
+         border: 1px solid var(--border-strong); border-radius: 6px; padding: 4px 10px;
+         min-height: var(--chrome-h); cursor: pointer; font-family: var(--font); }
+  .ctl:hover { border-color: var(--text-muted); }
   .ctl:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
   a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 2px; }
   select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px; background-image: var(--select-chevron); background-repeat: no-repeat; background-position: right 9px center; }
 
   /* ---- Narrow screens: let the header and card headers wrap instead of squeezing/clipping ---- */
   @media (max-width: 640px) {
+    .headbar, .wrap { padding-left: 16px; padding-right: 16px; }
     body { padding: 20px 12px; }
     h1 { font-size: calc(22px * var(--scale)); }
     .header-row { flex-wrap: wrap; }
@@ -183,30 +241,36 @@
 </style>
 </head>
 <body>
-<div class="header-row">
-  <div>
+<header>
+  <div class="headbar">
     <!-- ?v= is not decoration: a browser holds on to a favicon for a long time, and
          without it this would keep showing whatever icon it cached the first time.
          Bump it on both references when make_favicon.py is re-run. -->
-    <h1><img src="favicon.ico?v=1" width="23" height="23" alt="">Claude Task Dashboard</h1>
+    <h1 class="brand"><img src="favicon.ico?v=1" width="23" height="23" alt=""
+      >Task&nbsp;Dashboard <span>&middot; Charlie&rsquo;s Epic Information Roundup</span></h1>
+    <div class="controls">
+      <select class="ctl" id="textsize" aria-label="Text size">
+        <option value="0.85">🔠 Small</option>
+        <option value="1">🔠 Normal</option>
+        <option value="1.15">🔠 Large</option>
+        <option value="1.3">🔠 XL</option>
+        <option value="1.5">🔠 XXL</option>
+      </select>
+      <select class="ctl" id="theme" aria-label="Theme">
+        <option value="dark">☾ Dark</option>
+        <option value="light">☀️ Light</option>
+        <option value="midnight">✦ Midnight</option>
+        <option value="sepia">📜 Sepia</option>
+      </select>
+      <!-- The glyph is a plain text character, aria-hidden, in front of the word —
+           the family's header pattern. It was already carried inline in the label,
+           where a screen reader read it out as part of the button's name. -->
+      <button class="ctl" onclick="location.reload()"><span aria-hidden="true">↻</span> Refresh</button>
+    </div>
   </div>
-  <div class="controls">
-    <select class="ctl" id="textsize" aria-label="Text size">
-      <option value="0.85">🔠 Small</option>
-      <option value="1">🔠 Normal</option>
-      <option value="1.15">🔠 Large</option>
-      <option value="1.3">🔠 XL</option>
-      <option value="1.5">🔠 XXL</option>
-    </select>
-    <select class="ctl" id="theme" aria-label="Theme">
-      <option value="dark">☾ Dark</option>
-      <option value="light">☀️ Light</option>
-      <option value="midnight">✦ Midnight</option>
-      <option value="sepia">📜 Sepia</option>
-    </select>
-    <button class="ctl" onclick="location.reload()">↻ Refresh</button>
-  </div>
-</div>
+</header>
+
+<div class="wrap">
 <noscript>
   <p>This dashboard needs JavaScript to display your scheduled-task output.</p>
 </noscript>
@@ -217,6 +281,7 @@
   <a href="https://github.com/eagleadams86/artifacts"
      target="_blank" rel="noopener noreferrer">How it works</a> &middot;
   <a href="privacy.html">Privacy policy</a></footer>
+</div>
 
 <script>
 // ---- Theme picker ----
