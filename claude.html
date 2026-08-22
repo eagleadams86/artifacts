@@ -106,7 +106,22 @@
      as an alert on every card; and all three contrast figures improved — link
      8.1→11.9, focus ring 7.4→10.8, badge text on its fill 6.0→9.4.
   ─────────────────────────────────────────────────────────────────────────── */
-  :root { --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  :root {
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    /* ── Page width ─────────────────────────────────────────────────────────
+       Money Map's cap, deliberately the same number rather than the family's
+       usual 1500px: that one is for pages of charts and short tables, which do
+       not grow with the window. Everything on both these pages does — a card
+       body here is a whole briefing, and the 1500px cap would have left a third
+       of a wide screen empty beside a column of text that still needed
+       scrolling.
+
+       The cap is high rather than absent so the page still has a shape on an
+       ultrawide instead of running to both bezels. It goes on the ROW inside
+       the header, not on the header itself: the bar's background reaches the
+       window edges, and its content lines up with the cards below. */
+    --page-w: 2400px;
+  }
   :root, [data-theme="midnight"] {
     --body-text: var(--text-secondary);
     --chip-text: var(--accent); --chip-bg: var(--accent-bg);
@@ -340,8 +355,9 @@
      opened at 24px, carried over from the body padding it used to have, which
      left its header row visibly inset compared with the sibling apps: their
      controls reach to 16px of the window edge and these stopped at 24px. */
-  .headbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 0 16px; }
-  .wrap { padding: 0 16px 32px; }
+  .headbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+             max-width: var(--page-w); margin: 0 auto; padding: 0 16px; }
+  .wrap { max-width: var(--page-w); margin: 0 auto; padding: 0 16px 32px; }
   /* The family's brand line: mark, name, then the strapline muted behind a middle
      dot. The auto right margin pushes the controls to the far edge. It is NOT a
      flex row — the mark sits in the heading's own text flow, so a strapline that
