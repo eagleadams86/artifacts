@@ -195,7 +195,7 @@
   .brand img { width: 1.3em; height: 1.3em; vertical-align: -.22em; margin-right: 9px; }
   .subtitle { color: var(--text-muted); font-size: calc(var(--fs-sm) * var(--scale)); margin-bottom: 36px; }
   .grid { display: flex; flex-direction: column; gap: 24px; }
-  .card { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px; overflow: hidden; }
+  .card { background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius); overflow: hidden; }
   /* The header is a real <button> (inside an <h2>) so it is keyboard-reachable
      and announced as an expandable control. These rules undo the UA button
      styling; the layout below is unchanged. */
@@ -210,7 +210,7 @@
   .card.expanded .chevron { transform: rotate(90deg); }
   .card-headline { display: block; }
   .card-updated { display: block; text-align: right; flex-shrink: 0; }
-  .updated-ago { font-size: calc(var(--fs-xs) * var(--scale)); color: var(--chip-text); background: var(--chip-bg); border-radius: 6px; padding: 3px 8px; white-space: nowrap; display: inline-block; }
+  .updated-ago { font-size: calc(var(--fs-xs) * var(--scale)); color: var(--chip-text); background: var(--chip-bg); border-radius: var(--radius-sm); padding: 3px 8px; white-space: nowrap; display: inline-block; }
   .updated-ago.stale { color: var(--text-muted); background: var(--surface-alt); }
   .updated-full { display: block; font-size: calc(var(--fs-xs) * var(--scale)); color: var(--text-hint); margin-top: 5px; white-space: nowrap; }
   .card-meta { display: block; font-size: calc(var(--fs-xs) * var(--scale)); color: var(--text-muted); margin-top: 4px; font-weight: 400; }
@@ -326,7 +326,7 @@
      failure. */
   .notice { display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
             background: var(--surface); border: 1px solid var(--border-strong);
-            border-left: 3px solid var(--warn); border-radius: 12px;
+            border-left: 3px solid var(--warn); border-radius: var(--radius);
             padding: 12px 16px; font-size: calc(var(--fs-xs) * var(--scale)); color: var(--text-secondary); }
   /* `display: flex` beats the UA sheet's [hidden] rule, so it has to be said. */
   .notice[hidden] { display: none; }
@@ -378,7 +378,7 @@
      at 12px against their 13. The height is the shared `--chrome-h`, which is
      scaled here (see the token) because this page's text size is a preference. */
   .ctl { font-size: calc(var(--fs-xs) * var(--scale)); color: var(--text-primary); background: var(--surface-alt);
-         border: 1px solid var(--border-strong); border-radius: 6px; padding: 4px 10px;
+         border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 4px 10px;
          min-height: var(--chrome-h); cursor: pointer; font-family: var(--font); }
   .ctl:hover { border-color: var(--text-muted); }
   /* The same control one step down, for the card's own buttons and the notice —
