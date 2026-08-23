@@ -327,6 +327,58 @@ t('the default theme is auto, on both pages', () => {
   eq((APP_SRC.match(/<option value="(?:auto|midnight|dark|light|sepia)" selected>/g) || []).length,
     1, 'exactly one theme option may carry `selected`');
 });
+/* ── The share window ────────────────────────────────────────────────────────
+   Added 2026-08-23, when this page joined the six apps that already had one.
+   indexOf, not regexes: a pattern holding `</`, a backtick or a quote inside a
+   <script> in an HTML file is a thing to get wrong, and a substring says exactly
+   what it is looking for. */
+group('Share — the family window, and the one sink it feeds');
+t('the window is the family\'s, to the frame', () => {
+  ok(APP_SRC.indexOf('id="shareDialogTitle">Share a Read-Only Link<') !== -1,
+     'every sibling calls it the same thing');
+  ok(APP_SRC.indexOf('id="shareCopyBtn"') !== -1
+     && APP_SRC.indexOf('id="shareOpenBtn"') !== -1
+     && APP_SRC.indexOf('id="shareCloseBtn"') !== -1, 'and uses their three button ids');
+  ok(APP_SRC.indexOf('aria-label="Read-only share link"') !== -1, 'the link box says what it is');
+  ok(APP_SRC.indexOf('<strong>snapshot</strong>') !== -1, 'and it closes on the snapshot warning');
+  ok(APP_SRC.indexOf('#shareDialog { max-width: 1100px;') !== -1,
+     '1100px, which is what the six apps open Share at');
+});
+t('a shared card body goes through the SANITIZER, like every other one', () => {
+  /* The one that matters. A link is untrusted by definition — whoever holds it
+     can edit it — so its content must reach a card body the same way the live
+     data does, through formatContent, which is the only path to innerHTML on
+     this page. */
+  ok(APP_SRC.indexOf('entry.body.innerHTML = entry.raw.trim()') !== -1
+     && APP_SRC.indexOf('? formatContent(entry.raw)') !== -1,
+     'a shared body must be built by formatContent, never inserted raw');
+});
+t('a link carries the output and NOT the page\'s own copy of the task list', () => {
+  /* Titles, schedules and descriptions are hard-coded in TASKS on the page
+     reading the link. Sending them would send a copy of something the reader
+     already has — and a copy that could disagree with it. */
+  const fn = APP_SRC.slice(APP_SRC.indexOf('function buildSharePayload'),
+                           APP_SRC.indexOf('async function encodeShare'));
+  ok(fn.indexOf('id: e.task.id') !== -1, 'the id rides');
+  ok(fn.indexOf('updatedAt') !== -1 && fn.indexOf('content') !== -1, 'so do the stamp and output');
+  ok(fn.indexOf('title') === -1 && fn.indexOf('schedule') === -1 && fn.indexOf('description') === -1,
+     'the task metadata does not — the reading page has its own');
+});
+t('a shared view does not let the permalink eat its own token', () => {
+  /* syncHash replaces the hash with whichever card is open. In a shared view
+     that hash IS the snapshot, so the first click would throw it away. */
+  const fn = APP_SRC.slice(APP_SRC.indexOf('function syncHash'),
+                           APP_SRC.indexOf('function openFromHash'));
+  ok(fn.indexOf('if (viewOnly) return;') !== -1, 'syncHash must stand down in a shared view');
+  ok(APP_SRC.indexOf('if (viewOnly) return false;') !== -1,
+     'and openFromHash must not read the token as a card id');
+});
+t('the cards are held back until the snapshot is in them', () => {
+  ok(APP_SRC.indexOf('html[data-share-pending] #grid { visibility: hidden; }') !== -1,
+     'or a shared view flashes the LIVE briefing and then corrects itself');
+  ok(APP_SRC.indexOf("removeAttribute('data-share-pending')") !== -1,
+     'and it has to come off again — on the failure path as well as the good one');
+});
 t('the policy sits in <main>, and the footer comes after it', () => {
   /* Comments stripped FIRST, and looped rather than a single pass — the notes
      beside both elements name them in prose, so a page that had lost the

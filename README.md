@@ -28,6 +28,30 @@ Opening a card puts its id in the address bar, so a card can be bookmarked or se
 
 Each open card carries **Copy** and **Print**. Copy puts the task's raw output on the clipboard — markdown link syntax and all, which survives being pasted into a note better than a stripped-out link would. Print prints that one card; printing the page itself prints every card's output, expanded, with the header and footer left off. The page names no colour for paper: the theme pack's own print rule swaps the dark themes to the Light palette when printing, so a midnight card prints as ink on white without this page inventing a print palette of its own.
 
+### Sharing a Snapshot
+
+**Share** builds a read-only link out of the cards you pick. The output travels *inside* the
+link itself — nothing is uploaded, no copy is kept, and opening one touches nothing the reader
+has saved. It is a **snapshot**: these tasks rewrite themselves on their own schedules and a
+link will not follow them, so send a fresh one when the output moves. There is no way to
+withdraw one once sent.
+
+Opening a link shows only the cards it carries, with a banner saying so and a way back to the
+live page. Everything else on the page still works on them — search, Expand all, Copy, Print,
+the ticking timestamps. Two things are worth knowing:
+
+- **A shared card's output goes through `formatContent`, the same sanitizer as the live data.**
+  A link is untrusted input by definition — whoever holds it can edit it — and that function is
+  the only path to a card body anywhere on this page.
+- **A link carries the id, the timestamp and the output, and nothing else.** Titles, schedules
+  and descriptions are hard-coded in `TASKS` on the page reading the link, so sending them would
+  be sending a copy of something the reader already has — and a copy that could disagree with it.
+  A card whose id the reading page does not know is simply not shown.
+
+Task output is prose, so these links are long: all eight cards runs to about 27,000 characters.
+The window says so and suggests picking fewer, which is the honest fix — this is the one page in
+the family where the too-long warning is the normal case rather than the edge.
+
 ### Staying Current
 
 The dashboard is a snapshot of the moment it loaded. The relative timestamps tick, so a tab left open overnight no longer insists a card was updated five minutes ago, and once the page has been open longer than the hourly push cycle it says so and offers a reload. It cannot check whether newer output exists — the page's CSP is `connect-src 'none'` — so it says the one thing it does know, which is how long ago this copy arrived. That matters more now that it works offline, not less: it is what makes a copy served from the cache honest about its age.

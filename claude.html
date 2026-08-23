@@ -391,6 +391,62 @@
      close, but a shade quieter than the same row in the sibling apps, and sized
      at 12px against their 13. The height is the shared `--chrome-h`, which is
      scaled here (see the token) because this page's text size is a preference. */
+  /* ── The family's share window ─────────────────────────────────────────────
+     1100px on 18px padding, which is what all six sibling apps open Share at.
+     The prose is pinned here — size, colour AND margin — so a paragraph added
+     later cannot land at the wrong one; anything with an inline margin of its
+     own still wins, which is how the panel's hints keep theirs.
+
+     `--scale` is deliberately NOT applied to this window's own chrome, the way
+     it is to `.ctl` below: the text-size preference is this page's alone, and a
+     window shared with six other apps should be the size it is in all of them.
+     The card output inside a shared view scales as it always did. */
+  #shareDialog { max-width: 1100px; width: calc(100% - 32px); padding: 18px;
+                 background: var(--surface); color: var(--text-primary);
+                 border: 1px solid var(--border-strong); border-radius: var(--radius);
+                 max-height: calc(100vh - 32px); overflow: auto; overscroll-behavior: contain; }
+  #shareDialog::backdrop { background: rgba(0,0,0,.55); }
+  #shareDialog h2 { margin: 0 0 12px; font-size: var(--fs-md); font-weight: var(--fw-semibold); }
+  #shareDialog p { font-size: var(--fs-xs); color: var(--text-secondary); margin: 0 0 12px; }
+  #shareDialog .share-choices { display: grid; grid-template-columns: 1fr; gap: 0 14px; }
+  #shareDialog .formpanel { border: 1px solid var(--border); border-radius: var(--radius-sm);
+                            padding: 12px; margin: 0; background: var(--surface-alt); }
+  #shareDialog .formpanel + .formpanel,
+  #shareDialog .share-choices + .formpanel { margin-top: 20px; }
+  #shareDialog legend { padding: 0 6px; font-size: var(--fs-xs); font-weight: var(--fw-semibold);
+                        color: var(--text-secondary); text-transform: uppercase;
+                        letter-spacing: var(--ls-label); }
+  #shareDialog .checklist-head { display: flex; align-items: baseline;
+                                 justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+  #shareDialog .checklist { display: grid; gap: 8px; max-height: 240px; overflow: auto; }
+  #shareDialog .checkline { display: flex; align-items: flex-start; gap: 8px;
+                            font-size: var(--fs-xs); color: var(--text-secondary); }
+  #shareDialog .checkline input { margin-top: 2px; flex: none; }
+  #shareDialog .btnrow { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  #shareDialog .ctl { font-size: var(--fs-xs); }
+  #shareDialog .ctl.primary { background: var(--btn-bg); color: var(--btn-text);
+                              border-color: var(--btn-bg); }
+  #shareDialog .ctl.primary:hover { opacity: .88; }
+  #shareDialog .ctl.small { padding: 4px 9px; }
+  #shareDialog .warn { color: var(--err); font-size: var(--fs-xs); margin: 8px 0 0; }
+  #shareDialog .warn:empty, #shareMeta:empty, #shareScope:empty { display: none; }
+  #shareLink { width: 100%; font-family: var(--font-mono, monospace); font-size: var(--fs-xs);
+               color: var(--text-secondary); background: var(--surface);
+               border: 1px solid var(--input-border); border-radius: var(--radius-sm);
+               padding: 9px 11px; }
+  /* The banner on somebody else's snapshot — the family's, to the token. */
+  /* A shared view swaps the card bodies once the token has been decoded, which
+     is a tick or two after first paint. Without this the reader would see the
+     LIVE briefing flash up and then be replaced — the right content arriving as
+     a correction. The attribute is set synchronously by the script below and
+     removed when the swap is done, or when it fails. */
+  html[data-share-pending] #grid { visibility: hidden; }
+  .viewbar { display: flex; gap: 10px 14px; align-items: baseline; flex-wrap: wrap;
+             border: 1px solid var(--border-strong); border-left: 4px solid var(--focus-border);
+             border-radius: var(--radius); background: var(--surface-alt);
+             padding: 11px 14px; margin-bottom: 16px;
+             font-size: calc(var(--fs-xs) * var(--scale)); }
+  .viewbar .muted { color: var(--text-muted); }
   .ctl { font-size: calc(var(--fs-xs) * var(--scale)); color: var(--text-primary); background: var(--surface-alt);
          border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 4px 10px;
          min-height: var(--chrome-h); cursor: pointer; font-family: var(--font); }
@@ -541,6 +597,11 @@ footer { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
         <option value="1.3">🔠 XL</option>
         <option value="1.5">🔠 XXL</option>
       </select>
+      <!-- ↗ Share, in the slot the comment above reserves for it: after this
+           page's own controls and before the theme picker, which is always
+           last. Added 2026-08-23, when the family's share window reached the
+           last two pages without one. -->
+      <button class="ctl" type="button" id="shareBtn" title="Create a read-only link to show someone these cards"><span aria-hidden="true">↗</span> Share</button>
       <select class="ctl" id="theme" aria-label="Theme">
         <option value="auto" selected>◐ Auto</option>
         <option value="dark">☾ Dark</option>
@@ -558,6 +619,11 @@ footer { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
 </header>
 
 <div class="wrap">
+
+<!-- The banner on somebody else's snapshot. Empty and hidden until a shared view
+     fills it, and `no-print` because it is chrome, not the briefing. -->
+<div class="viewbar no-print" id="viewbar" hidden></div>
+
 <noscript>
   <p>This dashboard needs JavaScript to display your scheduled-task output.</p>
 </noscript>
@@ -595,6 +661,59 @@ footer { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
   </div>
 </footer>
 </div>
+
+<!-- ── The family's share window ─────────────────────────────────────────────
+     The same shape in all seven pages that have one: the title, the sentence
+     about where the data goes, the choices, the "Your Link" panel with the box
+     and its two buttons, the snapshot warning, and a Done that is the only thing
+     in the footer.
+
+     ONE panel of choices here, not the family's two, and it is worth saying why
+     rather than inventing a second: the other apps offer a HOW MUCH (a window
+     over a history) and a WHAT (a redaction). This page has neither. It holds
+     eight cards of task output with no history behind them and nothing in them
+     that is optional — so the only question worth asking is which cards, and a
+     second panel would be a control invented to fill a grid. -->
+<dialog id="shareDialog" aria-labelledby="shareDialogTitle">
+  <h2 id="shareDialogTitle">Share a Read-Only Link</h2>
+  <p>Anyone opening this link sees the cards you pick, frozen as they read right now.
+    The output travels <em>inside</em> the link itself — nothing is uploaded anywhere, and
+    opening it doesn't touch whatever they have saved in their own browser.</p>
+
+  <div class="share-choices">
+  <fieldset class="formpanel">
+    <legend>Which Cards</legend>
+    <div class="checklist-head">
+      <span class="hint" id="shareCountNote" role="status"></span>
+      <button type="button" class="ctl small" id="shareSelectAll">Select All</button>
+    </div>
+    <div class="checklist" id="shareCards"></div>
+    <p class="hint" style="margin:12px 0 0">A card with no output yet can still be picked — the
+      link says it is waiting for its first run, the same as this page does.</p>
+  </fieldset>
+  </div>
+
+  <fieldset class="formpanel">
+    <legend>Your Link</legend>
+    <input type="text" id="shareLink" readonly aria-label="Read-only share link">
+    <p class="hint" id="shareMeta" role="status" style="margin:8px 0 0"></p>
+    <p class="hint" id="shareScope" role="status" style="margin:6px 0 0"></p>
+    <p class="warn" id="shareWarn" role="status"></p>
+    <div class="btnrow" style="margin-top:10px">
+      <button type="button" class="ctl primary" id="shareCopyBtn">Copy Link</button>
+      <button type="button" class="ctl" id="shareOpenBtn">Preview It</button>
+    </div>
+  </fieldset>
+
+  <p class="hint" style="margin-top:14px">This is a <strong>snapshot</strong>, frozen as it
+    reads right now — these tasks rewrite themselves on their own schedules, and a link will
+    not follow them, so send a fresh one when the output moves. There is no way to withdraw
+    one once sent, and whoever holds it can read everything inside it.</p>
+
+  <div class="btnrow" style="justify-content:flex-end;margin-top:18px">
+    <button type="button" class="ctl primary" id="shareCloseBtn">Done</button>
+  </div>
+</dialog>
 
 <script>
 // ---- Theme picker ----
@@ -1062,6 +1181,253 @@ expandBtn.addEventListener('click', () => {
   syncExpandBtn();
 });
 
+/* ── Share a read-only link ──────────────────────────────────────────────────
+   The family's window and the family's machinery: deflate-raw into base64url
+   behind a format marker, so the format can change later without breaking links
+   already sent. Nothing is uploaded and nothing is kept — the output IS the
+   link, which is why the window says so twice.
+
+   WHAT A SHARED VIEW DOES *NOT* DO IS REBUILD THE PAGE. The cards are built
+   above from `data` and carry every listener this page has; a shared view swaps
+   each card's BODY and its stamp and drops the cards that were not sent. That
+   keeps search, expand-all, copy, print, the permalink and the ticking stamps
+   working on the real cards rather than on a second set built to look like them.
+
+   The output goes through formatContent — the same sanitizer as the live data,
+   and the only path to a card body anywhere on this page. A link is untrusted
+   input by definition: it can be edited by whoever holds it. */
+const SHARE_PREFIX = '#share=';
+const shareToken = location.hash.startsWith(SHARE_PREFIX)
+  ? location.hash.slice(SHARE_PREFIX.length) : null;
+const viewOnly = !!shareToken;
+const SHARE_FORMAT = 1;
+const SHARE_PAYLOAD_V = 1;
+const SHARE_WARN_AT = 8000;
+
+const b64urlEncode = (bytes) => {
+  let out = '';
+  for (const b of bytes) out += String.fromCharCode(b);
+  return btoa(out).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+};
+const b64urlDecode = (str) => {
+  const b = atob(str.replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from(b, (c) => c.charCodeAt(0));
+};
+async function squeeze(bytes, Stream, format) {
+  const st = new Stream(format);
+  const w = st.writable.getWriter();
+  w.write(bytes); w.close();
+  return new Uint8Array(await new Response(st.readable).arrayBuffer());
+}
+
+/* WHAT RIDES: the id, when the task last ran, and its output. The title, the
+   schedule and the description do NOT — they are hard-coded in TASKS on the
+   page reading the link, so sending them would be sending a copy of something
+   the reader already has, and a copy that could disagree with it. A card whose
+   id this build does not know is simply not shown. Pure, so the suite can pin
+   exactly what a link carries. */
+function buildSharePayload(list, ids) {
+  const pick = ids && ids.length ? new Set(ids) : null;
+  return {
+    v: SHARE_PAYLOAD_V,
+    sharedAt: new Date().toISOString(),
+    cards: list.filter((e) => !pick || pick.has(e.task.id)).map((e) => ({
+      id: e.task.id,
+      updatedAt: (data[e.task.id] || {}).updatedAt || '',
+      content: e.raw || '',
+    })),
+  };
+}
+
+async function encodeShare(payload) {
+  const json = new TextEncoder().encode(JSON.stringify(payload));
+  if (typeof CompressionStream !== 'function') return '0.' + b64urlEncode(json);
+  return SHARE_FORMAT + '.' + b64urlEncode(await squeeze(json, CompressionStream, 'deflate-raw'));
+}
+
+async function decodeShare(token) {
+  const dot = token.indexOf('.');
+  if (dot < 1) throw new Error('no format marker');
+  const marker = token.slice(0, dot);
+  const bytes = b64urlDecode(token.slice(dot + 1));
+  let json;
+  if (marker === '0') {
+    json = new TextDecoder().decode(bytes);
+  } else if (marker === String(SHARE_FORMAT)) {
+    if (typeof DecompressionStream !== 'function') throw new Error('no DecompressionStream');
+    json = new TextDecoder().decode(await squeeze(bytes, DecompressionStream, 'deflate-raw'));
+  } else {
+    throw new Error('unknown format ' + marker);
+  }
+  const p = JSON.parse(json);
+  if (!p || !Array.isArray(p.cards)) throw new Error('not a share payload');
+  if (Number(p.v || 1) > SHARE_PAYLOAD_V) {
+    const err = new Error('share payload v' + p.v + ' is newer than this build');
+    err.newerVersion = true;
+    throw err;
+  }
+  return p;
+}
+
+/* ── The window ─────────────────────────────────────────────────────────────*/
+let shareSeq = 0;
+const shareDialog = document.getElementById('shareDialog');
+
+function renderShareCards() {
+  document.getElementById('shareCards').innerHTML = cards.map((e) =>
+    `<label class="checkline"><input type="checkbox" value="${escapeHtml(e.task.id)}" checked>`
+    + `<span>${escapeHtml(e.task.title)}</span></label>`).join('');
+}
+
+const sharePicked = () =>
+  [...document.querySelectorAll('#shareCards input:checked')].map((el) => el.value);
+
+async function refreshShareLink() {
+  const link = document.getElementById('shareLink');
+  const meta = document.getElementById('shareMeta');
+  const scope = document.getElementById('shareScope');
+  const warn = document.getElementById('shareWarn');
+  const busy = ++shareSeq;
+  const setBusy = (on) => {
+    document.getElementById('shareCopyBtn').disabled = on;
+    document.getElementById('shareOpenBtn').disabled = on;
+  };
+  const stop = (msg) => { link.value = ''; meta.textContent = msg;
+                          scope.textContent = ''; warn.textContent = ''; setBusy(true); };
+
+  const boxes = [...document.querySelectorAll('#shareCards input')];
+  const ids = sharePicked();
+  const all = boxes.length > 0 && ids.length === boxes.length;
+  const sel = document.getElementById('shareSelectAll');
+  sel.textContent = all ? 'Select None' : 'Select All';
+  sel.hidden = boxes.length < 2;
+  document.getElementById('shareCountNote').textContent =
+    `${ids.length} of ${boxes.length} selected`;
+  if (!ids.length) return stop('Pick at least one card.');
+
+  setBusy(true);
+  link.value = 'Building the link…';
+  try {
+    const token = await encodeShare(buildSharePayload(cards, ids));
+    if (busy !== shareSeq) return;             /* a newer build has taken over */
+    const url = location.origin + location.pathname + SHARE_PREFIX + token;
+    link.value = url;
+    setBusy(false);
+    meta.textContent = (all ? `${ids.length} cards` : `${ids.length} of ${boxes.length} cards`)
+      + ' · ' + url.length.toLocaleString() + ' characters';
+    const empty = ids.filter((id) => !(cards.find((e) => e.task.id === id) || {}).raw).length;
+    scope.textContent = empty
+      ? `${empty} of them has no output yet and will say so.`.replace('has', empty === 1 ? 'has' : 'have')
+      : 'Every card picked has output in it.';
+    /* Task output is prose, and eight cards of it make a long link — this is the
+       one app in the family where the warning is the likely case, not the edge. */
+    warn.textContent = url.length > SHARE_WARN_AT
+      ? 'Long enough that some chat apps and mail clients will cut it. Send it as a link '
+        + 'rather than pasting the text, or pick fewer cards.' : '';
+  } catch (e) {
+    if (busy !== shareSeq) return;
+    stop('This browser could not build a link.');
+  }
+}
+
+document.getElementById('shareBtn').addEventListener('click', () => {
+  renderShareCards();
+  shareDialog.showModal();
+  refreshShareLink();
+});
+document.getElementById('shareCards').addEventListener('change', refreshShareLink);
+document.getElementById('shareSelectAll').addEventListener('click', () => {
+  const boxes = [...document.querySelectorAll('#shareCards input')];
+  const allOn = boxes.every((b) => b.checked);
+  boxes.forEach((b) => { b.checked = !allOn; });
+  refreshShareLink();
+});
+document.getElementById('shareCopyBtn').addEventListener('click', async () => {
+  const v = document.getElementById('shareLink').value;
+  if (!v || v.indexOf('http') !== 0) return;
+  try { await navigator.clipboard.writeText(v); }
+  catch (e) { document.getElementById('shareLink').select(); }
+});
+document.getElementById('shareOpenBtn').addEventListener('click', () => {
+  const v = document.getElementById('shareLink').value;
+  if (v && v.indexOf('http') === 0) window.open(v, '_blank', 'noopener');
+});
+document.getElementById('shareCloseBtn').addEventListener('click', () => shareDialog.close());
+/* A click on the backdrop closes, the family's rule for every dialog. The hit
+   test is against the dialog's own box, so a click on its padding or a drag that
+   started inside a field does not count as outside. */
+shareDialog.addEventListener('click', (ev) => {
+  const r = shareDialog.getBoundingClientRect();
+  if (ev.clientX < r.left || ev.clientX > r.right
+      || ev.clientY < r.top || ev.clientY > r.bottom) shareDialog.close();
+});
+
+/* ── Reading one ────────────────────────────────────────────────────────────*/
+function renderViewbar(p) {
+  const bar = document.getElementById('viewbar');
+  bar.hidden = false;
+  const when = p && p.sharedAt ? new Date(p.sharedAt) : null;
+  bar.innerHTML = '<strong>You are looking at a shared snapshot.</strong>'
+    + '<span>These cards are frozen as they read when the link was made, and nothing here '
+    + 'is saved to this browser.</span>'
+    + (when && !isNaN(when) ? '<span class="muted">Shared ' + escapeHtml(when.toLocaleString())
+        + '</span>' : '')
+    + '<button type="button" class="ctl small" id="leaveShare">Back to the live page</button>';
+  document.getElementById('leaveShare').addEventListener('click', () => {
+    location.hash = '';
+    location.reload();
+  });
+}
+
+async function enterSharedView(token) {
+  let p;
+  try {
+    p = await decodeShare(token);
+  } catch (e) {
+    /* A link that cannot be read falls back to the LIVE page rather than to a
+       blank one — the cards are already built and correct behind it. */
+    document.documentElement.removeAttribute('data-share-pending');
+    const bar = document.getElementById('viewbar');
+    bar.hidden = false;
+    bar.innerHTML = '<strong>That link could not be read.</strong>'
+      + '<span>' + (e && e.newerVersion
+          ? 'It was made by a newer version of this page.'
+          : 'Showing the live dashboard instead.') + '</span>';
+    return;
+  }
+  const byId = new Map(p.cards.map((c) => [c.id, c]));
+  /* Walked backwards so a removal cannot skip the next entry. */
+  for (let i = cards.length - 1; i >= 0; i--) {
+    const entry = cards[i];
+    const c = byId.get(entry.task.id);
+    if (!c) { entry.card.remove(); cards.splice(i, 1); continue; }
+    entry.raw = String(c.content || '');
+    entry.body.innerHTML = entry.raw.trim()
+      ? formatContent(entry.raw)
+      : '<span class="empty">No output yet — waiting for first run.</span>';
+    entry.stamp = parseStamp(c.updatedAt);
+    entry.badStamp = entry.stamp === null && !!c.updatedAt;
+    entry.full.textContent = entry.stamp !== null
+      ? new Date(entry.stamp).toLocaleString()
+      : (c.updatedAt ? String(c.updatedAt) : 'waiting for first run');
+    /* The haystack is what search reads, and it has to follow the new body or a
+       shared view would find words that are no longer on the page. */
+    if ('haystack' in entry) {
+      entry.haystack = `${entry.task.title} ${entry.task.description} `
+        + `${entry.task.schedule || ''} ${entry.raw}`.toLowerCase();
+    }
+    paintStamp(entry);
+  }
+  document.getElementById('shareBtn').hidden = true;
+  renderViewbar(p);
+  document.documentElement.removeAttribute('data-share-pending');
+}
+
+if (viewOnly) {
+  document.documentElement.setAttribute('data-share-pending', '');
+  enterSharedView(shareToken);
+}
+
 /* ── The permalink ──────────────────────────────────────────────────────────
    The URL carries whichever single card is open, so one can be bookmarked or
    sent to somebody. replaceState rather than pushState: opening a card is
@@ -1075,6 +1441,11 @@ expandBtn.addEventListener('click', () => {
    file:// document: some browsers throw a SecurityError on replaceState there,
    and losing the permalink is not a reason to lose the click that triggered it. */
 function syncHash() {
+  /* NOT IN A SHARED VIEW. This replaces the hash with whichever single card is
+     open — which in a shared view is the token the page was opened with, so the
+     first click would throw the snapshot away and a refresh would land on the
+     live page. The permalink is what the link already is up here. */
+  if (viewOnly) return;
   const open = openCards();
   const hash = open.length === 1 ? '#' + encodeURIComponent(open[0].task.id) : '';
   try {
@@ -1083,6 +1454,7 @@ function syncHash() {
 }
 
 function openFromHash(scroll) {
+  if (viewOnly) return false;          /* the hash is the snapshot, not a card */
   let id = '';
   try { id = decodeURIComponent(location.hash.slice(1)); } catch (e) { return false; }
   const entry = cards.find(e => e.task.id === id);
