@@ -471,6 +471,23 @@
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
   }
+
+/* ── The footer every public page in this account carries ────────────────────
+   Sprint Predictability's, transcribed — it is the design lead for this chrome
+   and a change here belongs there too. Three lines: what the page does with your
+   data, the privacy policy beside the repo under "How it works", and the
+   authorship line, whose TWO links point at NOTICE (who owns it) and LICENSE
+   (the terms) in that order.
+   `footer` is a flex ROW so a cross-link to a sibling can sit at the right-hand
+   end; `.footnotes` keeps the paragraphs stacked inside it, and without that
+   wrapper they become flex items and lay out side by side.
+   The links are MUTED, not accent: provenance at the foot of a document rather
+   than something to click on the way in. */
+footer { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.footnotes { flex: 1 1 320px; min-width: 0; }
+.privacy { font-size: var(--fs-xs); color: var(--text-muted); margin: 28px 0 0; padding-left: 19px; }
+.privacy-links { margin-top: 6px; }
+.privacy-links a { color: var(--text-muted); }
 </style>
 </head>
 <body>
@@ -564,14 +581,19 @@
      and landing on NOTICE — a licence is the terms, NOTICE is who owns it, so
      the label and the destination disagreed. Sprint Velocity and Flow Metrics
      have carried the split pair since 2026-08-21; this matches them. -->
-<footer class="site-footer">&copy; 2026 Charles Adams — an
-  <a href="https://github.com/eagleadams86/artifacts/blob/main/NOTICE"
-     target="_blank" rel="noopener noreferrer">independent personal project</a>,
-  <a href="https://github.com/eagleadams86/artifacts/blob/main/LICENSE"
-     target="_blank" rel="noopener noreferrer">MIT licensed</a> &middot;
-  <a href="https://github.com/eagleadams86/artifacts"
-     target="_blank" rel="noopener noreferrer">How it works</a> &middot;
-  <a href="privacy.html">Privacy policy</a></footer>
+<footer>
+  <div class="footnotes">
+    <p class="privacy" id="privacyNote">🔒 Private — this page reads only the task files in its
+      own repository. It stores nothing and there is no account.</p>
+    <p class="privacy privacy-links"><a href="privacy.html">Privacy policy</a> &middot;
+      <a href="https://github.com/eagleadams86/artifacts" target="_blank" rel="noopener noreferrer">How it works</a></p>
+    <p class="privacy privacy-links">&copy; 2026 Charles Adams — an
+      <a href="https://github.com/eagleadams86/artifacts/blob/main/NOTICE"
+         target="_blank" rel="noopener noreferrer">independent personal project</a>,
+      <a href="https://github.com/eagleadams86/artifacts/blob/main/LICENSE"
+         target="_blank" rel="noopener noreferrer">MIT licensed</a>.</p>
+  </div>
+</footer>
 </div>
 
 <script>
