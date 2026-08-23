@@ -167,6 +167,22 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* THE `hidden` ATTRIBUTE HAS TO BEAT A CLASS THAT SETS `display`, AND ON ITS
+     OWN IT DOESN'T. The browser's own `[hidden] { display: none }` lives in the
+     USER-AGENT stylesheet, and ANY author rule beats a UA rule whatever the
+     specificity — so a class that sets `display` cancels it and the element
+     stays on screen with `hidden` set. Nothing throws and nothing logs; the
+     thing is simply there.
+
+     This page had been patching it one class at a time — `.card[hidden]`,
+     `.notice[hidden]` — and the third one caught it out: the shared-view banner
+     shipped on 2026-08-23 as `display: flex`, so the live page carried an empty
+     bordered strip under its header. Reported the same day. The family's rule is
+     this one, stated once and `!important` so source order cannot matter; every
+     sibling app has carried it from the start. The two per-class patches are
+     gone with it — they can never decide anything now, and leaving them invites
+     a fourth. */
+  [hidden] { display: none !important; }
   /* `--chrome-h` is the app family's one height for everything in the header row —
      a native <select> ignores line-height, so it sizes shorter than a button with
      identical padding, and pinning both is the only way to keep the row even.
@@ -328,7 +344,6 @@
   mark.hit { background: var(--warn-bg); color: var(--warn); border-radius: 3px; padding: 0 1px; }
   /* Filtered-out cards. The UA sheet already does this; saying it here means a
      later `display:` on .card cannot quietly bring them back. */
-  .card[hidden] { display: none; }
   /* The result count. Empty rather than hidden between searches — see the note
      on the element — so `:empty` is what keeps it out of the layout. */
   .searchnote { margin: 0; font-size: calc(var(--fs-xs) * var(--scale)); color: var(--text-muted); }
@@ -342,8 +357,6 @@
             background: var(--surface); border: 1px solid var(--border-strong);
             border-left: 3px solid var(--warn); border-radius: var(--radius);
             padding: 12px 16px; font-size: calc(var(--fs-xs) * var(--scale)); color: var(--text-secondary); }
-  /* `display: flex` beats the UA sheet's [hidden] rule, so it has to be said. */
-  .notice[hidden] { display: none; }
   .notice b { color: var(--text-primary); font-weight: 600; }
 
   /* ── Per-card actions ──────────────────────────────────────────────────────
@@ -401,7 +414,12 @@
      it is to `.ctl` below: the text-size preference is this page's alone, and a
      window shared with six other apps should be the size it is in all of them.
      The card output inside a shared view scales as it always did. */
-  #shareDialog { max-width: 1100px; width: calc(100% - 32px); padding: 18px;
+  /* `margin: auto` is how a <dialog> centres itself in the viewport, and the `*`
+     reset at the top of this file takes it away from everything — so this window
+     opened pinned to the top-left corner while the same window in six sibling
+     apps opened centred. None of them has a universal margin reset, which is why
+     none of them has to say this. Reported 2026-08-23. */
+  #shareDialog { margin: auto; max-width: 1100px; width: calc(100% - 32px); padding: 18px;
                  background: var(--surface); color: var(--text-primary);
                  border: 1px solid var(--border-strong); border-radius: var(--radius);
                  max-height: calc(100vh - 32px); overflow: auto; overscroll-behavior: contain; }

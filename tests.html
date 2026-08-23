@@ -341,7 +341,7 @@ t('the window is the family\'s, to the frame', () => {
      && APP_SRC.indexOf('id="shareCloseBtn"') !== -1, 'and uses their three button ids');
   ok(APP_SRC.indexOf('aria-label="Read-only share link"') !== -1, 'the link box says what it is');
   ok(APP_SRC.indexOf('<strong>snapshot</strong>') !== -1, 'and it closes on the snapshot warning');
-  ok(APP_SRC.indexOf('#shareDialog { max-width: 1100px;') !== -1,
+  ok(APP_SRC.indexOf('max-width: 1100px; width: calc(100% - 32px); padding: 18px;') !== -1,
      '1100px, which is what the six apps open Share at');
 });
 t('a shared card body goes through the SANITIZER, like every other one', () => {
@@ -372,6 +372,28 @@ t('a shared view does not let the permalink eat its own token', () => {
   ok(fn.indexOf('if (viewOnly) return;') !== -1, 'syncHash must stand down in a shared view');
   ok(APP_SRC.indexOf('if (viewOnly) return false;') !== -1,
      'and openFromHash must not read the token as a card id');
+});
+t('a `hidden` element is hidden, whatever class it wears', () => {
+  /* The UA's own `[hidden] { display: none }` loses to ANY author rule that sets
+     display, whatever the specificity. This page patched that one class at a
+     time until the shared-view banner shipped as `display: flex` and left an
+     empty bordered strip under the header on the live page. */
+  ok(APP_SRC.indexOf('[hidden] { display: none !important; }') !== -1,
+     'the family states this once, globally, and !important so source order cannot matter');
+  /* The RULES, not the selectors: the comment above the global rule names both of
+     them, and a test that matched the prose would fail the moment the fix was
+     explained. */
+  ok(APP_SRC.indexOf('.card[hidden] { display:') === -1
+     && APP_SRC.indexOf('.notice[hidden] { display:') === -1,
+     'and the per-class patches go with it, or someone adds a fourth');
+});
+t('the share window centres itself, despite the universal margin reset', () => {
+  /* A <dialog> centres with `margin: auto`, and `* { margin: 0 }` at the top of
+     this file takes that away from everything. No sibling app needs to say this
+     because none of them has a universal margin reset. */
+  ok(/\* \{ box-sizing: border-box; margin: 0;/.test(APP_SRC), 'the reset is still there');
+  ok(APP_SRC.indexOf('#shareDialog { margin: auto;') !== -1,
+     'so the dialog has to hand itself its margin back, or it opens in the corner');
 });
 t('the cards are held back until the snapshot is in them', () => {
   ok(APP_SRC.indexOf('html[data-share-pending] #grid { visibility: hidden; }') !== -1,
