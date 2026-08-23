@@ -419,11 +419,19 @@
      opened pinned to the top-left corner while the same window in six sibling
      apps opened centred. None of them has a universal margin reset, which is why
      none of them has to say this. Reported 2026-08-23. */
-  #shareDialog { margin: auto; max-width: 1100px; width: calc(100% - 32px); padding: 18px;
-                 background: var(--surface); color: var(--text-primary);
-                 border: 1px solid var(--border-strong); border-radius: var(--radius);
-                 max-height: calc(100vh - 32px); overflow: auto; overscroll-behavior: contain; }
-  #shareDialog::backdrop { background: rgba(0,0,0,.55); }
+  /* THE BASE EVERY WINDOW ON THIS PAGE OPENS AT — the family's `dialog` rule,
+     which this page did not have. Its one window carried the chrome itself, so
+     the second window would have had to copy it; five sibling apps declare it
+     once, here, and give each dialog only its own width. `margin: auto` is in
+     it because the `*` reset at the top of this file takes the UA's centring
+     margin away — no sibling has to say that, because none of them resets
+     margin on `*`. */
+  dialog { margin: auto; background: var(--surface); color: var(--text-primary);
+           border: 1px solid var(--border-strong); border-radius: var(--radius);
+           padding: 20px; max-width: 560px; width: calc(100% - 32px);
+           max-height: calc(100vh - 32px); overflow: auto; overscroll-behavior: contain; }
+  dialog::backdrop { background: rgba(0,0,0,.55); }
+  #shareDialog { max-width: 1100px; padding: 18px; }
   #shareDialog h2 { margin: 0 0 12px; font-size: var(--fs-md); font-weight: var(--fw-semibold); }
   #shareDialog p { font-size: var(--fs-xs); color: var(--text-secondary); margin: 0 0 12px; }
   #shareDialog .share-choices { display: grid; grid-template-columns: 1fr; gap: 0 14px; }
@@ -453,60 +461,73 @@
                border: 1px solid var(--input-border); border-radius: var(--radius-sm);
                padding: 9px 11px; }
 
-  /* ── The family's Find window ──────────────────────────────────────────────
-     Money Map's window, ported to Sprint Predictability, Flow Metrics and Golf
-     Handicap on 2026-08-23 and to this page in the same sweep, so ⌘K reaches
-     the same thing in whichever app is open. Every number below is theirs.
+  /* ── The family's Find window ───────────────────────────────────────────────
+     ONE window in six apps, pinned property by property on 2026-08-23: 700px on
+     18px of padding — the size of the Back Up & Restore window, the family's other
+     fixed-width window — with everything inside it declared right here. A change
+     belongs in all six, verbatim.
 
-     Its own width, and a narrow one: what it holds is a text box and a column of
-     short lines, and at the share window's 1100px it would be the widest thing
-     on screen for the least content in it.
+     IT DECLARES ITS OWN TEXT rather than borrowing whichever quiet-text class the
+     app happens to have (`.sub` in two of them, `.hint` in three, nothing in the
+     sixth). That borrowing is how one window became six slightly different ones:
+     360px wide and 420px, a 320px box inside a 360px dialog, a hittab at --fs-sm
+     here and --fs-xs there, a hand-typed .04em beside a token that already says
+     it, and four different colours on the line that reads "Nothing matches".
 
-     `--scale` is deliberately NOT applied here, for the reason the share window
-     gives above: the text-size preference is this page's alone, and a window
-     shared with four other apps should be the size it is in all of them.
-
-     `margin: auto` for the reason #shareDialog says it — the `*` reset at the
-     top of this file takes the UA's centring margin away, and without it this
-     window opens pinned to the top-left corner. No sibling has to say it,
-     because none of them resets margin on `*`. */
-  #searchDialog { margin: auto; max-width: 360px; width: calc(100% - 32px); padding: 18px;
-                  background: var(--surface); color: var(--text-primary);
-                  border: 1px solid var(--border-strong); border-radius: var(--radius);
-                  max-height: calc(100vh - 32px); overflow: auto; overscroll-behavior: contain; }
-  #searchDialog::backdrop { background: rgba(0,0,0,.55); }
-  #searchDialog h2 { margin: 0 0 8px; font-size: var(--fs-md); font-weight: var(--fw-semibold); }
-  #searchDialog p { font-size: var(--fs-xs); color: var(--text-secondary); margin: 0 0 12px; }
-  /* `max-width` rather than a flat width so it still shrinks with the window on
-     a phone. The 13px is floored to 16px on a touch screen by the theme pack's
-     own rule — under that, iOS zooms the page in on any focused field. */
-  #searchBox { width: 320px; max-width: 100%; box-sizing: border-box; margin-top: 4px;
-               font-family: var(--font); font-size: var(--fs-xs); color: var(--text-primary);
-               background: var(--surface); border: 1px solid var(--input-border);
-               border-radius: var(--radius-sm); padding: 9px 11px; }
+     WHAT IT DELIBERATELY DOES NOT DECLARE is the chrome every other window in the
+     app shares: the backdrop, the drop shadow, the touch-height floor on a field,
+     and the max-height (Money Map divides its by the app's own zoom). Pinning
+     those here would make Find the one window in the app that ignores them. */
+  #searchDialog { max-width: 700px; padding: 18px; }
+  /* Both tags. The family's dialog headings are split between h2 and h3, each
+     app's Find matching the window beside it; what has to be the same is how it
+     renders, and this is what makes it so. */
+  #searchDialog h2, #searchDialog h3 { margin: 0 0 12px; font-size: var(--fs-md);
+    font-weight: var(--fw-semibold); line-height: var(--lh-tight); }
+  /* The DIRECT child only. The message the results list can show is a <p> too,
+     and an id in this selector would out-rank the `.searchresults .hint` rule at
+     the foot of this block and quietly hand it the intro line's colour. */
+  #searchDialog > p { margin: 0 0 12px; font-size: var(--fs-xs);
+    color: var(--text-secondary); line-height: var(--lh-base); }
+  /* The box is exactly as wide as the list under it, and its text starts on the
+     same 10px — 9px of padding plus its own 1px border. It was a 320px box in a
+     360px dialog, which is to say the window WAS the box; at 700 a third-width
+     field over a full-width list reads as two columns that do not line up. */
+  #searchBox { width: 100%; max-width: 100%; box-sizing: border-box; margin-top: 4px;
+    padding: 7px 9px; font-family: inherit; font-size: var(--fs-base);
+    color: var(--text-primary); background: var(--surface);
+    border: 1px solid var(--input-border); border-radius: var(--radius-sm); }
   #searchBox::placeholder { color: var(--text-hint); opacity: 1; }
-  #searchBox:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+  #searchBox:focus-visible { outline: 2px solid var(--focus-border); outline-offset: 2px; }
   .searchresults { max-height: 50vh; overflow-y: auto; margin-top: 10px; }
-  /* A hit is a full-width button so the keyboard reaches it — Tab walks the
-     list, Enter opens. Left-aligned prose, not button chrome. */
-  .searchresults .hit { display: block; width: 100%; text-align: left;
-    background: none; border: none; border-bottom: 1px solid var(--border);
-    padding: 8px 10px; cursor: pointer; color: var(--text-primary);
-    font-family: var(--font); font-size: var(--fs-xs); border-radius: 0; }
+  /* A hit is a full-width button so the keyboard reaches it — Tab walks the list,
+     Enter opens. Left-aligned prose, not button chrome: the height, the font and
+     the weight are said out loud because several of these apps give every
+     <button> a control height and a 16px control font. */
+  .searchresults .hit { display: block; width: 100%; margin: 0; padding: 8px 10px;
+    min-height: 0; text-align: left; background: none; border: none;
+    border-bottom: 1px solid var(--border); border-radius: 0; cursor: pointer;
+    color: var(--text-primary); font-family: inherit; font-size: var(--fs-xs);
+    font-weight: var(--fw-normal); line-height: var(--lh-base); }
   .searchresults .hit:hover, .searchresults .hit:focus-visible { background: var(--accent-bg); }
-  .searchresults .hit:focus-visible { outline: 2px solid var(--link); outline-offset: -2px; }
-  .searchresults .hitwhere { font-weight: 600; display: block; }
-  /* --text-secondary, not the muted grey: this line sits on --accent-bg when the
-     hit is hovered or focused, and muted fails AA there. */
+  .searchresults .hit:focus-visible { outline: 2px solid var(--focus-border); outline-offset: 2px; }
+  .searchresults .hitwhere { display: block; font-weight: var(--fw-semibold); }
+  /* --text-secondary, not the muted grey: these two lines sit on --accent-bg when
+     the hit is hovered or focused, and muted fails AA there (4.15 Midnight, 3.62
+     Dark). */
   .searchresults .hitsnip { display: block; color: var(--text-secondary);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .searchresults .hittab { display: block; font-size: var(--fs-sm);
-    color: var(--text-secondary); text-transform: uppercase; letter-spacing: .04em;
-    margin-top: 2px; }
-  /* The empty state, the "type two characters" nudge and the overflow line —
-     one class, padded to line up with the hits above them. */
-  .searchresults .hint { margin: 0; padding: 8px 10px;
-    font-size: var(--fs-xs); color: var(--text-muted); }
+  /* --fs-xs, and the pack's own label tracking. Five of the six had --fs-sm here,
+     which made the quietest line of a hit the biggest thing in it — 15px over a
+     13px snippet — and .04em typed out beside --ls-label, which is 0.06em. */
+  .searchresults .hittab { display: block; margin-top: 2px; font-size: var(--fs-xs);
+    color: var(--text-secondary); text-transform: uppercase;
+    letter-spacing: var(--ls-label); }
+  /* The empty state, the two-character nudge and the overflow line — one rule, so
+     the message lines up with the hits above it instead of arriving with whatever
+     inline padding and whichever quiet-text class each app reached for. */
+  .searchresults .hint { margin: 0; padding: 8px 10px; font-size: var(--fs-xs);
+    color: var(--text-muted); line-height: var(--lh-base); }
   /* The banner on somebody else's snapshot — the family's, to the token. */
   /* A shared view swaps the card bodies once the token has been decoded, which
      is a tick or two after first paint. Without this the reader would see the

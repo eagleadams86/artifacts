@@ -410,7 +410,7 @@ t('the window is the family\'s, to the frame', () => {
      && APP_SRC.indexOf('id="shareCloseBtn"') !== -1, 'and uses their three button ids');
   ok(APP_SRC.indexOf('aria-label="Read-only share link"') !== -1, 'the link box says what it is');
   ok(APP_SRC.indexOf('<strong>snapshot</strong>') !== -1, 'and it closes on the snapshot warning');
-  ok(APP_SRC.indexOf('max-width: 1100px; width: calc(100% - 32px); padding: 18px;') !== -1,
+  ok(APP_SRC.indexOf('#shareDialog { max-width: 1100px; padding: 18px; }') !== -1,
      '1100px, which is what the six apps open Share at');
 });
 t('a shared card body goes through the SANITIZER, like every other one', () => {
@@ -456,13 +456,17 @@ t('a `hidden` element is hidden, whatever class it wears', () => {
      && APP_SRC.indexOf('.notice[hidden] { display:') === -1,
      'and the per-class patches go with it, or someone adds a fourth');
 });
-t('the share window centres itself, despite the universal margin reset', () => {
+t('every window centres itself, despite the universal margin reset', () => {
   /* A <dialog> centres with `margin: auto`, and `* { margin: 0 }` at the top of
      this file takes that away from everything. No sibling app needs to say this
-     because none of them has a universal margin reset. */
+     because none of them has a universal margin reset. It is said ONCE now, on
+     the base `dialog` rule this page gained when Find became its second window
+     — before that the share window carried the whole chrome itself. */
   ok(/\* \{ box-sizing: border-box; margin: 0;/.test(APP_SRC), 'the reset is still there');
-  ok(APP_SRC.indexOf('#shareDialog { margin: auto;') !== -1,
-     'so the dialog has to hand itself its margin back, or it opens in the corner');
+  ok(APP_SRC.indexOf('dialog { margin: auto;') !== -1,
+     'so the dialogs have to hand themselves their margin back, or they open in the corner');
+  ok(APP_SRC.indexOf('#shareDialog { margin: auto;') === -1,
+     'and the share window must not go back to declaring its own chrome');
 });
 t('the cards are held back until the snapshot is in them', () => {
   ok(APP_SRC.indexOf('html[data-share-pending] #grid { visibility: hidden; }') !== -1,
