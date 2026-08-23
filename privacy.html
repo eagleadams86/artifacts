@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="midnight">
+<html lang="en" data-theme="auto">
 <head>
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; base-uri 'none'; form-action 'none'">
@@ -9,12 +9,16 @@
 <script>
   /* The same pre-paint boot as claude.html: honour the saved theme, so this page
      doesn't open midnight on someone who chose Light. Keep the list in step with
-     the dashboard's. */
+     the dashboard's.
+
+     THE DEFAULT IS 'auto' (2026-08-22): with nothing saved — and on this page that is
+     the common case, since it can be linked to directly — the reader follows their own
+     system. <html data-theme="auto"> above covers the same case with script disabled. */
   try {
     var t = localStorage.getItem('dashboard-theme');
     var ok = ['auto','midnight','dark','light','sepia'];
     document.documentElement.setAttribute('data-theme',
-      ok.indexOf(t) === -1 ? 'midnight' : t);
+      ok.indexOf(t) === -1 ? 'auto' : t);
   } catch (e) {}
 </script>
 <link rel="stylesheet" href="theme.css">

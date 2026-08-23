@@ -76,7 +76,7 @@ function ok(cond, note) { if (!cond) throw new Error(note || 'expected truthy');
    registers today, so ADDING a test never fails the build; removing one does,
    which is the moment to ask whether it should have gone. Lower it deliberately
    when a test is deliberately retired. */
-const EXPECTED = 43;
+const EXPECTED = 44;
 let w;
 
 group('formatContent — escapes everything, then re-enables a tiny allowlist');
@@ -295,6 +295,30 @@ t('it carries How it works and the authorship line, but not a link to itself', (
   ok(!/href="privacy\.html"/.test(PRIVACY_SRC),
      'and NOT a privacy link, which on the privacy page points at itself');
 });
+/* ── The default theme ───────────────────────────────────────────────────────
+   It moved from midnight to auto on 2026-08-22, so a reader who has never touched the
+   picker follows their own system. On the dashboard it lives in THREE places which have
+   to agree, and none of them can see the other two: the <html> attribute (what a browser
+   with script disabled paints), the boot script (what a reader with nothing — or
+   something retired — saved gets), and the picker's `selected` (what the header ROW
+   reads while both of those happen). Any one left on midnight is a silent disagreement,
+   and silent in the direction that hides it: on a dark-mode machine every combination
+   looks identical. privacy.html has the first two and no picker. */
+t('the default theme is auto, on both pages', () => {
+  ok(APP_SRC && PRIVACY_SRC, 'a page did not load, so nothing below proves anything');
+  for (const [name, src] of [['claude.html', APP_SRC], ['privacy.html', PRIVACY_SRC]]) {
+    ok(/<html[^>]*\sdata-theme="auto"/.test(src),
+      name + ': <html> must carry data-theme="auto", or a script-less load falls back to '
+      + ":root's midnight");
+    ok(/THEMES\.indexOf\(t\) > -1 \? t : 'auto'|ok\.indexOf\(t\) === -1 \? 'auto' : t/.test(src),
+      name + ': the boot script must land nothing-saved and retired ids on auto');
+  }
+  ok(/<option value="auto" selected>/.test(APP_SRC),
+    'auto must carry `selected` in the picker markup, or the row names another theme '
+    + 'until the script at the foot of the file runs');
+  eq((APP_SRC.match(/<option value="(?:auto|midnight|dark|light|sepia)" selected>/g) || []).length,
+    1, 'exactly one theme option may carry `selected`');
+});
 t('the policy sits in <main>, and the footer comes after it', () => {
   /* Comments stripped FIRST, and looped rather than a single pass — the notes
      beside both elements name them in prose, so a page that had lost the
@@ -492,20 +516,37 @@ let PRIVACY_SRC = '', SW_SRC = '', KILL_SRC = '', APP_SRC = '';
 
 window.addEventListener('load', () => {
   if (!LOCAL_HOSTS.includes(location.hostname)) return refuse();
+  /* Every read below is cache-BUSTED, as the sibling suites' bustFetch does, for
+     one reason: a page served from a cache makes this suite grade a file that is
+     no longer on disk. It then fails in whichever direction the cache happens to
+     be stale in — a green run over yesterday's file, or a red one over a change
+     that landed minutes ago — and neither reading is about the code.
+
+     Worth knowing what this does and does not reach. It defeats the HTTP cache.
+     It does NOT defeat a registered SERVICE WORKER, which is what actually bit on
+     2026-08-22: this suite never installs one, but claude.html opened in an
+     ordinary tab does, the origin is shared with every sibling app, and the worker
+     then answered these fetches out of `dash-shell-v1` — a 65KB claude.html when
+     the file on disk was 69KB, so the theme-default check below went red against a
+     copy that predated the change. curl saw the new file the whole time. If a read
+     here ever disagrees with the disk again, unregister the worker and clear the
+     caches for the origin before believing a word of it. */
+  const bust = (f) => f + (f.indexOf('?') < 0 ? '?' : '&') + 'v=' + Date.now();
+  const bustFetch = (f) => fetch(bust(f), { cache: 'no-store' });
   /* Read alongside the frame rather than after it: the runner is synchronous
      once it starts, so anything a test reads has to be in hand before then. */
-  fetch('privacy.html').then((r) => (r.ok ? r.text() : '')).then((t) => { PRIVACY_SRC = t; })
+  bustFetch('privacy.html').then((r) => (r.ok ? r.text() : '')).then((t) => { PRIVACY_SRC = t; })
     .catch(() => {});
   /* The offline worker is read as TEXT rather than exercised as a live one, and
      that is the point rather than a shortcut: registration is frame-guarded, so
      this suite never installs a worker — one that did would be testing whatever
      it had cached instead of the files on disk. */
-  fetch('sw.js').then((r) => (r.ok ? r.text() : '')).then((t) => { SW_SRC = t; }).catch(() => {});
-  fetch('sw-kill.js').then((r) => (r.ok ? r.text() : '')).then((t) => { KILL_SRC = t; }).catch(() => {});
-  fetch('claude.html').then((r) => (r.ok ? r.text() : '')).then((t) => { APP_SRC = t; }).catch(() => {});
+  bustFetch('sw.js').then((r) => (r.ok ? r.text() : '')).then((t) => { SW_SRC = t; }).catch(() => {});
+  bustFetch('sw-kill.js').then((r) => (r.ok ? r.text() : '')).then((t) => { KILL_SRC = t; }).catch(() => {});
+  bustFetch('claude.html').then((r) => (r.ok ? r.text() : '')).then((t) => { APP_SRC = t; }).catch(() => {});
   const frame = document.createElement('iframe');
   frame.id = 'app';
-  frame.src = 'claude.html';
+  frame.src = bust('claude.html');
   frame.title = 'dashboard under test';
   frame.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
   document.body.appendChild(frame);
