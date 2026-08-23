@@ -145,25 +145,21 @@
     --body-text: var(--text-secondary);
     --chip-text: var(--accent); --chip-bg: var(--accent-bg);
     --link: var(--accent);
-    --select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%23838cab' stroke-width='1.5'/></svg>");
   }
   [data-theme="dark"] {
     --body-text: var(--text-secondary);
     --chip-text: var(--accent); --chip-bg: var(--accent-bg);
     --link: var(--accent);
-    --select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%239396a3' stroke-width='1.5'/></svg>");
   }
   [data-theme="light"] {
     --body-text: var(--text-primary);
     --chip-text: var(--accent); --chip-bg: var(--accent-bg);
     --link: var(--accent);
-    --select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%23656562' stroke-width='1.5'/></svg>");
   }
   [data-theme="sepia"] {
     --body-text: var(--text-primary);
     --chip-text: var(--accent); --chip-bg: var(--accent-bg);
     --link: var(--accent);
-    --select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%236a5e46' stroke-width='1.5'/></svg>");
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -398,7 +394,12 @@
   .brand { font-size: calc(var(--fs-md) * var(--scale)); font-weight: var(--fw-bold); margin: 0 auto 0 0;
            color: var(--text-primary); letter-spacing: -0.01em; }
   .brand span { color: var(--text-muted); font-weight: 400; }
-  .controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  /* 12px, which is what every sibling app's header row uses. This row had 8px —
+     its buttons sat visibly tighter together than the same buttons in the app
+     beside it. The five apps put their controls straight in `.headbar` at
+     `gap: 12px`; the pages with a nested row have to say it themselves.
+     Reported 2026-08-23. */
+  .controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
   /* The family's button: `--surface-alt` on `--border-strong` at 6px, darkening its
      border on hover. It was the same fill on `--border-control` with muted text —
      close, but a shade quieter than the same row in the sibling apps, and sized
@@ -465,8 +466,11 @@
              padding: 11px 14px; margin-bottom: 16px;
              font-size: calc(var(--fs-xs) * var(--scale)); }
   .viewbar .muted { color: var(--text-muted); }
+  /* --border-control, NOT --border-strong: the family's button edge is the
+     control token, where --border-strong is a PANEL's and several steps darker.
+     Reported 2026-08-23 on the lottery pages, and this page wore it too. */
   .ctl { font-size: calc(var(--fs-xs) * var(--scale)); color: var(--text-primary); background: var(--surface-alt);
-         border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 4px 10px;
+         border: 1px solid var(--border-control); border-radius: var(--radius-sm); padding: 4px 9px;
          min-height: var(--chrome-h); cursor: pointer; font-family: var(--font); }
   .ctl:hover { border-color: var(--text-muted); }
   /* The same control one step down, for the card's own buttons and the notice —
@@ -489,7 +493,13 @@
   input.ctl::placeholder { color: var(--text-hint); opacity: 1; }
   .ctl:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
   a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 2px; }
-  select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px; background-image: var(--select-chevron); background-repeat: no-repeat; background-position: right 9px center; }
+  /* NO `appearance: none`, and no chevron of our own. theme.css says it in as many
+     words — "select keeps its appearance because the arrow IS the affordance" —
+     and every sibling app's pickers show the platform's. This page drew its own
+     from four inline SVGs whose stroke was a hardcoded hex PER THEME: four
+     colours invented in an app, which is what the theme pack exists to prevent,
+     and four more things to keep in step every time the palette moves. The same
+     fault the two lottery pages had, found in the same sweep on 2026-08-23. */
 
   /* ---- Narrow screens: let the header and card headers wrap instead of squeezing/clipping ---- */
   @media (max-width: 640px) {
