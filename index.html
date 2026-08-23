@@ -27,9 +27,9 @@
      whose browser ignores it. A page this small has no business needing JS, and
      not having any is one less thing on the origin to reason about. */
   body { margin: 0; background: var(--bg); color: var(--text-primary);
-         font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+         font: var(--fw-normal) var(--fs-base)/var(--lh-base) var(--font-sans); }
   .wrap { max-width: 560px; margin: 0 auto; padding: 60px 20px; text-align: center; }
-  h1 { font-size: 20px; margin: 0 0 8px; }
+  h1 { font-size: var(--fs-xl); margin: 0 0 8px; }
   p { color: var(--text-secondary); margin: 0 0 20px; }
   a { color: var(--accent); }
   a:focus-visible { outline: 2px solid var(--focus-border); outline-offset: 2px; border-radius: 3px; }
