@@ -333,17 +333,16 @@
      chip as well, so the state never depends on the colour being seen. */
   .updated-ago.overdue { color: var(--warn); background: var(--warn-bg); }
 
-  /* ── Search ────────────────────────────────────────────────────────────────
-     The highlight. Same gated pair as the overdue chip — the two never mean the
-     same thing but they never share a place on the card either: one is a pill in
-     the header, the other is a word inside the body text. */
+  /* ── Find ──────────────────────────────────────────────────────────────────
+     The highlight left on whichever card a result opens. Same gated pair as the
+     overdue chip — the two never mean the same thing but they never share a
+     place on the card either: one is a pill in the header, the other is a word
+     inside the body text. */
   mark.hit { background: var(--warn-bg); color: var(--warn); border-radius: 3px; padding: 0 1px; }
-  /* Filtered-out cards. The UA sheet already does this; saying it here means a
-     later `display:` on .card cannot quietly bring them back. */
-  /* The result count. Empty rather than hidden between searches — see the note
-     on the element — so `:empty` is what keeps it out of the layout. */
-  .searchnote { margin: 0; font-size: calc(var(--fs-xs) * var(--scale)); color: var(--text-muted); }
-  .searchnote:empty { display: none; }
+  /* The window's own label, and the count it announces. Every sibling app has
+     this helper; this page had no visually-hidden text until Find arrived. */
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+             overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
   /* ── The page-age notice ───────────────────────────────────────────────────
      Sits in the card flow as the first item, so it arrives where the eye already
@@ -453,6 +452,61 @@
                color: var(--text-secondary); background: var(--surface);
                border: 1px solid var(--input-border); border-radius: var(--radius-sm);
                padding: 9px 11px; }
+
+  /* ── The family's Find window ──────────────────────────────────────────────
+     Money Map's window, ported to Sprint Predictability, Flow Metrics and Golf
+     Handicap on 2026-08-23 and to this page in the same sweep, so ⌘K reaches
+     the same thing in whichever app is open. Every number below is theirs.
+
+     Its own width, and a narrow one: what it holds is a text box and a column of
+     short lines, and at the share window's 1100px it would be the widest thing
+     on screen for the least content in it.
+
+     `--scale` is deliberately NOT applied here, for the reason the share window
+     gives above: the text-size preference is this page's alone, and a window
+     shared with four other apps should be the size it is in all of them.
+
+     `margin: auto` for the reason #shareDialog says it — the `*` reset at the
+     top of this file takes the UA's centring margin away, and without it this
+     window opens pinned to the top-left corner. No sibling has to say it,
+     because none of them resets margin on `*`. */
+  #searchDialog { margin: auto; max-width: 360px; width: calc(100% - 32px); padding: 18px;
+                  background: var(--surface); color: var(--text-primary);
+                  border: 1px solid var(--border-strong); border-radius: var(--radius);
+                  max-height: calc(100vh - 32px); overflow: auto; overscroll-behavior: contain; }
+  #searchDialog::backdrop { background: rgba(0,0,0,.55); }
+  #searchDialog h2 { margin: 0 0 8px; font-size: var(--fs-md); font-weight: var(--fw-semibold); }
+  #searchDialog p { font-size: var(--fs-xs); color: var(--text-secondary); margin: 0 0 12px; }
+  /* `max-width` rather than a flat width so it still shrinks with the window on
+     a phone. The 13px is floored to 16px on a touch screen by the theme pack's
+     own rule — under that, iOS zooms the page in on any focused field. */
+  #searchBox { width: 320px; max-width: 100%; box-sizing: border-box; margin-top: 4px;
+               font-family: var(--font); font-size: var(--fs-xs); color: var(--text-primary);
+               background: var(--surface); border: 1px solid var(--input-border);
+               border-radius: var(--radius-sm); padding: 9px 11px; }
+  #searchBox::placeholder { color: var(--text-hint); opacity: 1; }
+  #searchBox:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+  .searchresults { max-height: 50vh; overflow-y: auto; margin-top: 10px; }
+  /* A hit is a full-width button so the keyboard reaches it — Tab walks the
+     list, Enter opens. Left-aligned prose, not button chrome. */
+  .searchresults .hit { display: block; width: 100%; text-align: left;
+    background: none; border: none; border-bottom: 1px solid var(--border);
+    padding: 8px 10px; cursor: pointer; color: var(--text-primary);
+    font-family: var(--font); font-size: var(--fs-xs); border-radius: 0; }
+  .searchresults .hit:hover, .searchresults .hit:focus-visible { background: var(--accent-bg); }
+  .searchresults .hit:focus-visible { outline: 2px solid var(--link); outline-offset: -2px; }
+  .searchresults .hitwhere { font-weight: 600; display: block; }
+  /* --text-secondary, not the muted grey: this line sits on --accent-bg when the
+     hit is hovered or focused, and muted fails AA there. */
+  .searchresults .hitsnip { display: block; color: var(--text-secondary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .searchresults .hittab { display: block; font-size: var(--fs-sm);
+    color: var(--text-secondary); text-transform: uppercase; letter-spacing: .04em;
+    margin-top: 2px; }
+  /* The empty state, the "type two characters" nudge and the overflow line —
+     one class, padded to line up with the hits above them. */
+  .searchresults .hint { margin: 0; padding: 8px 10px;
+    font-size: var(--fs-xs); color: var(--text-muted); }
   /* The banner on somebody else's snapshot — the family's, to the token. */
   /* A shared view swaps the card bodies once the token has been decoded, which
      is a tick or two after first paint. Without this the reader would see the
@@ -479,18 +533,6 @@
   .ctl.small { font-size: calc(var(--fs-xs) * var(--scale)); padding: 3px 9px; }
   .ctl:disabled { opacity: .5; cursor: default; }
   .ctl:disabled:hover { border-color: var(--border-strong); }
-  /* An input is not a button: it takes a text cursor, and unlike the pickers
-     beside it there is no label inside to give it a width.
-
-     A FIXED width, deliberately, and not `flex: 1 1 170px` — a flex BASIS a few
-     pixels wider than the field's own content width makes the row's intrinsic
-     width and its line-breaking disagree, and the header bar wrapped Refresh
-     onto a second row at 1280px over a 3px difference. Width and flex base are
-     the same number this way. It still shrinks on a narrow window (flex-shrink
-     is 1 by default) down to the min, and wraps below that like everything
-     else in the row. */
-  input.ctl { cursor: text; width: 210px; min-width: 120px; box-sizing: border-box; }
-  input.ctl::placeholder { color: var(--text-hint); opacity: 1; }
   .ctl:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
   a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 2px; }
   /* NO `appearance: none`, and no chevron of our own. theme.css says it in as many
@@ -507,14 +549,11 @@
        and `body` has no padding of its own any more, nor an `h1` or a
        `.header-row` to restyle. All four rules went with the header rewrite. */
     .grid { gap: 16px; }
-    /* Two control rows on a phone, which is what this bar had before it gained
-       a search box and an Expand all — a third row of sticky header is a lot of
-       a phone screen to give up. The search stretches into whatever the row has
-       spare beside Expand all rather than sitting at its wide-window width with
-       a hand's width of empty bar beside it; the three that were here already
-       stay together on the row below. */
+    /* The row is six controls of their own width now that Find is a button
+       rather than a field, so it wraps where it likes and there is nothing to
+       stretch. `.controls` still takes the full width so the wrapped rows stay
+       right-aligned under the brand rather than centring themselves. */
     .controls { width: 100%; }
-    input.ctl { flex: 1 1 auto; width: auto; min-width: 120px; }
     .card-header { flex-wrap: wrap; }
     .card-updated { width: 100%; text-align: left; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
     .updated-full { margin-top: 0; }
@@ -539,7 +578,7 @@
      collapsed on screen never gets `.card.expanded`, and it is the only thing
      separating its title from the output underneath. */
   @media print {
-    header, .skip, .notice, .searchnote, .card-actions, .site-footer, .chevron { display: none !important; }
+    header, .skip, .notice, .card-actions, .site-footer, .chevron { display: none !important; }
     .wrap { padding: 0; }
     .grid { gap: 16px; }
     .card { break-inside: auto; }
@@ -599,11 +638,15 @@ footer { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
 
            Search led this row until 2026-08-22, on the argument that it is the
            one control that changes what the page SHOWS while the rest only
-           change how it looks. That is still true and it is still why search
-           sits ahead of the two pickers; what changed is that the family fixes
-           where the pair of them go, and the THEME PICKER IS ALWAYS LAST — it
-           is the one control in any of these apps that changes nothing but the
-           page's colours. -->
+           change how it looks. That is still true and it is still why Find sits
+           ahead of the two pickers; what changed is that the family fixes where
+           the pair of them go, and the THEME PICKER IS ALWAYS LAST — it is the
+           one control in any of these apps that changes nothing but the page's
+           colours.
+
+           What sat in that slot was a text FIELD until 2026-08-23, when the
+           family's Find window reached the last page without one. Same slot,
+           same shortcut; the button every sibling has now opens it. -->
       <!-- The state lives in the LABEL, not in aria-expanded: this button controls
            eight disclosures rather than one, and "Expand all, collapsed" would be
            a plain lie on a page where seven of the eight are already open. The
@@ -613,11 +656,9 @@ footer { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
            the family's header pattern. It was already carried inline in the label,
            where a screen reader read it out as part of the button's name. -->
       <button class="ctl" onclick="location.reload()"><span aria-hidden="true">↻</span> Refresh</button>
-      <!-- type="search" gets the browser's own clear button, and the theme pack
-           already floors it at 16px on a touch screen (iOS zooms the page in on
-           any focused field under that). -->
-      <input class="ctl" id="search" type="search" autocomplete="off"
-             placeholder="Search all tasks" aria-label="Search every task&rsquo;s output" aria-describedby="searchnote">
+      <!-- ⌕ Find. The glyph is the family's, and the title names the shortcut
+           the same way every sibling's does. -->
+      <button class="ctl" type="button" id="findBtn" title="Search every task&rsquo;s output — the line, not just the card (⌘K / Ctrl+K)"><span aria-hidden="true">⌕</span> Find</button>
       <select class="ctl" id="textsize" aria-label="Text size">
         <option value="0.85">🔠 Small</option>
         <option value="1">🔠 Normal</option>
@@ -665,10 +706,6 @@ footer { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
     <span>This page was loaded <b id="agenotice-age">an hour ago</b> and does not update itself.</span>
     <button class="ctl small" type="button" id="agenotice-refresh"><span aria-hidden="true">&#8635;</span> Refresh</button>
   </div>
-  <!-- A live region that is EMPTY rather than hidden: a role="status" toggled
-       out of `hidden` is announced unreliably, an empty one that gains text is
-       not. `:empty` keeps it out of the layout in the meantime. -->
-  <p class="searchnote" id="searchnote" role="status"></p>
 </main>
 <!-- Two links, not one: "independent personal project" points at NOTICE and
      "MIT licensed" points at LICENSE. They were one link reading "MIT licensed"
@@ -689,6 +726,35 @@ footer { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
   </div>
 </footer>
 </div>
+
+<!-- ── The family's Find window ──────────────────────────────────────────────
+     Money Map's window and the fifth port of it: the same dialog, the same slot
+     in the header, the same ⌘K, the same two-character floor and the same cap of
+     80 with the overflow counted.
+
+     What a HIT is differs, and it has to. The other four search records — a
+     sprint, a round, a holding — and take you to the one you picked; this page
+     has eight cards and no records, so a hit is a LINE of a task's output.
+     Opening one opens that card, highlights every match in it and scrolls to
+     the line, which is the question eight briefings' worth of prose actually
+     gets asked: not which card mentions this, but where in it.
+
+     The third line of a hit is the card's own freshness rather than the family's
+     "which tab this takes you to" — there is one view here, so that label would
+     read the same on every row and say nothing. How old the briefing is is the
+     thing that tells two cards mentioning the same word apart. -->
+<dialog id="searchDialog" aria-labelledby="searchDialogTitle">
+  <h2 id="searchDialogTitle">Find</h2>
+  <p>Every task&rsquo;s output, and every card&rsquo;s title, description and schedule.
+    A result opens its card and scrolls to the line.</p>
+  <label class="sr-only" for="searchBox">Search</label>
+  <input type="text" id="searchBox" autocomplete="off" spellcheck="false"
+    placeholder="At least two characters…">
+  <!-- The COUNT is the live region, not the list: a screen reader hears
+       "12 results" per keystroke rather than the whole list re-read. -->
+  <span id="searchCount" class="sr-only" role="status"></span>
+  <div id="searchResults" class="searchresults"></div>
+</dialog>
 
 <!-- ── The family's share window ─────────────────────────────────────────────
      The same shape in all seven pages that have one: the title, the sentence
@@ -883,11 +949,10 @@ function timeAgo(t) {
 
 /* ── Cards ──────────────────────────────────────────────────────────────────
    Everything below works off ONE array of card entries — the element, its
-   buttons, the timestamp chip and a lowercased haystack of everything the card
-   says. Five features read the same set (search, expand all, the permalink
-   hash, the ticking timestamps, per-card copy and print), and each of them
-   re-deriving it from the DOM would be five slightly different answers to the
-   same question. */
+   buttons, its timestamp chip and the raw text behind its body. Five features
+   read the same set (Find, expand all, the permalink hash, the ticking
+   timestamps, per-card copy and print), and each of them re-deriving it from
+   the DOM would be five slightly different answers to the same question. */
 const grid = document.getElementById('grid');
 const data = window.taskData || {};
 const cards = [];
@@ -959,34 +1024,35 @@ function paintStamp(entry) {
   entry.ago.classList.toggle('overdue', state === 'overdue');
 }
 
-/* Bring the top of an expanded card to just under the header bar — NOT to the
-   top of the viewport, which is where the bar is. The header went sticky on
-   2026-08-21 and this scroll did not know about it, so opening a card slid its
-   own title underneath the bar and you landed on the second line of the
-   description.
+/* Bring something to just under the header bar — NOT to the top of the
+   viewport, which is where the bar is. The header went sticky on 2026-08-21 and
+   this scroll did not know about it, so opening a card slid its own title
+   underneath the bar and you landed on the second line of the description.
 
    MEASURED rather than assumed: the bar's height moves with the text-size
    preference and wraps to two or three rows on a narrow window, so a constant
    would be wrong in most of the cases that matter. Read at the moment of the
-   scroll, which is when it is correct. */
-function scrollCardIntoView(card) {
+   scroll, which is when it is correct.
+
+   Any element, not just a card: Find lands on the highlighted line inside one,
+   which has exactly the same problem with the bar. */
+function scrollUnderHeader(el) {
   requestAnimationFrame(() => {
     const bar = document.querySelector('header');
     const clearance = (bar ? bar.getBoundingClientRect().height : 0) + 16;
-    const top = card.getBoundingClientRect().top + window.scrollY - clearance;
+    const top = el.getBoundingClientRect().top + window.scrollY - clearance;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.scrollTo({ top: Math.max(0, top), behavior: reduce ? 'auto' : 'smooth' });
   });
 }
 
 function isOpen(entry) { return entry.card.classList.contains('expanded'); }
-function visibleCards() { return cards.filter(e => !e.card.hidden); }
 function openCards() { return cards.filter(isOpen); }
 
 function setOpen(entry, open, scroll) {
   entry.card.classList.toggle('expanded', open);
   entry.btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-  if (open && scroll) scrollCardIntoView(entry.card);
+  if (open && scroll) scrollUnderHeader(entry.card);
 }
 
 function collapseAll() { cards.forEach(e => setOpen(e, false)); }
@@ -1091,10 +1157,7 @@ TASKS.forEach(task => {
       meta: card.querySelector('.card-meta'),
       stamp,
       badStamp: stamp === null && !!d?.updatedAt,
-      raw,
-      // Title and description included on purpose: searching for "beta" should
-      // find the two beta-check cards even on a week when neither ran.
-      haystack: `${task.title} ${task.description} ${task.schedule || ''} ${raw}`.toLowerCase()
+      raw
     };
     paintStamp(entry);
 
@@ -1187,24 +1250,25 @@ function printCard(entry) {
 }
 
 /* ── Expand all ─────────────────────────────────────────────────────────────
-   The escape hatch from one-card-at-a-time. It acts on the VISIBLE cards, so
-   during a search it expands the matches and nothing else. */
+   The escape hatch from one-card-at-a-time. It acts on every card there is —
+   until 2026-08-23 it acted on the VISIBLE ones, because searching used to hide
+   the cards that did not match. Nothing hides a card now: Find opens the one you
+   picked and leaves the rest where they were. */
 const expandBtn = document.getElementById('expandall');
 
-function allVisibleOpen() {
-  const vis = visibleCards();
-  return vis.length > 0 && vis.every(isOpen);
+function allCardsOpen() {
+  return cards.length > 0 && cards.every(isOpen);
 }
 
 function syncExpandBtn() {
-  const open = allVisibleOpen();
+  const open = allCardsOpen();
   expandBtn.querySelector('.label').textContent = open ? 'Collapse All' : 'Expand All';
-  expandBtn.disabled = visibleCards().length === 0;
+  expandBtn.disabled = cards.length === 0;
 }
 
 expandBtn.addEventListener('click', () => {
-  const closing = allVisibleOpen();
-  visibleCards().forEach(e => setOpen(e, !closing));
+  const closing = allCardsOpen();
+  cards.forEach(e => setOpen(e, !closing));
   syncHash();
   syncExpandBtn();
 });
@@ -1438,12 +1502,10 @@ async function enterSharedView(token) {
     entry.full.textContent = entry.stamp !== null
       ? new Date(entry.stamp).toLocaleString()
       : (c.updatedAt ? String(c.updatedAt) : 'waiting for first run');
-    /* The haystack is what search reads, and it has to follow the new body or a
-       shared view would find words that are no longer on the page. */
-    if ('haystack' in entry) {
-      entry.haystack = `${entry.task.title} ${entry.task.description} `
-        + `${entry.task.schedule || ''} ${entry.raw}`.toLowerCase();
-    }
+    /* Nothing to re-derive for Find: it reads `entry.raw` and the body's own
+       rendered text at the moment you type, both of which have just been
+       replaced above. A shared view therefore finds what its cards say and not
+       a word more. */
     paintStamp(entry);
   }
   document.getElementById('shareBtn').hidden = true;
@@ -1495,90 +1557,190 @@ function openFromHash(scroll) {
 
 window.addEventListener('hashchange', () => openFromHash(true));
 
-/* ── Search ─────────────────────────────────────────────────────────────────
+/* ── Find ───────────────────────────────────────────────────────────────────
    Until 2026-08-22 nothing on this page was findable. Card bodies are
    `display: none` while collapsed and only one card opens at a time, so the
    browser's own Ctrl+F reached exactly one card's text — eight tasks' worth of
    output with no way to search across it.
 
+   What answered that was a FIELD in the header bar which filtered the grid to
+   the matching cards and expanded them. This is the family's Find WINDOW
+   instead, ported from Money Map on 2026-08-23 — the same dialog, the same
+   ⌘K, the same two-character floor, the same cap — so the control is in the
+   same place whichever app is open.
+
+   It is also the better answer to what this page gets asked. Filtering said
+   which of eight cards mention a word and left you to scroll for it; the window
+   says which LINE of which briefing does, and opening a result takes you to that
+   line with every match in the card highlighted behind it.
+
    Two characters is the floor: one letter matches most of the English language
-   and would mark several thousand nodes per keystroke to say nothing. */
-const searchBox = document.getElementById('search');
-const searchNote = document.getElementById('searchnote');
+   and would list every line of every card to say nothing. */
+const SEARCH_CAP = 80;
 const MIN_QUERY = 2;
-let openBeforeSearch = null;
-let wasSearching = false;
 
-function currentQuery() { return searchBox.value.trim().toLowerCase(); }
+/* PURE over the items it is handed — the app passes what the cards say, the
+   suite passes a fixture — which is the family's rule for this function and what
+   lets the matching be pinned without a DOM. It never reaches for `cards`.
 
-function applySearch() {
-  const q = currentQuery();
-  const on = q.length >= MIN_QUERY;
+   `mark` is the index of the match WITHIN THAT CARD'S BODY, counted the way
+   markMatches counts: every occurrence, left to right, advancing by the length
+   of the needle. That is what lets a result scroll to its own line rather than
+   to the top of a card whose output runs for two hundred of them.
 
-  /* Remember what was open the moment a search starts, so clearing the box puts
-     the page back where it was rather than dumping you on a collapsed grid. */
-  if (on && !wasSearching) {
-    const open = openCards();
-    openBeforeSearch = open.length === 1 ? open[0].task.id : null;
-  }
+   It is an index into the marks, not a promise. A match that spans two text
+   nodes in the rendered body — "Beta <strong>6</strong>" — is in the text this
+   reads and is NOT one markMatches can wrap, so the count can run ahead of the
+   marks it is indexing. The caller clamps, and the worst case is landing on a
+   nearby match rather than the exact one. */
+function searchApp(items, query) {
+  const q = String(query || '').trim().toLowerCase();
+  if (q.length < MIN_QUERY) return { hits: [], more: 0 };
+  const hits = [];
+  let dropped = 0;
+  const push = (h) => { if (hits.length < SEARCH_CAP) hits.push(h); else dropped++; };
 
-  let hits = 0;
-  cards.forEach(e => {
-    clearMarks(e.card);
-    const hit = !on || e.haystack.includes(q);
-    e.card.hidden = on && !hit;
-    if (on && hit) {
-      hits++;
-      setOpen(e, true);
-      markMatches(e.title, q);
-      markMatches(e.meta, q);
-      markMatches(e.body, q);
+  (Array.isArray(items) ? items : []).forEach(it => {
+    const title = String(it.title || '');
+    const when = String(it.when || '');
+    /* What the card says about ITSELF first: somebody who typed a task's name
+       wants the task before forty lines of what it said this morning. Title,
+       description and schedule together, so "beta" finds both beta-check cards
+       even in a week when neither of them ran. */
+    const about = (title + ' ' + (it.description || '') + ' ' + (it.schedule || '')).toLowerCase();
+    if (about.includes(q))
+      push({ id: it.id, where: title, snippet: String(it.description || ''), when, mark: -1 });
+
+    /* Then one hit per matching LINE of the output, in the order the card reads.
+       Every occurrence advances `n`, including a second one on a line already
+       listed: `n` has to agree with the marks, not with the hits. */
+    const text = String(it.text || '');
+    const lower = text.toLowerCase();
+    let at = lower.indexOf(q), n = 0, listed = -1;
+    while (at !== -1) {
+      const from = lower.lastIndexOf('\n', at) + 1;
+      if (from !== listed) {
+        let to = lower.indexOf('\n', at);
+        if (to === -1) to = text.length;
+        push({ id: it.id, where: title, snippet: text.slice(from, to).trim(), when, mark: n });
+        listed = from;
+      }
+      n++;
+      at = lower.indexOf(q, at + q.length);
     }
   });
-
-  if (on) {
-    const shown = searchBox.value.trim();
-    searchNote.textContent = hits === 0
-      ? `No task mentions “${shown}”.`
-      : `${hits} of ${cards.length} tasks match “${shown}” — expanded and highlighted below.`;
-  } else {
-    searchNote.textContent = '';
-    if (wasSearching) {
-      collapseAll();
-      const back = openBeforeSearch && cards.find(e => e.task.id === openBeforeSearch);
-      if (back) setOpen(back, true);
-      openBeforeSearch = null;
-    }
-  }
-
-  wasSearching = on;
-  syncHash();
-  syncExpandBtn();
+  return { hits, more: dropped };
 }
 
-/* Debounced: a card body is one long text node, and re-marking eight of them on
-   every keystroke is work nobody sees the result of until you stop typing. */
-let searchTimer = null;
-searchBox.addEventListener('input', () => {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(applySearch, 120);
+/* The consts above are reachable from the suite; a plain function declaration
+   already is. */
+window.__dashTestHooks = { SEARCH_CAP, MIN_QUERY };
+
+const searchDialog = document.getElementById('searchDialog');
+const findBtn = document.getElementById('findBtn');
+
+/* What the window searches is what the card SAYS — the body's rendered text,
+   not the raw markdown behind it. Two reasons, and the second is the one that
+   matters: a raw line carries syntax a reader never sees ("[the docs](https://…)"),
+   and the marks go into the RENDERED text, so an index counted anywhere else
+   would point at the wrong match. A card with no output yet contributes nothing
+   rather than its "waiting for first run" placeholder, which is the page
+   talking, not the task. */
+function searchItems() {
+  return cards.map(e => ({
+    id: e.task.id,
+    title: e.task.title,
+    description: e.task.description,
+    schedule: e.task.schedule || '',
+    when: e.ago.textContent,
+    text: e.raw.trim() ? e.body.textContent : ''
+  }));
+}
+
+let searchHits = [];
+
+function renderSearchResults() {
+  const box = document.getElementById('searchBox');
+  const out = document.getElementById('searchResults');
+  const typed = box.value.trim();
+  const { hits, more } = searchApp(searchItems(), box.value);
+  searchHits = hits;
+  /* Announced through the count span (role="status"), not the list: a screen
+     reader hears "12 results" per keystroke rather than the whole list re-read. */
+  document.getElementById('searchCount').textContent = typed.length < MIN_QUERY ? ''
+    : hits.length ? hits.length + (more ? ' of ' + (hits.length + more) : '')
+        + ' result' + (hits.length === 1 && !more ? '' : 's')
+    : 'Nothing matches';
+  out.innerHTML = hits.length
+    ? hits.map((h, i) => '<button type="button" class="hit" data-hit="' + i + '">'
+        + '<span class="hitwhere">' + escapeHtml(h.where) + '</span>'
+        + (h.snippet ? '<span class="hitsnip">' + escapeHtml(h.snippet.slice(0, 120)) + '</span>' : '')
+        + '<span class="hittab">' + escapeHtml(h.when) + '</span></button>').join('')
+      + (more ? '<p class="hint">…and ' + more + ' more — narrow the search.</p>' : '')
+    : typed.length >= MIN_QUERY
+      ? '<p class="hint">Nothing matches.</p>'
+      : '<p class="hint">Type at least two characters.</p>';
+}
+
+/* Opening a result is the one place this page collapses everything else: you
+   asked for a line, and the card it is in is what should be on screen. The
+   marks from the previous result come off first — every card, not just this
+   one — so what is highlighted is always the search you are looking at. */
+function goToSearchHit(h) {
+  const entry = cards.find(e => e.task.id === h.id);
+  if (!entry) return;
+  const q = document.getElementById('searchBox').value.trim().toLowerCase();
+  searchDialog.close();
+  cards.forEach(e => clearMarks(e.card));
+  collapseAll();
+  setOpen(entry, true);
+  markMatches(entry.title, q);
+  markMatches(entry.meta, q);
+  markMatches(entry.body, q);
+  syncHash();
+  syncExpandBtn();
+  const marks = entry.body.querySelectorAll('mark.hit');
+  /* Clamped — see the note on searchApp's `mark`. With nothing marked at all
+     (a hit on the title, or a match the renderer split across two nodes) the
+     card's own top is the honest answer. */
+  scrollUnderHeader(h.mark >= 0 && marks.length
+    ? marks[Math.min(h.mark, marks.length - 1)] : entry.card);
+}
+
+findBtn.addEventListener('click', () => {
+  const box = document.getElementById('searchBox');
+  searchDialog.showModal();
+  box.value = '';
+  renderSearchResults();
+  /* Typing IS the reason this window opens, so it is the one place the keyboard
+     should arrive with it — on a phone as much as anywhere. */
+  box.focus();
 });
-searchBox.addEventListener('keydown', ev => {
-  if (ev.key === 'Escape' && searchBox.value !== '') {
-    ev.preventDefault();          // don't let the browser's own search-field clear beat us to it
-    searchBox.value = '';
-    clearTimeout(searchTimer);
-    applySearch();
-  }
+document.getElementById('searchBox').addEventListener('input', renderSearchResults);
+document.getElementById('searchResults').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('[data-hit]');
+  if (btn && searchHits[+btn.dataset.hit]) goToSearchHit(searchHits[+btn.dataset.hit]);
 });
-/* ⌘K / Ctrl+K — Money Map's shortcut for the same job, so the family agrees. */
-document.addEventListener('keydown', ev => {
-  if ((ev.metaKey || ev.ctrlKey) && !ev.altKey && ev.key.toLowerCase() === 'k') {
-    ev.preventDefault();
-    searchBox.focus();
-    searchBox.select();
-  }
+/* A click on the backdrop closes, the family's rule for every dialog. The hit
+   test is against the dialog's own box, so a click on its padding or a drag that
+   started inside the field does not count as outside. */
+searchDialog.addEventListener('click', (ev) => {
+  const r = searchDialog.getBoundingClientRect();
+  if (ev.clientX < r.left || ev.clientX > r.right
+      || ev.clientY < r.top || ev.clientY > r.bottom) searchDialog.close();
 });
+/* ⌘K / Ctrl+K — the family's shortcut, with the family's guard: never over the
+   top of another window, and a second press closes it. */
+document.addEventListener('keydown', (ev) => {
+  if ((ev.key !== 'k' && ev.key !== 'K') || !(ev.metaKey || ev.ctrlKey) || ev.shiftKey || ev.altKey)
+    return;
+  const open = document.querySelector('dialog[open]');
+  if (open && open.id !== 'searchDialog') return;
+  ev.preventDefault();
+  if (open) open.close();
+  else findBtn.click();
+});
+
 
 /* ── The clock ──────────────────────────────────────────────────────────────
    Repaints every relative timestamp, and once the page has been open longer

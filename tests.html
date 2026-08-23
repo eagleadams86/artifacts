@@ -75,8 +75,12 @@ function ok(cond, note) { if (!cond) throw new Error(note || 'expected truthy');
    This is what makes the count itself an assertion. It is the number the suite
    registers today, so ADDING a test never fails the build; removing one does,
    which is the moment to ask whether it should have gone. Lower it deliberately
-   when a test is deliberately retired. */
-const EXPECTED = 44;
+   when a test is deliberately retired.
+
+   It had drifted: 44 was pinned against a suite of 53 by 2026-08-23, and a floor
+   several tests below the truth only catches a group being deleted once enough
+   of them have already gone. Re-pinned to what actually runs when Find arrived. */
+const EXPECTED = 57;
 let w;
 
 group('formatContent — escapes everything, then re-enables a tiny allowlist');
@@ -199,20 +203,85 @@ t('the needle is matched literally — a regex character is not a wildcard', () 
   eq(w.markMatches(box, 'a+b'), 1, 'if this is 2, the needle reached a RegExp');
 });
 
-group('The controls the cards are driven by');
-t('there is a search box, and it is labelled', () => {
-  const box = w.document.getElementById('search');
-  ok(box, 'no search box');
-  eq(box.getAttribute('type'), 'search', 'type=search gets the browser’s clear button');
-  ok(box.getAttribute('aria-label'), 'a placeholder is not a label');
+/* The fixture is what the app hands searchApp: what each card SAYS, with the
+   body's rendered text rather than the raw markdown behind it. The matcher never
+   touches the DOM, which is the whole reason it can be pinned here. */
+const FIND_ITEMS = [
+  { id: 'news', title: 'Daily News Briefing', description: 'The morning read',
+    schedule: 'Every day at 6:00 AM', when: 'Updated 2h ago',
+    text: 'Apple shipped beta 6\nnothing to see\nbeta 7 and beta 8 landed\n' },
+  { id: 'watch', title: 'Beta Watch', description: 'iOS betas', schedule: 'Every Monday',
+    when: 'Updated 3d ago', text: '' }
+];
+
+group('Find — what a hit is, and where in the card it points');
+t('one character finds nothing: the floor is two', () => {
+  eq(w.searchApp(FIND_ITEMS, 'b'), { hits: [], more: 0 });
+  eq(w.searchApp(FIND_ITEMS, ' '), { hits: [], more: 0 }, 'trimmed before it is counted');
 });
-t('the result count is an EMPTY live region, not a hidden one', () => {
-  const note = w.document.getElementById('searchnote');
-  ok(note, 'no result count element');
-  eq(note.getAttribute('role'), 'status');
+t('a card matches on its own title, description and schedule, ahead of its output', () => {
+  const { hits } = w.searchApp(FIND_ITEMS, 'beta');
+  const own = hits.filter(h => h.mark === -1);
+  eq(own.length, 1, 'exactly one card names itself after a beta');
+  eq(own[0].id, 'watch');
+  eq(own[0].snippet, 'iOS betas', 'the description is what a card-level hit shows');
+  /* A card with no output yet contributes nothing else — the "waiting for first
+     run" placeholder is the page talking, not the task. */
+  eq(hits.filter(h => h.id === 'watch').length, 1);
+});
+t('every matching LINE of the output is its own hit, in reading order', () => {
+  const lines = w.searchApp(FIND_ITEMS, 'beta').hits.filter(h => h.id === 'news');
+  eq(lines.map(h => h.snippet),
+     ['Apple shipped beta 6', 'beta 7 and beta 8 landed']);
+  eq(lines.map(h => h.when), ['Updated 2h ago', 'Updated 2h ago'],
+     'the third line of a hit is the card’s own freshness');
+});
+t('a second match on a line already listed does not repeat it — but it still counts', () => {
+  /* `mark` is an index into the marks markMatches will make, so it has to count
+     EVERY occurrence: "beta 8" is the third one, and the line it shares with
+     "beta 7" is listed once, at index 1. */
+  const lines = w.searchApp(FIND_ITEMS, 'beta').hits.filter(h => h.id === 'news');
+  eq(lines.map(h => h.mark), [0, 1]);
+});
+t('and that index lands on the mark markMatches actually makes', () => {
+  const box = w.document.createElement('div');
+  box.textContent = FIND_ITEMS[0].text;
+  eq(w.markMatches(box, 'beta'), 3, 'three occurrences across the three lines');
+  const marks = box.querySelectorAll('mark.hit');
+  const second = w.searchApp(FIND_ITEMS, 'beta').hits.filter(h => h.id === 'news')[1];
+  ok(marks[second.mark].nextSibling.nodeValue.startsWith(' 7'),
+     'the index pointed at the wrong match: ' + marks[second.mark].nextSibling.nodeValue.slice(0, 12));
+});
+t('the cap is hard, and what it dropped is counted rather than silently lost', () => {
+  const cap = w.__dashTestHooks.SEARCH_CAP;
+  const text = Array.from({ length: cap + 20 }, (_, i) => 'zeta line ' + i).join('\n');
+  const r = w.searchApp([{ id: 'x', title: 'X', description: '', schedule: '', when: '', text }], 'zeta');
+  eq(r.hits.length, cap);
+  eq(r.more, 20, 'the overflow is the number the window says "and N more" about');
+});
+
+group('The controls the cards are driven by');
+t('Find is a button in the header, and the field it replaced has gone', () => {
+  const btn = w.document.getElementById('findBtn');
+  ok(btn, 'no Find button');
+  ok(/find/i.test(btn.textContent), 'unexpected label: ' + btn.textContent);
+  ok(/⌘K/.test(btn.title || ''), 'the title names the shortcut in every sibling app');
+  ok(!w.document.getElementById('search'), 'the old header search field is still here');
+});
+t('the Find window has a labelled box and an EMPTY live region for the count', () => {
+  const d = w.document;
+  const dlg = d.getElementById('searchDialog');
+  ok(dlg, 'no Find window');
+  eq(dlg.tagName, 'DIALOG', 'it is a real <dialog>, like every other window here');
+  const box = d.getElementById('searchBox');
+  ok(box, 'no search box in the window');
+  ok(d.querySelector('label[for="searchBox"]'), 'a placeholder is not a label');
+  const count = d.getElementById('searchCount');
+  ok(count, 'no result count element');
+  eq(count.getAttribute('role'), 'status');
   /* Toggling a status region out of `hidden` is announced unreliably; one that
      is present and empty, and then gains text, is not. */
-  ok(!note.hasAttribute('hidden'), 'it must not be hidden — `:empty` hides it instead');
+  ok(!count.hasAttribute('hidden'), 'it must not be hidden — .sr-only keeps it off screen');
 });
 t('Expand all carries its state in its own label', () => {
   const btn = w.document.getElementById('expandall');
