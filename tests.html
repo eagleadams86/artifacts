@@ -80,7 +80,7 @@ function ok(cond, note) { if (!cond) throw new Error(note || 'expected truthy');
    It had drifted: 44 was pinned against a suite of 53 by 2026-08-23, and a floor
    several tests below the truth only catches a group being deleted once enough
    of them have already gone. Re-pinned to what actually runs when Find arrived. */
-const EXPECTED = 57;
+const EXPECTED = 58;
 let w;
 
 group('formatContent — escapes everything, then re-enables a tiny allowlist');
@@ -578,6 +578,21 @@ t('is network-first, so a cached briefing needs a network that actually failed',
      'this looks cache-first — a stale briefing shown as current is the thing this page ruled out');
   ok(/!res\.ok && cached/.test(SW),
      'a same-origin error reply with a cached copy in hand must serve the cache');
+});
+/* The bug this test exists for shipped WITH the worker and hid for two days: a
+   plain `fetch(req)` inherits the cache mode of the request the page made, so
+   on an ordinary reload the browser's own HTTP cache answered it, the page was
+   handed that copy as if it were the network's, and `cache.put` wrote it back
+   over the offline copy. Pages sends `max-age=600`, so pressing Refresh in the
+   ten minutes after a task published new output showed the OLD output — and
+   only a hard reload, which bypasses the worker, showed the new. Network-first
+   has to mean the network, not "whatever the browser has to hand". */
+t('goes to the network even when the browser has a fresh copy of its own', () => {
+  const SW = swStrip(SW_SRC);
+  ok(/fetch\(req, \{ cache: 'no-cache' \}\)/.test(SW),
+     'the serving fetch must opt out of the HTTP cache, or an ordinary reload is answered from it');
+  ok(!/fetch\(req\)/.test(SW),
+     'a bare fetch(req) is the bug: it inherits the page request\u2019s cache mode');
 });
 t('can repair its cache without a new worker version', () => {
   const SW = swStrip(SW_SRC);

@@ -225,7 +225,23 @@ async function networkFirst(req, key) {
      the shell should win. Only allowlisted files ever reach here, so no real
      missing page is being papered over. */
   const cached = await cache.match(cacheKey);
-  const fresh = fetch(req).then((res) => {
+  /* `no-cache`, and this line is the whole difference between network-first and
+     network-first-in-name-only. A plain `fetch(req)` inherits the cache mode of
+     the request the page made, which for a `<script src>` or a stylesheet on an
+     ORDINARY reload is `default` — so the browser's own HTTP cache answers it
+     without a byte reaching GitHub, this handler hands that copy to the page as
+     if it were the network's, and then `cache.put` writes the stale copy back
+     into the offline cache on top of it. Pages serves everything here with
+     `max-age=600`, so that is a ten-minute window in which pressing Refresh
+     after a task has published new output shows you the old output and quietly
+     re-stores it. (A hard reload bypasses this worker entirely, which is why it
+     appeared to be the only thing that worked.) `topUp()` already knew this and
+     said so; the fetch that actually serves the page did not.
+     `no-cache` rather than `reload`: it still goes to the server every time,
+     but as a conditional request, so an unchanged file comes back as a 304 and
+     costs nothing. Offline it rejects exactly as before and the cache answers,
+     which is the only time a cached copy should ever be what you see. */
+  const fresh = fetch(req, { cache: 'no-cache' }).then((res) => {
     /* Only a real, same-origin 200 is worth keeping. `basic` excludes opaque
        cross-origin replies, which we should never see here anyway. */
     if (res && res.ok && res.type === 'basic') cache.put(cacheKey, res.clone());
