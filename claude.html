@@ -611,10 +611,13 @@
     body.printing-one .card:not(.print-target) { display: none; }
   }
 
-  /* Respect the OS "reduce motion" setting. */
-  @media (prefers-reduced-motion: reduce) {
-    * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
-  }
+  /* prefers-reduced-motion is the theme pack's rule 15 as of 2026-08-26, so there
+     is nothing to declare here. It was hand-copied into five pages in THREE
+     spellings and missing from four others; `theme.css` carries the one form now
+     and every app gets it by linking the file. The pack's version is the `.01ms`
+     spelling deliberately — `transition: none` never fires `transitionend`.
+     A scroll asked for from SCRIPT still needs its own check: CSS cannot reach
+     `scrollTo({ behavior: 'smooth' })`. */
 
 /* ── The footer every public page in this account carries ────────────────────
    Sprint Predictability's, transcribed — it is the design lead for this chrome
