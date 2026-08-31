@@ -3,10 +3,11 @@
 <head>
 <meta charset="utf-8">
 <!-- frame-src 'self' is the hidden iframe this suite boots claude.html in.
-     connect-src 'self' is the fetch of privacy.html, which the landmark group
-     below reads as text — it has to be spelled out, because it falls back to
-     default-src, which is 'none' here, and a refused fetch shows up as three
-     tests failing about a file that is plainly present. -->
+     connect-src 'self' covers the files the suite reads as TEXT — privacy.html,
+     sw.js, sw-kill.js, index.html, .nojekyll and claude.html's own source. It
+     has to be spelled out, because it falls back to default-src, which is
+     'none' here, and refused fetches show up as tests failing about files
+     that are plainly present. -->
 <!-- api.github.com is the CI-scorecard line at the foot of this file, and the
      only off-origin host any page in this repo names. It is here because this
      page is published beside the ones it tests and refuses to RUN there, so
@@ -90,8 +91,9 @@ function ok(cond, note, detail) {
 
    It had drifted: 44 was pinned against a suite of 53 by 2026-08-23, and a floor
    several tests below the truth only catches a group being deleted once enough
-   of them have already gone. Re-pinned to what actually runs when Find arrived. */
-const EXPECTED = 58;
+   of them have already gone. Re-pinned to what actually runs when Find arrived;
+   58 → 60 when the Pages-root pin (index.html + .nojekyll) landed 2026-08-31. */
+const EXPECTED = 60;
 let w;
 
 group('formatContent — escapes everything, then re-enables a tiny allowlist');
@@ -518,6 +520,28 @@ function stripHtmlComments(str) {
   return out;
 }
 
+/* ── The Pages root ──────────────────────────────────────────────────────────
+   Without .nojekyll, Pages ran this repo through Jekyll and published
+   README.md as /artifacts/ — a page on the family's shared origin with NO CSP
+   that pulled a script from cdnjs.cloudflare.com. The empty file is the off
+   switch, and index.html is what the address serves instead. Fixed 2026-08-18;
+   pinned here so a tidy-up that deletes an "empty file" fails the build
+   instead of quietly re-opening the hole. */
+group('The Pages root — what keeps Jekyll off the shared origin');
+t('.nojekyll and index.html are both served, so Pages never renders a .md', () => {
+  ok(NOJEKYLL_OK, '.nojekyll is missing — Pages would publish every .md as a CSP-less page');
+  ok(INDEX_SRC, 'index.html is missing — Pages would serve a rendered README at the root');
+});
+t('and the stub is a CSP’d redirect that carries no script at all', () => {
+  ok(INDEX_SRC, 'index.html did not load, so the negations below would pass on an empty string');
+  ok(/http-equiv="Content-Security-Policy"/.test(INDEX_SRC),
+     'the stub must carry a CSP meta tag, like every page on this origin');
+  ok(/http-equiv="refresh" content="0; url=claude\.html"/.test(INDEX_SRC),
+     'and redirect to claude.html — it is a stub, not a second dashboard');
+  ok(!/<script/i.test(stripHtmlComments(INDEX_SRC)),
+     'its CSP names no script-src, so it must carry no script at all');
+});
+
 /* ══════════════════════════════════════════════════════════════════════════
    The offline worker (2026-08-22). This page was the one in the family without
    one, on the argument that a cached copy of hourly task output presented as
@@ -700,7 +724,8 @@ function showLatestRun() {
 ─────────────────────────────────────────────────────────────────────────── */
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
 
-let PRIVACY_SRC = '', SW_SRC = '', KILL_SRC = '', APP_SRC = '';
+let PRIVACY_SRC = '', SW_SRC = '', KILL_SRC = '', APP_SRC = '', INDEX_SRC = '';
+let NOJEKYLL_OK = false;
 
 window.addEventListener('load', () => {
   if (!LOCAL_HOSTS.includes(location.hostname)) return refuse();
@@ -732,6 +757,9 @@ window.addEventListener('load', () => {
   bustFetch('sw.js').then((r) => (r.ok ? r.text() : '')).then((t) => { SW_SRC = t; }).catch(() => {});
   bustFetch('sw-kill.js').then((r) => (r.ok ? r.text() : '')).then((t) => { KILL_SRC = t; }).catch(() => {});
   bustFetch('claude.html').then((r) => (r.ok ? r.text() : '')).then((t) => { APP_SRC = t; }).catch(() => {});
+  bustFetch('index.html').then((r) => (r.ok ? r.text() : '')).then((t) => { INDEX_SRC = t; }).catch(() => {});
+  /* Existence is the whole assertion — the file is empty by design. */
+  bustFetch('.nojekyll').then((r) => { NOJEKYLL_OK = r.ok; }).catch(() => {});
   const frame = document.createElement('iframe');
   frame.id = 'app';
   frame.src = bust('claude.html');

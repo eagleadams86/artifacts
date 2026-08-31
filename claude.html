@@ -37,11 +37,12 @@
      as app…" into a real install: its own window with no browser chrome, its own
      icon in the Dock or on the taskbar, opening straight on this page.
 
-     UNLIKE the sibling apps, this does NOT bring offline with it. Those have a
-     service worker; this page has none, and it should not — what it displays is
-     task output that is rewritten hourly, and a cached copy of that presented as
-     current is a wrong answer rather than an old page. Installed, it still needs
-     the network, and that is the right trade for what it shows.
+     Since 2026-08-22 it brings offline with it too, like the sibling apps:
+     sw.js (registered at the foot of this file) is NETWORK-FIRST, so the cache
+     only ever answers a network that actually failed. The old objection — that
+     a cached copy of hourly task output presented as current is a wrong answer
+     rather than an old page — was right, and network-first is what answers it:
+     a newer briefing landing while you are online is impossible to miss.
 
      `start_url` is claude.html rather than "./": the directory index is a
      redirect stub, and a standalone window should not open on a meta-refresh.
@@ -723,9 +724,10 @@ footer { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
 <main class="grid" id="grid" tabindex="-1">
   <!-- Both live INSIDE the main landmark, so the skip link lands above them
        rather than past them, and the cards render after them. -->
-  <!-- This page has no service worker and no network of its own, so it cannot
-       ask whether newer output exists. What it can say is how long ago this copy
-       was loaded, which is the thing a tab left open overnight hides. -->
+  <!-- This page has no network of its own (connect-src 'none') — the offline
+       worker only re-serves these same files — so it cannot ask whether newer
+       output exists. What it can say is how long ago this copy was loaded,
+       which is the thing a tab left open overnight hides. -->
   <div class="notice" id="agenotice" hidden>
     <span>This page was loaded <b id="agenotice-age">an hour ago</b> and does not update itself.</span>
     <button class="ctl small" type="button" id="agenotice-refresh"><span aria-hidden="true">&#8635;</span> Refresh</button>
@@ -1768,10 +1770,10 @@ document.addEventListener('keydown', (ev) => {
 
 /* ── The clock ──────────────────────────────────────────────────────────────
    Repaints every relative timestamp, and once the page has been open longer
-   than the hourly push cycle, says so. This page has no service worker and no
-   network of its own (`connect-src 'none'`), so it cannot check whether newer
-   output exists — the notice says what it actually knows, which is how long ago
-   this copy was loaded.
+   than the hourly push cycle, says so. This page has no network of its own
+   (`connect-src 'none'`) — the offline worker only re-serves these same files —
+   so it cannot check whether newer output exists. The notice says what it
+   actually knows, which is how long ago this copy was loaded.
 
    Everything here is decided from wall-clock arithmetic rather than by counting
    ticks: a background tab's timers are throttled and may not fire at all, so an
