@@ -10,7 +10,7 @@ Cards are sorted by most recently updated and collapse by default — click a ca
 
 ### Finding Things
 
-**⌕ Find searches every card's output at once**, not just the one that happens to be open — the app family's window, the same one Money Map, Sprint Predictability, Flow Metrics and Golf Handicap open on **⌘K / Ctrl+K**. Type two characters or more and the results list every *line* that mentions them, under the card it came from and how old that card's output is. Picking one opens that card, highlights every match in it and scrolls to the line. Escape or a click outside closes the window; a second ⌘K does too.
+**⌕ Find searches every card's output at once**, not just the one that happens to be open — the app family's window, the same one Money Map, Sprint Predictability, Flow Metrics and Golf Handicap open on **⌘K / Ctrl+K**. Type two characters or more and the results list every *line* that mentions them, under the card it came from and how old that card's output is. Picking one — a click, or **Enter** for the top result — opens that card, highlights every match in it and scrolls to the line. Escape or a click outside closes the window; a second ⌘K does too. (Until 2026-09-04 Enter did nothing: only typing was wired up, so you had to Tab out of the box to reach a result. With nothing matching, Enter still does nothing and the window stays open — there is nowhere to go.)
 
 Cards themselves are also searched by title, description and schedule, so "beta" finds both beta-check cards even in a week when neither of them ran. The list stops at 80 results and says how many more there were, so a search that matched half the page never quietly shows you a slice of itself.
 

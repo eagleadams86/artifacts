@@ -1743,6 +1743,18 @@ findBtn.addEventListener('click', () => {
   box.focus();
 });
 document.getElementById('searchBox').addEventListener('input', renderSearchResults);
+/* Enter opens the FIRST hit (2026-09-04) — the one key a search box teaches,
+   and until now the only listener on this box was `input`, so Enter did nothing
+   at all and a reader had to Tab out of the field to reach a result. The same
+   call a click on that hit makes; with nothing matching there is nothing to go
+   to and the window stays open. A PLAIN Enter only — a modified one belongs to
+   the browser or a screen reader. Nothing else about the box changes. The same
+   fix, the same day, in the five sibling apps that share this window. */
+document.getElementById('searchBox').addEventListener('keydown', (ev) => {
+  if (ev.key !== 'Enter' || ev.metaKey || ev.ctrlKey || ev.altKey || ev.shiftKey) return;
+  ev.preventDefault();
+  if (searchHits[0]) goToSearchHit(searchHits[0]);
+});
 document.getElementById('searchResults').addEventListener('click', (ev) => {
   const btn = ev.target.closest('[data-hit]');
   if (btn && searchHits[+btn.dataset.hit]) goToSearchHit(searchHits[+btn.dataset.hit]);

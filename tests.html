@@ -92,8 +92,9 @@ function ok(cond, note, detail) {
    It had drifted: 44 was pinned against a suite of 53 by 2026-08-23, and a floor
    several tests below the truth only catches a group being deleted once enough
    of them have already gone. Re-pinned to what actually runs when Find arrived;
-   58 → 60 when the Pages-root pin (index.html + .nojekyll) landed 2026-08-31. */
-const EXPECTED = 60;
+   58 → 60 when the Pages-root pin (index.html + .nojekyll) landed 2026-08-31;
+   60 → 61 when Enter was wired to the Find box on 2026-09-04. */
+const EXPECTED = 61;
 let w;
 
 group('formatContent — escapes everything, then re-enables a tiny allowlist');
@@ -271,6 +272,81 @@ t('the cap is hard, and what it dropped is counted rather than silently lost', (
   const r = w.searchApp([{ id: 'x', title: 'X', description: '', schedule: '', when: '', text }], 'zeta');
   eq(r.hits.length, cap);
   eq(r.more, 20, 'the overflow is the number the window says "and N more" about');
+});
+
+/* ── Driving the Find window for real ───────────────────────────────────────
+   Everything above pins the MATCHER, which is pure and needs no page. These
+   two groups press the keys instead, so the queries have to be ones that
+   really match: this page searches live task output, rewritten hourly, and a
+   hard-coded word would rot the first time a briefing changed. `aLiveQuery`
+   takes a word out of what the cards actually say when the suite runs.
+
+   These are also the only tests here that CHANGE the page — they open a card,
+   mark it and rewrite the permalink — and the whole suite shares one frame, so
+   each one puts it back in a `finally`. */
+function aLiveQuery() {
+  for (const it of w.searchItems()) {
+    const m = String(it.text || '').match(/[A-Za-z]{4,}/);
+    if (m) return m[0].toLowerCase();
+  }
+  return '';
+}
+function openFind(q) {
+  const d = w.document;
+  d.getElementById('findBtn').click();
+  const box = d.getElementById('searchBox');
+  box.value = q;
+  box.dispatchEvent(new w.Event('input', { bubbles: true }));
+  return box;
+}
+function pressEnter(el, extra) {
+  return el.dispatchEvent(new w.KeyboardEvent('keydown',
+    Object.assign({ key: 'Enter', bubbles: true, cancelable: true }, extra || {})));
+}
+function resetFind() {
+  const d = w.document;
+  const dlg = d.getElementById('searchDialog');
+  if (dlg.open) dlg.close();
+  d.querySelectorAll('.card').forEach((c) => w.clearMarks(c));
+  w.collapseAll();
+  w.syncExpandBtn();
+  w.syncHash();
+  if (d.activeElement && d.activeElement.blur) d.activeElement.blur();
+}
+
+group('Find — Enter opens the first hit');
+/* Until 2026-09-04 the only listener on the box was `input`, so Enter — the one
+   key a search box teaches — did nothing at all and a reader had to Tab out of
+   the field to reach a result. */
+t('Enter opens the first hit — and with nothing matching, leaves the window open', () => {
+  const d = w.document;
+  const dlg = d.getElementById('searchDialog');
+  try {
+    const box = openFind('zzzz-nothing-matches-this');
+    ok(dlg.open && !d.querySelector('#searchResults .hit'), 'the window is open with no hits');
+    pressEnter(box);
+    ok(dlg.open, 'Enter with nothing matching leaves the window open — there is nothing to go to');
+
+    const q = aLiveQuery();
+    ok(q, 'no card has any output to search — without it the assertions below prove nothing');
+    box.value = q;
+    box.dispatchEvent(new w.Event('input', { bubbles: true }));
+    const first = w.searchApp(w.searchItems(), q).hits[0];
+    ok(first, 'a word taken out of a card must match that card');
+    ok(d.querySelector('#searchResults .hit'), 'and the window must be listing it');
+
+    pressEnter(box);
+    ok(!dlg.open, 'Enter opens the first hit: the window closes');
+    const card = d.getElementById('body-' + first.id).closest('.card');
+    ok(card.classList.contains('expanded'),
+       'and the card the FIRST hit is in is the one that opened');
+
+    /* A modified Enter belongs to somebody else — a browser shortcut, or a
+       screen reader — and must not be taken as this one. */
+    openFind(q);
+    pressEnter(box, { metaKey: true });
+    ok(dlg.open, 'Enter with a modifier held is not this shortcut');
+  } finally { resetFind(); }
 });
 
 group('The controls the cards are driven by');
