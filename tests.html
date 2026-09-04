@@ -93,8 +93,9 @@ function ok(cond, note, detail) {
    several tests below the truth only catches a group being deleted once enough
    of them have already gone. Re-pinned to what actually runs when Find arrived;
    58 → 60 when the Pages-root pin (index.html + .nojekyll) landed 2026-08-31;
-   60 → 61 when Enter was wired to the Find box on 2026-09-04. */
-const EXPECTED = 61;
+   60 → 62 when Enter was wired to the Find box and the keyboard was given
+   somewhere to land after a hit, on 2026-09-04. */
+const EXPECTED = 62;
 let w;
 
 group('formatContent — escapes everything, then re-enables a tiny allowlist');
@@ -347,6 +348,70 @@ t('Enter opens the first hit — and with nothing matching, leaves the window op
     pressEnter(box, { metaKey: true });
     ok(dlg.open, 'Enter with a modifier held is not this shortcut');
   } finally { resetFind(); }
+});
+
+group('Find — where the keyboard lands after a hit');
+/* Closing the window hands the focus back to whatever had it before, which
+   after a ⌘K pressed from nowhere in particular is <body> — or the search box
+   itself, now inside a closed dialog where nothing can see it. The four sibling
+   apps land the keyboard on the tab of the view the hit went to; there are no
+   tabs here and a hit is a LINE, so the landing is the CARD that opened, on the
+   one focusable control its header has: the header button itself, which is what
+   a keyboard reader would act on next (Enter or Space collapses it again).
+   `{ preventScroll: true }` because the scroll to the marked line is the whole
+   point of a line hit and the focus must not fight it. */
+t('the keyboard lands on the opened card’s header button, and the scroll still goes to the mark', () => {
+  const d = w.document;
+  const realScroll = w.scrollUnderHeader;
+  const scrolled = [];
+  /* This suite's frame is 1px square, so a scroll offset read off the page
+     would prove nothing. The scroll TARGET is what the assertion is about, so
+     it is captured here rather than performed. */
+  w.scrollUnderHeader = (el) => { scrolled.push(el); };
+  const where = () => {
+    const a = d.activeElement;
+    return a ? (a.className || a.id || a.tagName) : 'nothing';
+  };
+  try {
+    const q = aLiveQuery();
+    ok(q, 'no card has any output to search — without it the assertions below prove nothing');
+    const hits = w.searchApp(w.searchItems(), q).hits;
+    const i = hits.findIndex((h) => h.mark >= 0);
+    ok(i !== -1, 'a word taken out of a card’s own output must give at least one LINE hit');
+
+    openFind(q);
+    const btns = d.querySelectorAll('#searchResults .hit');
+    ok(btns[i], 'the window must be listing that hit');
+    btns[i].click();
+    ok(!d.getElementById('searchDialog').open, 'the hit closed the window');
+    const card = d.getElementById('body-' + hits[i].id).closest('.card');
+    ok(card.classList.contains('expanded'), 'the card the hit is in is open');
+
+    const header = card.querySelector('.card-header');
+    ok(d.activeElement === header,
+       'the keyboard is on that card’s own header button, not on <body>', where());
+    ok(header.getClientRects().length > 0, 'and that button is something a reader can see');
+
+    /* The scroll is untouched by the focus: it still goes to the mark the hit
+       points at — the body's marks only, since the title and the description
+       are marked too. */
+    const marks = card.querySelector('.card-body').querySelectorAll('mark.hit');
+    ok(marks.length, 'the matches inside the card are marked');
+    eq(scrolled.length, 1, 'the hit scrolls once');
+    ok(scrolled[0] === marks[Math.min(hits[i].mark, marks.length - 1)],
+       'and to the marked line the hit points at, not to the card or the button',
+       scrolled[0] && (scrolled[0].tagName + '.' + scrolled[0].className));
+
+    /* A focus that is already on something VISIBLE is left where it is: the
+       Find button, after a real press on it, keeps it — the window's own close
+       hands it back and there is nothing to repair. */
+    const findBtn = d.getElementById('findBtn');
+    findBtn.focus();
+    openFind(q);
+    d.querySelectorAll('#searchResults .hit')[i].click();
+    ok(d.activeElement === findBtn,
+       'a focus that is already somewhere visible is left alone', where());
+  } finally { w.scrollUnderHeader = realScroll; resetFind(); }
 });
 
 group('The controls the cards are driven by');

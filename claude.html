@@ -1731,6 +1731,25 @@ function goToSearchHit(h) {
      card's own top is the honest answer. */
   scrollUnderHeader(h.mark >= 0 && marks.length
     ? marks[Math.min(h.mark, marks.length - 1)] : entry.card);
+  /* Where the keyboard is afterwards (2026-09-04). Closing the window hands the
+     focus back to whatever had it before, and after a ⌘K pressed from nowhere
+     in particular that is <body> — or the search box itself, now inside a
+     closed dialog where nothing can see it. Either way the next Tab starts from
+     the top of the page rather than from where the hit took the reader.
+
+     The four sibling apps land on the tab of the view the hit went to. There
+     are no tabs here and a hit is a LINE, so the landing is the CARD that just
+     opened, on the one focusable control its header has — the header button
+     itself, which is what a keyboard reader would act on next (Enter or Space
+     collapses it again). `{ preventScroll: true }` because the scroll to the
+     marked line above is the whole point of a line hit, and focusing must not
+     drag the page off it.
+
+     A focus that is already on something VISIBLE is left alone: the Find button
+     keeps it after a real press on it, and nothing needs repairing. */
+  const had = document.activeElement;
+  if (!had || had === document.body || !had.getClientRects().length)
+    entry.btn.focus({ preventScroll: true });
 }
 
 findBtn.addEventListener('click', () => {
