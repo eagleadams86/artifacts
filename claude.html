@@ -187,21 +187,12 @@
      page has a text-size preference the others do not, and a control fixed at
      30px would clip its own label at XL and XXL. */
   :root { --scale: 1; --chrome-h: calc(30px * var(--scale)); }
-  /* `color-scheme` tells the browser which way round the page is, so the parts of
-     a control it draws itself — the select chevrons this page overrides, but also
-     scrollbars and any focus ring it supplies — follow the theme instead of always
-     being drawn light. It is not one of our colours and overrides nothing in the
-     pack. The pairing follows the PALETTE, not the theme's name: sepia is a warm
-     LIGHT theme and takes `light`. Every app in the family carries this block. */
-  :root, [data-theme="midnight"] { color-scheme: dark; }
-  [data-theme="dark"]  { color-scheme: dark; }
-  [data-theme="light"] { color-scheme: light; }
-  /* Auto has no palette of its own — theme.css resolves it to Light or, under
-     prefers-color-scheme: dark, to Midnight. `light dark` is the honest answer: the
-     page works either way, and the browser should draw its own controls to match the
-     system, which is what the palette above it is doing. */
-  [data-theme="auto"]  { color-scheme: light dark; }
-  [data-theme="sepia"] { color-scheme: light; }
+  /* `color-scheme` moved INTO the pack on 2026-09-12 (rule 18). theme.css emits
+     it on every palette block — :root, each [data-theme], BOTH halves of auto,
+     and the print block — derived from each theme's `isLight` in tokens.json, so
+     it follows the PALETTE and not the theme's name. This page declared its own
+     until then; don't re-add one, a local block is drift now and it is what left
+     the same declaration missing from ten other pages in the family. */
   /* No side or top padding on the body any more — the header is a full-width bar
      that has to reach the window edges, so the gutters moved onto the bar's own
      row and onto `.wrap` below it. */
