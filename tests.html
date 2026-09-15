@@ -95,8 +95,10 @@ function ok(cond, note, detail) {
    58 → 60 when the Pages-root pin (index.html + .nojekyll) landed 2026-08-31;
    60 → 62 when Enter was wired to the Find box and the keyboard was given
    somewhere to land after a hit, on 2026-09-04; 62 → 63 when the header's
-   controls became one scrolling line with arrows, on 2026-09-14. */
-const EXPECTED = 63;
+   controls became one scrolling line with arrows, on 2026-09-14; 63 → 65 the
+   same evening, when the row stayed beside the name and a keyboard focus was
+   brought whole into it. */
+const EXPECTED = 65;
 let w;
 
 group('formatContent — escapes everything, then re-enables a tiny allowlist');
@@ -458,6 +460,52 @@ t('the header controls are one scrolling line at every width, with arrows for a 
      'the arrows are for a mouse or trackpad — a finger swipes the row');
   ok(!/\.controls \{[^}]*justify-content: flex-end/.test(APP_SRC),
      'no flex-end on the scroller — it strands the left-hand controls past the start edge');
+});
+t('the header controls stay BESIDE the name and scroll there (Charles, 2026-09-14: "keep buttons beside the name")', () => {
+  /* The first cut took the whole row onto a line of its own the moment it did
+     not fit. Measured in a 900px copy, where the six controls overflow but the
+     name still leaves the row more than its 15rem — so the row must stay on
+     the name's line and scroll, not wrap under it. */
+  const mid = document.getElementById('rowMid').contentWindow;
+  const D = mid.document;
+  const ctl = D.querySelector('.headrow > .controls'), row = D.querySelector('.headrow');
+  ok(ctl.scrollWidth > ctl.clientWidth, '900px: the controls overflow — otherwise nothing is measured',
+     ctl.scrollWidth + ' vs ' + ctl.clientWidth);
+  const brand = D.querySelector('.brand').getBoundingClientRect(), rr = row.getBoundingClientRect();
+  ok(Math.abs(ctl.getBoundingClientRect().top - brand.top) < 16 && rr.left >= brand.right - 1,
+     'the row sits on the name\'s line, to its right, and scrolls there',
+     'top ' + (ctl.getBoundingClientRect().top - brand.top).toFixed(1) + ', left ' + rr.left.toFixed(1) + ' vs ' + brand.right.toFixed(1));
+  ok(/\.headrow \{[^}]*justify-content: flex-end;[^}]*flex: 1 1 0%; min-width: min\(15rem, 100%\); \}/.test(APP_SRC),
+     'the row takes what the name leaves, packed right, and wraps only under 15rem');
+});
+t('a control half past the header row\'s edge, reached from the keyboard, scrolls wholly into the row', () => {
+  /* The browser scrolls a focus target into view only when it is ENTIRELY
+     hidden, so Tab onto a control half past the edge left it half past the
+     edge. The straddle is MADE rather than hoped for: the first control
+     reaching past the right edge is scrolled until its middle sits on it. */
+  const D = document.getElementById('rowMid').contentWindow.document;
+  const row = D.querySelector('.headrow > .controls');
+  const items = [...row.children].filter((c) => c.getClientRects().length);
+  row.scrollLeft = 0;
+  let box = row.getBoundingClientRect();
+  const half = items.find((el) => el.getBoundingClientRect().right > box.right - 1);
+  ok(half, 'there is a control reaching past the edge to test with');
+  if (!half) return;
+  const r0 = half.getBoundingClientRect();
+  row.scrollLeft += Math.max(0, r0.left + r0.width / 2 - box.right);
+  box = row.getBoundingClientRect();
+  const r1 = half.getBoundingClientRect();
+  ok(r1.left < box.right && r1.right > box.right, 'set up: it straddles the edge',
+     r1.left.toFixed(1) + ' ' + r1.right.toFixed(1) + ' vs ' + box.right.toFixed(1));
+  half.focus();
+  const r = half.getBoundingClientRect(), b2 = row.getBoundingClientRect();
+  ok(b2.right - r.right >= 3 && r.left - b2.left >= 3,
+     'focused, it is scrolled fully inside the row with its ring room',
+     (r.left - b2.left).toFixed(1) + ' / ' + (b2.right - r.right).toFixed(1));
+  half.blur();
+  row.scrollLeft = 0;
+  ok(/if \(t === row \|\| !t\.matches\(':focus-visible'\)\) return;/.test(APP_SRC),
+     'only a keyboard focus scrolls the row — a mouse press needs no help');
 });
 t('the Find window has a labelled box and an EMPTY live region for the count', () => {
   const d = w.document;
@@ -944,8 +992,10 @@ window.addEventListener('load', () => {
   frame.title = 'dashboard under test';
   frame.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
   document.body.appendChild(frame);
-  /* Two more copies at REAL window widths, for the header row's live test
-     (2026-09-14). The frame above is 1px square, where every control overflows
+  /* Three more copies at REAL window widths, for the header row's live tests
+     (2026-09-14): 480px, where the row sits under the name and scrolls; 900px,
+     where it overflows but must stay BESIDE the name; 2000px, where it fits.
+     The frame above is 1px square, where every control overflows
      and nothing about a row that fits can be measured. `position: fixed` so a
      2000px frame does not give this page a sideways scroll; invisible and
      click-through like the frame above. The runner is synchronous, so they
@@ -966,7 +1016,8 @@ window.addEventListener('load', () => {
     else frame.addEventListener('load', resolve, { once: true });
   });
   const start = () => setTimeout(run, 250); // also lets the privacy.html fetch above land
-  Promise.all([mainLoaded, sizedFrame('rowNarrow', 480), sizedFrame('rowWide', 2000)]).then(start);
+  Promise.all([mainLoaded, sizedFrame('rowNarrow', 480), sizedFrame('rowMid', 900),
+    sizedFrame('rowWide', 2000)]).then(start);
 });
 
 /* Two reasons to land here, needing different sentences: the published site and

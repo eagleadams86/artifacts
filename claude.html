@@ -393,17 +393,24 @@
   /* THE CONTROLS ARE ONE LINE THAT SCROLLS SIDEWAYS, AT EVERY WIDTH (Charles,
      2026-09-14, family-wide: "should we just make them both always single line
      side scrollers?" — Money Map's shape, ported). `.headrow` is the row and its
-     two arrows; `.controls` is what scrolls. The row is sized to its content, so
-     while every control fits beside the name it sits there, pushed right by the
-     name's auto margin exactly as before; when it does not, flex-wrap takes the
-     WHOLE row onto a line of its own, where it shrinks to that line and scrolls.
-     `justify-content: flex-end` went with it: in a box that overflows it puts
-     the left-hand controls past the start edge, where no scroll can reach them.
+     two arrows; `.controls` is what scrolls. THE ROW STAYS BESIDE THE NAME AND
+     SCROLLS THERE (Charles, the same evening: "keep buttons beside the name" —
+     the first cut took the whole row onto a line of its own the moment it did
+     not fit). So the row takes whatever the name leaves (`flex: 1 1 0%`), its
+     controls packed to the right-hand end by `justify-content: flex-end` on the
+     ROW — which never overflows, because the scroller inside it shrinks
+     instead, so nothing is pushed out of reach — and it only wraps under the
+     name when that would leave it less than 15rem. This page's strapline is
+     long, so that is a window under about 717px at the default text size
+     (902px at the largest), and every upright phone. `justify-content:
+     flex-end` is NOT on `.controls`: in a box that overflows it puts the
+     left-hand controls past the start edge, where no scroll can reach them.
      The 4px of padding and matching negative margin are room for the focus ring
      on every side without moving a control. No scrollbar: the arrows are the
      sign there is more, and what a mouse can press — a wheel does not scroll
      sideways, and a Mac hides its bars. */
-  .headrow { display: flex; align-items: center; gap: 4px; flex: 0 1 auto; min-width: 0; }
+  .headrow { display: flex; align-items: center; justify-content: flex-end; gap: 4px;
+             flex: 1 1 0%; min-width: min(15rem, 100%); }
   .controls { display: flex; align-items: center; gap: 12px; flex-wrap: nowrap; flex: 0 1 auto;
               min-width: 0; overflow-x: auto; padding: 4px; margin: -4px; scrollbar-width: none; }
   .controls::-webkit-scrollbar { display: none; }
@@ -595,12 +602,10 @@
        and `body` has no padding of its own any more, nor an `h1` or a
        `.header-row` to restyle. All four rules went with the header rewrite. */
     .grid { gap: 16px; }
-    /* The controls never fit beside the name here, so the row always sits on a
-       line of its own. While it fits that line it keeps to the right-hand end,
-       where `.controls { width: 100% }` with `justify-content: flex-end` held
-       it until 2026-09-14; once it overflows it fills the line and the auto
-       margin comes to nothing. */
-    .headrow { margin-left: auto; }
+    /* Nothing to say about the header row here since the second 2026-09-14
+       change: the base `.headrow` grows to fill whatever line it is on and packs
+       its controls right, which is what `.headrow { margin-left: auto }` (and
+       `.controls { width: 100% }` before it) did for this width alone. */
     .card-header { flex-wrap: wrap; }
     .card-updated { width: 100%; text-align: left; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
     .updated-full { margin-top: 0; }
@@ -937,6 +942,24 @@ function wireScrollRow(row, nav) {
   const step = (dir) => { row.scrollLeft += dir * Math.max(80, Math.round(row.clientWidth * 0.8)); };
   prev.onclick = () => step(-1);
   next.onclick = () => step(1);
+  /* A CONTROL REACHED FROM THE KEYBOARD LANDS WHOLE INSIDE THE ROW. The
+     browser scrolls a focused element into view only when it is entirely
+     hidden, so Tab onto a button half past the edge left it half past the
+     edge (measured on PAPTrack at 480px: Back Up focused with 21px still
+     clipped), and an arrow key along a tab bar did the same. Measured against
+     the PADDING edge, so the 4px bought for the focus ring stays the ring's —
+     the tab nudge's lesson. Only a `:focus-visible` focus: a mouse press
+     needs no help, and scrolling under it would move a tab that is about to
+     be dragged. */
+  row.addEventListener('focusin', (e) => {
+    const t = e.target;
+    if (t === row || !t.matches(':focus-visible')) return;
+    const cs = getComputedStyle(row);
+    const padL = parseFloat(cs.paddingLeft) || 0, padR = parseFloat(cs.paddingRight) || 0;
+    const box = row.getBoundingClientRect(), tr = t.getBoundingClientRect();
+    if (tr.left < box.left + padL) row.scrollLeft += tr.left - box.left - padL;
+    else if (tr.right > box.right - padR) row.scrollLeft += tr.right - box.right + padR;
+  });
   row.addEventListener('scroll', sync, { passive: true });
   if ('ResizeObserver' in window) new ResizeObserver(sync).observe(row);
   new MutationObserver(sync).observe(row, { subtree: true, childList: true, characterData: true,
@@ -1127,9 +1150,12 @@ function paintStamp(entry) {
    underneath the bar and you landed on the second line of the description.
 
    MEASURED rather than assumed: the bar's height moves with the text-size
-   preference and wraps to two or three rows on a narrow window, so a constant
-   would be wrong in most of the cases that matter. Read at the moment of the
-   scroll, which is when it is correct.
+   preference (one row is 47px at Small, 66px at XXL), and it grows a second
+   row once the window is too narrow to keep the controls beside the name —
+   under about 717px at the default size, 902px at XXL — and a third on an
+   upright phone, where the name wraps too (105px, or 141px at XXL). A
+   constant would be wrong in most of the cases that matter. Read at the
+   moment of the scroll, which is when it is correct.
 
    Any element, not just a card: Find lands on the highlighted line inside one,
    which has exactly the same problem with the bar. */
