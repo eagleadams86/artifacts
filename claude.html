@@ -390,7 +390,40 @@
      beside it. The five apps put their controls straight in `.headbar` at
      `gap: 12px`; the pages with a nested row have to say it themselves.
      Reported 2026-08-23. */
-  .controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+  /* THE CONTROLS ARE ONE LINE THAT SCROLLS SIDEWAYS, AT EVERY WIDTH (Charles,
+     2026-09-14, family-wide: "should we just make them both always single line
+     side scrollers?" — Money Map's shape, ported). `.headrow` is the row and its
+     two arrows; `.controls` is what scrolls. The row is sized to its content, so
+     while every control fits beside the name it sits there, pushed right by the
+     name's auto margin exactly as before; when it does not, flex-wrap takes the
+     WHOLE row onto a line of its own, where it shrinks to that line and scrolls.
+     `justify-content: flex-end` went with it: in a box that overflows it puts
+     the left-hand controls past the start edge, where no scroll can reach them.
+     The 4px of padding and matching negative margin are room for the focus ring
+     on every side without moving a control. No scrollbar: the arrows are the
+     sign there is more, and what a mouse can press — a wheel does not scroll
+     sideways, and a Mac hides its bars. */
+  .headrow { display: flex; align-items: center; gap: 4px; flex: 0 1 auto; min-width: 0; }
+  .controls { display: flex; align-items: center; gap: 12px; flex-wrap: nowrap; flex: 0 1 auto;
+              min-width: 0; overflow-x: auto; padding: 4px; margin: -4px; scrollbar-width: none; }
+  .controls::-webkit-scrollbar { display: none; }
+  .controls > * { flex: 0 0 auto; }
+  /* The two arrows beside the row. The box sets no `display`, so `hidden` —
+     which wireScrollRow() sets whenever there is nothing to scroll — still
+     hides it. Plain glyph buttons, not the family's `.ctl`: they point at the
+     controls rather than being one. */
+  .rownav { flex: none; white-space: nowrap; }
+  .rownav button { background: none; border: 0; border-radius: var(--radius-sm); padding: 4px 10px;
+                   color: var(--text-secondary); font-family: var(--font);
+                   font-size: calc(var(--fs-md) * var(--scale)); line-height: 1.1; min-height: auto;
+                   cursor: pointer; }
+  .rownav button:hover:not(:disabled) { background: var(--surface-alt); color: var(--text-primary); }
+  .rownav button:disabled { opacity: .35; cursor: default; }
+  .rownav button:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+  /* FOR A MOUSE OR A TRACKPAD ONLY: a finger swipes the row, which is all the
+     arrows stand in for. `!important` because wireScrollRow() clears `hidden`
+     whenever the row overflows. */
+  @media (hover: none), (pointer: coarse) { .rownav { display: none !important; } }
   /* The family's button: `--surface-alt` on `--border-strong` at 6px, darkening its
      border on hover. It was the same fill on `--border-control` with muted text —
      close, but a shade quieter than the same row in the sibling apps, and sized
@@ -562,11 +595,12 @@
        and `body` has no padding of its own any more, nor an `h1` or a
        `.header-row` to restyle. All four rules went with the header rewrite. */
     .grid { gap: 16px; }
-    /* The row is six controls of their own width now that Find is a button
-       rather than a field, so it wraps where it likes and there is nothing to
-       stretch. `.controls` still takes the full width so the wrapped rows stay
-       right-aligned under the brand rather than centring themselves. */
-    .controls { width: 100%; }
+    /* The controls never fit beside the name here, so the row always sits on a
+       line of its own. While it fits that line it keeps to the right-hand end,
+       where `.controls { width: 100% }` with `justify-content: flex-end` held
+       it until 2026-09-14; once it overflows it fills the line and the auto
+       margin comes to nothing. */
+    .headrow { margin-left: auto; }
     .card-header { flex-wrap: wrap; }
     .card-updated { width: 100%; text-align: left; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
     .updated-full { margin-top: 0; }
@@ -638,6 +672,10 @@ footer { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
          Bump it on both references when make_favicon.py is re-run. -->
     <h1 class="brand"><img src="favicon.ico?v=1" width="23" height="23" alt=""
       >Task&nbsp;Dashboard <span>&middot; Charlie&rsquo;s Epic Information Roundup</span></h1>
+    <!-- `.headrow` holds the scroller and its two arrows; the arrows cannot go
+         inside the thing they scroll. The arrows ship `hidden`, and
+         wireScrollRow() shows them only while the row has something off an end. -->
+    <div class="headrow">
     <div class="controls">
       <!-- ── The family's header order ─────────────────────────────────────────
            Every app in the family lays this row out the same way, so a control
@@ -699,6 +737,13 @@ footer { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
         <option value="midnight">✦ Midnight</option>
         <option value="sepia">📜 Sepia</option>
       </select>
+    </div>
+    <!-- Out of the Tab order and hidden from a screen reader on purpose: every
+         control in the row is reachable with Tab, and focusing one scrolls it
+         into view. The arrows are for a pointer. -->
+    <div class="rownav" hidden><button type="button" tabindex="-1" aria-hidden="true"
+      title="Scroll the controls left">‹</button><button type="button" tabindex="-1"
+      aria-hidden="true" title="Scroll the controls right">›</button></div>
     </div>
   </div>
 </header>
@@ -865,6 +910,41 @@ sizeSelect.addEventListener('change', () => {
   document.documentElement.style.setProperty('--scale', sizeSelect.value);
   localStorage.setItem('dashboard-textsize', sizeSelect.value);
 });
+
+/* ── A row that scrolls sideways, and the two arrows beside it ───────────────
+   The header's controls are a single scrolling line at every width (2026-09-14,
+   family-wide; Money Map's function, verbatim). A finger swipes the row and a
+   trackpad scrolls it, but a mouse wheel does not scroll sideways and a Mac
+   hides its scroll bars — so a control past the edge would be one nobody knew
+   was there. `nav` is a box holding the two arrows: shown only while the row
+   has something off an end, each arrow disabled at its own end, and a press
+   moving the row most of its own width. Instant, never smooth.
+
+   What keeps it true without anyone calling it: the row's own scroll, its size
+   (a ResizeObserver — the window, the text-size picker), and what is inside it
+   (a MutationObserver — Expand All becoming Collapse All). Showing the arrows
+   narrows the row, and that only ever leaves it overflowing, so the two cannot
+   flicker. */
+function wireScrollRow(row, nav) {
+  if (!row || !nav) return;
+  const [prev, next] = nav.querySelectorAll('button');
+  const sync = () => {
+    const room = row.scrollWidth - row.clientWidth;
+    nav.hidden = room <= 1;
+    prev.disabled = row.scrollLeft <= 1;
+    next.disabled = row.scrollLeft >= room - 1;
+  };
+  const step = (dir) => { row.scrollLeft += dir * Math.max(80, Math.round(row.clientWidth * 0.8)); };
+  prev.onclick = () => step(-1);
+  next.onclick = () => step(1);
+  row.addEventListener('scroll', sync, { passive: true });
+  if ('ResizeObserver' in window) new ResizeObserver(sync).observe(row);
+  new MutationObserver(sync).observe(row, { subtree: true, childList: true, characterData: true,
+    attributes: true, attributeFilter: ['hidden', 'class', 'style'] });
+  window.addEventListener('resize', sync);
+  sync();
+}
+wireScrollRow(document.querySelector('.headrow > .controls'), document.querySelector('.headrow > .rownav'));
 
 const TASKS = [
   {

@@ -94,8 +94,9 @@ function ok(cond, note, detail) {
    of them have already gone. Re-pinned to what actually runs when Find arrived;
    58 → 60 when the Pages-root pin (index.html + .nojekyll) landed 2026-08-31;
    60 → 62 when Enter was wired to the Find box and the keyboard was given
-   somewhere to land after a hit, on 2026-09-04. */
-const EXPECTED = 62;
+   somewhere to land after a hit, on 2026-09-04; 62 → 63 when the header's
+   controls became one scrolling line with arrows, on 2026-09-14. */
+const EXPECTED = 63;
 let w;
 
 group('formatContent — escapes everything, then re-enables a tiny allowlist');
@@ -421,6 +422,42 @@ t('Find is a button in the header, and the field it replaced has gone', () => {
   ok(/find/i.test(btn.textContent), 'unexpected label: ' + btn.textContent);
   ok(/⌘K/.test(btn.title || ''), 'the title names the shortcut in every sibling app');
   ok(!w.document.getElementById('search'), 'the old header search field is still here');
+});
+t('the header controls are one scrolling line at every width, with arrows for a pointer (2026-09-14)', () => {
+  /* Charles, 2026-09-14, family-wide: the header's control row is a single line
+     that scrolls sideways, never a wrapped block. Measured live in a 480px copy,
+     where the six controls cannot fit, and a 2000px copy, where nothing may have
+     changed. Read synchronously — the runner does not wait — so ‹ coming on
+     after a scroll (a scroll event away) is not asserted here. */
+  const lines = (W, el) => new Set([...el.children]
+    .filter((c) => c.getClientRects().length && W.getComputedStyle(c).display !== 'none')
+    .map((c) => Math.round(c.getBoundingClientRect().top))).size;
+  const narrow = document.getElementById('rowNarrow').contentWindow;
+  const D = narrow.document;
+  const ctl = D.querySelector('.headrow > .controls'), nav = D.querySelector('.headrow > .rownav');
+  ok(ctl && nav, 'the controls sit in .headrow beside a .rownav of two arrows');
+  eq(lines(narrow, ctl), 1, '480px: the controls are one line');
+  ok(ctl.scrollWidth > ctl.clientWidth, 'and have something to scroll — otherwise nothing is measured',
+     ctl.scrollWidth + ' vs ' + ctl.clientWidth);
+  ok(!nav.hidden, 'so the arrows are shown');
+  const [prev, next] = nav.querySelectorAll('button');
+  ok(prev.disabled && !next.disabled, 'at the start, ‹ is off and › is on');
+  next.click();
+  ok(ctl.scrollLeft > 0, 'pressing › scrolls the row', ctl.scrollLeft);
+  ctl.scrollLeft = 0;
+
+  const wide = document.getElementById('rowWide').contentWindow;
+  const WD = wide.document, wctl = WD.querySelector('.headrow > .controls');
+  ok(wctl.scrollWidth - wctl.clientWidth <= 1, '2000px: the controls fit',
+     wctl.scrollWidth + ' vs ' + wctl.clientWidth);
+  ok(WD.querySelector('.headrow > .rownav').hidden, 'so no arrows');
+  eq(lines(wide, wctl), 1, 'one line');
+  ok(Math.abs(wctl.getBoundingClientRect().top - WD.querySelector('.brand').getBoundingClientRect().top) < 16,
+     'and they sit beside the name, on its line, as they always have');
+  ok(/@media \(hover: none\), \(pointer: coarse\) \{ \.rownav \{ display: none !important; \} \}/.test(APP_SRC),
+     'the arrows are for a mouse or trackpad — a finger swipes the row');
+  ok(!/\.controls \{[^}]*justify-content: flex-end/.test(APP_SRC),
+     'no flex-end on the scroller — it strands the left-hand controls past the start edge');
 });
 t('the Find window has a labelled box and an EMPTY live region for the count', () => {
   const d = w.document;
@@ -907,10 +944,29 @@ window.addEventListener('load', () => {
   frame.title = 'dashboard under test';
   frame.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
   document.body.appendChild(frame);
+  /* Two more copies at REAL window widths, for the header row's live test
+     (2026-09-14). The frame above is 1px square, where every control overflows
+     and nothing about a row that fits can be measured. `position: fixed` so a
+     2000px frame does not give this page a sideways scroll; invisible and
+     click-through like the frame above. The runner is synchronous, so they
+     have to have booted before it starts. */
+  const sizedFrame = (id, wpx) => new Promise((resolve) => {
+    const f = document.createElement('iframe');
+    f.id = id;
+    f.src = bust('claude.html');
+    f.title = 'dashboard under test at ' + wpx + 'px';
+    f.style.cssText = 'position:fixed;left:0;top:0;width:' + wpx
+      + 'px;height:600px;border:0;opacity:0;pointer-events:none';
+    f.addEventListener('load', resolve, { once: true });
+    document.body.appendChild(f);
+  });
+  const mainLoaded = new Promise((resolve) => {
+    if (frame.contentDocument && frame.contentDocument.readyState === 'complete'
+        && frame.contentWindow.formatContent) resolve();
+    else frame.addEventListener('load', resolve, { once: true });
+  });
   const start = () => setTimeout(run, 250); // also lets the privacy.html fetch above land
-  if (frame.contentDocument && frame.contentDocument.readyState === 'complete'
-      && frame.contentWindow.formatContent) start();
-  else frame.addEventListener('load', start, { once: true });
+  Promise.all([mainLoaded, sizedFrame('rowNarrow', 480), sizedFrame('rowWide', 2000)]).then(start);
 });
 
 /* Two reasons to land here, needing different sentences: the published site and
