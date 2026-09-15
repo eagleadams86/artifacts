@@ -97,8 +97,9 @@ function ok(cond, note, detail) {
    somewhere to land after a hit, on 2026-09-04; 62 → 63 when the header's
    controls became one scrolling line with arrows, on 2026-09-14; 63 → 65 the
    same evening, when the row stayed beside the name and a keyboard focus was
-   brought whole into it. */
-const EXPECTED = 65;
+   brought whole into it; 65 → 66 the same night, when a focus scrolled to the
+   top of the window stopped landing under the sticky header. */
+const EXPECTED = 66;
 let w;
 
 group('formatContent — escapes everything, then re-enables a tiny allowlist');
@@ -506,6 +507,58 @@ t('a control half past the header row\'s edge, reached from the keyboard, scroll
   row.scrollLeft = 0;
   ok(/if \(t === row \|\| !t\.matches\(':focus-visible'\)\) return;/.test(APP_SRC),
      'only a keyboard focus scrolls the row — a mouse press needs no help');
+});
+t('a control focused half above the window, or behind the sticky header, lands BELOW the header', () => {
+  /* Charles, 2026-09-14: "fix the sticky header shift+tab issue". The browser's
+     scroll to a focus lines a control up with the top of the WINDOW, where the
+     bar is, and leaves one already inside the bar's band where it is. Tried in
+     the 900px copy: a card header put half above the window (where Shift+Tab
+     back up the page leaves one) and a short control put wholly behind the bar,
+     each focused with no preventScroll. A spacer gives the page scroll room
+     however little task output is on disk; everything is put back after. */
+  const FW = document.getElementById('rowMid').contentWindow, D = FW.document;
+  const head = D.querySelector('header');
+  const spacer = D.createElement('div');
+  spacer.style.height = '3000px';
+  D.body.appendChild(spacer);
+  const results = [];
+  try {
+    const hb = head.getBoundingClientRect().height;
+    const usable = (el) => {
+      if (!el.getClientRects().length || head.contains(el) || el.matches('.skip') || el.closest('dialog')) return false;
+      for (let n = el; n; n = n.parentElement) if (FW.getComputedStyle(n).position === 'fixed') return false;
+      const r = el.getBoundingClientRect();
+      return r.left >= 0 && r.width > 0 && r.height > 0;
+    };
+    const card = [...D.querySelectorAll('.card-header')].find(usable);
+    const short = [...D.querySelectorAll('a[href], button')].find((el) => usable(el) && el.getBoundingClientRect().height < hb - 6);
+    ok(card && short, 'there is a card header, and a control short enough to sit wholly behind the header');
+    const land = (el, want) => {
+      FW.scrollBy(0, el.getBoundingClientRect().top - want);
+      const placed = Math.abs(el.getBoundingClientRect().top - want) < 2;
+      const stuck = head.getBoundingClientRect().top <= 1;
+      el.focus();
+      const res = { placed: placed, stuck: stuck, focused: D.activeElement === el,
+        top: +el.getBoundingClientRect().top.toFixed(1), headBottom: +head.getBoundingClientRect().bottom.toFixed(1) };
+      el.blur();
+      return res;
+    };
+    results.push(['a card header half above the window', land(card, -Math.round(card.getBoundingClientRect().height / 2))]);
+    results.push(['a short control wholly behind the header', land(short, Math.round(hb - short.getBoundingClientRect().height - 3))]);
+  } finally {
+    spacer.remove();
+    FW.scrollTo(0, 0);
+  }
+  results.forEach(([name, r]) => {
+    ok(r.placed && r.stuck, name + ': set up — it was put there, with the header pinned', JSON.stringify(r));
+    ok(r.focused, name + ': and it took the focus');
+    ok(r.top >= r.headBottom, name + ': focused, it lands below the header\'s bottom',
+       'top ' + r.top + ' vs header bottom ' + r.headBottom);
+  });
+  ok(/html \{ scroll-padding-top: calc\(var\(--head-h, 0px\) \+ 8px\); \}/.test(APP_SRC),
+     'the clearance is the header\'s MEASURED height, plus room for the ring');
+  ok(/new ResizeObserver\(\(\) => \{\s*document\.documentElement\.style\.setProperty\('--head-h'/.test(APP_SRC),
+     'written by an observer on the header — the text-size picker resizes the bar and nothing calls this');
 });
 t('the Find window has a labelled box and an EMPTY live region for the count', () => {
   const d = w.document;

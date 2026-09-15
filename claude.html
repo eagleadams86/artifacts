@@ -369,6 +369,20 @@
     border-bottom: 1px solid var(--border-strong);
     padding: 10px 0; margin-bottom: 24px;
   }
+  /* A KEYBOARD FOCUS NEVER LANDS UNDER THE BAR (2026-09-14). `scrollUnderHeader`
+     below handles this page's OWN scrolls; this is the browser's. Its scroll to
+     a focused control — Tab, and above all Shift+Tab back up the page — lines a
+     card header half off the top up with the top of the WINDOW, where the bar
+     is, and a link wholly inside the band the bar covers counts as visible and
+     is not scrolled at all. Measured before this rule, at every width and text
+     size: every such control focused still behind the bar. `scroll-padding-top`
+     tells the browser the window starts below it. The height is MEASURED
+     (`--head-h`, written by a ResizeObserver beside `wireScrollRow()`): the bar
+     is 51px on one row, 66px at XXL, and grows a row when the controls go under
+     the name and another when the name wraps — the text-size picker resizes it
+     too, and the observer sees that like any other change. +8px keeps the focus
+     ring clear of its edge. Golf Handicap 8935363 is the reference. */
+  html { scroll-padding-top: calc(var(--head-h, 0px) + 8px); }
   /* 16px, the family's gutter — the bar and the content take the SAME number, or
      the brand stops lining up with the left edge of the first card. This page
      opened at 24px, carried over from the body padding it used to have, which
@@ -968,6 +982,17 @@ function wireScrollRow(row, nav) {
   sync();
 }
 wireScrollRow(document.querySelector('.headrow > .controls'), document.querySelector('.headrow > .rownav'));
+/* The sticky header's height, for `html { scroll-padding-top }` — see the note
+   beside that rule. Observed rather than read once: the bar changes depth with
+   the window, the zoom, the text-size picker and the name wrapping, and nothing
+   calls this. Golf Handicap's, verbatim. */
+(() => {
+  const head = document.querySelector('header');
+  if (!head || !('ResizeObserver' in window)) return;
+  new ResizeObserver(() => {
+    document.documentElement.style.setProperty('--head-h', Math.ceil(head.getBoundingClientRect().height) + 'px');
+  }).observe(head);
+})();
 
 const TASKS = [
   {
