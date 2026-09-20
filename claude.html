@@ -271,6 +271,26 @@
     .card-schedule { flex: 0 0 auto; margin-top: 0; }
     .updated-ago { flex: 0 0 auto; }
     .updated-full { flex: 0 0 auto; margin-top: 0; margin-left: auto; }
+
+    /* ── A description too long for its share of the line drops BELOW it ────
+       One row is right while the sentence fits it. A long description in a
+       narrow share of the card does not get shorter by being squeezed into a
+       three- or five-line column beside four one-line phrases: the row grows
+       to the height of its tallest item, so the card ends up mostly blank on
+       the right of a stack of six-word lines. Below the row the same sentence
+       has the whole card width and reads in one or two.
+
+       TWO LINES is the threshold, and it is measured, not guessed — see
+       `fitDescriptions()`. Nothing in CSS can ask how many lines a box took,
+       so the class is put on by script; without script the header simply
+       stays as it was, which is the layout that shipped.
+
+       `order` is what moves it, not the markup: the description keeps its
+       place in the DOM (title, description, schedule) so a reader hears the
+       card in the order it was written. The row gap is 4px rather than the
+       column's 20px — the same 4px the stacked layout separates these with. */
+    .card-header.desc-below { flex-wrap: wrap; row-gap: 4px; }
+    .card-header.desc-below .card-meta { order: 1; flex: 1 0 100%; }
   }
   .card-body { display: none; padding: 20px; font-size: calc(var(--fs-sm) * var(--scale)); line-height: 1.7; color: var(--body-text); white-space: pre-wrap; word-break: break-word; }
   .card.expanded .card-body { display: block; }
@@ -1336,6 +1356,60 @@ TASKS.forEach(task => {
   }
 });
 
+/* ── How many lines the description took ────────────────────────────────────
+   The card header is one row at 1100px and up, and the description is the only
+   part of it that flexes. That is right until the sentence is long enough that
+   its share of the line is a narrow column: the row is as tall as its tallest
+   item, so five wrapped lines of description sit beside four single-line
+   phrases and the rest of the card is empty. Past two lines the sentence moves
+   below the row (`.desc-below`), where it has the whole card width.
+
+   CSS cannot ask a box how many lines it took, so this is measured. A Range
+   over the element's contents reports one rect per line FRAGMENT, and Find's
+   <mark> makes extra fragments on a line it split — so the lines are counted as
+   DISTINCT TOPS, not as rects. That is also why highlighting re-runs this: a
+   mark carries 1px of padding each side and can be what pushes a line over.
+
+   Measured in the ROW state, always. Once the description is below the row it
+   fits in one line by definition, so asking a moved description whether it
+   still needs to move would move it straight back — every card has its class
+   removed first, then all of them are measured, then the ones that need it are
+   moved. Removing, reading and writing in three passes rather than per card is
+   also one layout instead of eight.
+
+   Under 1100px the header is already a stack, where the description has the
+   full width and this has nothing to say. */
+const DESC_MAX_LINES = 2;
+
+function lineCount(el) {
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const tops = new Set();
+  for (const r of range.getClientRects()) {
+    if (r.width > 0 || r.height > 0) tops.add(Math.round(r.top));
+  }
+  return tops.size;
+}
+
+function fitDescriptions() {
+  cards.forEach(e => e.btn.classList.remove('desc-below'));
+  if (!window.matchMedia('(min-width: 1100px)').matches) return;
+  const over = cards.filter(e => e.meta && lineCount(e.meta) > DESC_MAX_LINES);
+  over.forEach(e => e.btn.classList.add('desc-below'));
+}
+
+/* The window, the zoom and the text-size picker all change how much line a
+   description gets; a frame's worth of coalescing keeps a drag on the window
+   edge from measuring on every pixel. */
+let fitPending = 0;
+function fitDescriptionsSoon() {
+  if (fitPending) return;
+  fitPending = requestAnimationFrame(() => { fitPending = 0; fitDescriptions(); });
+}
+window.addEventListener('resize', fitDescriptionsSoon);
+sizeSelect.addEventListener('change', fitDescriptionsSoon);
+fitDescriptions();
+
 /* ── Copy and print ─────────────────────────────────────────────────────────
    What is copied is the RAW text, not what the sanitizer rendered: the point of
    the button is to paste a briefing into a note or a message, and markdown link
@@ -1845,6 +1919,10 @@ function goToSearchHit(h) {
   markMatches(entry.title, q);
   markMatches(entry.meta, q);
   markMatches(entry.body, q);
+  /* A mark is 1px of padding each side, so highlighting can be what pushes a
+     description onto a third line — and clearing the last search what brings
+     it back. Both happen above, so the fit is re-measured for every card. */
+  fitDescriptions();
   syncHash();
   syncExpandBtn();
   const marks = entry.body.querySelectorAll('mark.hit');
