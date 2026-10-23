@@ -519,6 +519,9 @@
   #shareDialog .ctl.primary { background: var(--btn-bg); color: var(--btn-text);
                               border-color: var(--btn-bg); }
   #shareDialog .ctl.primary:hover { opacity: .88; }
+  /* ...but not while it is switched off: this out-ranks `.ctl:disabled`, so a
+     disabled Copy Link brightened back up under the pointer. */
+  #shareDialog .ctl.primary:disabled:hover { opacity: .5; }
   #shareDialog .ctl.small { padding: 4px 9px; }
   #shareDialog .warn { color: var(--err); font-size: var(--fs-xs); margin: 8px 0 0; }
   #shareDialog .warn:empty, #shareMeta:empty, #shareScope:empty { display: none; }

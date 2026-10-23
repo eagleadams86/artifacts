@@ -86,6 +86,8 @@ The icon is a stack of task cards — what the page is — on the midnight tile 
 
 The palette is `theme.css` — the generated file from the private `claude-theme-pack` repo, the source of truth for the colours of every app in this family, whose script verifies every colour pair at WCAG AA. It is linked in the `<head>`, copied byte-for-byte from the pack; `claude.html`'s own theme blocks hold only the handful of app-specific tokens, documented in the comment above them.
 
+A switched-off button is dimmed by `theme.css` (pack rule 20, 2026-10-23); the page's own `.ctl` buttons keep their slightly lighter `.5`, and the share window's Copy Link no longer brightens back up under the pointer while it is disabled.
+
 Adding a theme starts in the theme pack (new themes need its contrast gate to pass): regenerate and re-copy the pack's `theme.css`, then four edits in `claude.html` — a `[data-theme="…"]` block for the app tokens, an `<option>` in the picker (kept alphabetical), the `THEMES` validation array in the `<head>` script — and this list.
 
 ### Accessibility
