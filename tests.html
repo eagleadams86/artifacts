@@ -630,8 +630,20 @@ t('past two lines the description drops below the row, and returns when it fits'
   try {
     FW.fitDescriptions();
     ok(!header.classList.contains('desc-below'), '2000px: the row is wide enough, nothing moves');
-    ok(sched && Math.abs(meta.getBoundingClientRect().top - sched.getBoundingClientRect().top) < 2,
-       'and the description sits on the row, beside the schedule');
+    /* Compared by the TEXT's line, not the boxes' tops (2026-10-24). The schedule
+       opens with a 🕐, and on a Mac Apple Color Emoji's taller ascent and descent
+       grow that span's line box 3px each way while the words still sit on the
+       description's baseline — so the box tops differed on every Mac and matched
+       on CI's Linux runner, which has no such font. A Range over the last text
+       node is the words alone, the same on both. */
+    const textLine = (el) => {
+      const r = D.createRange();
+      r.selectNodeContents([...el.childNodes].filter((n) => n.nodeType === 3).pop());
+      return r.getClientRects()[0];
+    };
+    ok(sched && Math.abs(textLine(meta).top - textLine(sched).top) < 2,
+       'and the description sits on the row, beside the schedule',
+       sched && (textLine(meta).top.toFixed(1) + ' vs ' + textLine(sched).top.toFixed(1)));
 
     /* Narrow the CARD, not the window: one-row mode stays on. */
     grid.style.maxWidth = '560px';
