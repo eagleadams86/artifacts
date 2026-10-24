@@ -1,7 +1,7 @@
 {
   "id": "/artifacts/claude.html",
-  "name": "Claude Task Dashboard",
-  "short_name": "Tasks",
+  "name": "AI Roundup",
+  "short_name": "AI Roundup",
   "description": "The output of every scheduled task, newest first — news briefings, digests and checks, in one page.",
   "start_url": "claude.html",
   "scope": "./",

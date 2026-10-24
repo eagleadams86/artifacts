@@ -466,13 +466,13 @@ t('the header controls are one scrolling line at every width, with arrows for a 
 });
 t('the header controls stay BESIDE the name and scroll there (Charles, 2026-09-14: "keep buttons beside the name")', () => {
   /* The first cut took the whole row onto a line of its own the moment it did
-     not fit. Measured in a 900px copy, where the six controls overflow but the
+     not fit. Measured in a 680px copy, where the six controls overflow but the
      name still leaves the row more than its 15rem — so the row must stay on
      the name's line and scroll, not wrap under it. */
   const mid = document.getElementById('rowMid').contentWindow;
   const D = mid.document;
   const ctl = D.querySelector('.headrow > .controls'), row = D.querySelector('.headrow');
-  ok(ctl.scrollWidth > ctl.clientWidth, '900px: the controls overflow — otherwise nothing is measured',
+  ok(ctl.scrollWidth > ctl.clientWidth, '680px: the controls overflow — otherwise nothing is measured',
      ctl.scrollWidth + ' vs ' + ctl.clientWidth);
   const brand = D.querySelector('.brand').getBoundingClientRect(), rr = row.getBoundingClientRect();
   ok(Math.abs(ctl.getBoundingClientRect().top - brand.top) < 16 && rr.left >= brand.right - 1,
@@ -514,7 +514,7 @@ t('a control focused half above the window, or behind the sticky header, lands B
   /* Charles, 2026-09-14: "fix the sticky header shift+tab issue". The browser's
      scroll to a focus lines a control up with the top of the WINDOW, where the
      bar is, and leaves one already inside the bar's band where it is. Tried in
-     the 900px copy: a card header put half above the window (where Shift+Tab
+     the 680px copy: a card header put half above the window (where Shift+Tab
      back up the page leaves one) and a short control put wholly behind the bar,
      each focused with no preventScroll. A spacer gives the page scroll room
      however little task output is on disk; everything is put back after. */
@@ -676,7 +676,7 @@ t('below 1100px it is already a stack, and nothing is moved', () => {
     grid.style.maxWidth = '400px';
     FW.fitDescriptions();
     eq([...D.querySelectorAll('.card-header.desc-below')].length, 0,
-       '900px: the stack needs no help');
+       '680px: the stack needs no help');
   } finally {
     grid.style.maxWidth = was;
     FW.fitDescriptions();
@@ -1137,7 +1137,8 @@ window.addEventListener('load', () => {
   frame.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
   document.body.appendChild(frame);
   /* Three more copies at REAL window widths, for the header row's live tests
-     (2026-09-14): 480px, where the row sits under the name and scrolls; 900px,
+     (2026-09-14): 480px, where the row sits under the name and scrolls; 680px
+     (900px until the subtitle left the name on 2026-10-24 and the controls fit there),
      where it overflows but must stay BESIDE the name; 2000px, where it fits.
      The frame above is 1px square, where every control overflows
      and nothing about a row that fits can be measured. `position: fixed` so a
@@ -1160,7 +1161,7 @@ window.addEventListener('load', () => {
     else frame.addEventListener('load', resolve, { once: true });
   });
   const start = () => setTimeout(run, 250); // also lets the privacy.html fetch above land
-  Promise.all([mainLoaded, sizedFrame('rowNarrow', 480), sizedFrame('rowMid', 900),
+  Promise.all([mainLoaded, sizedFrame('rowNarrow', 480), sizedFrame('rowMid', 680),
     sizedFrame('rowWide', 2000)]).then(start);
 });
 

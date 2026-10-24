@@ -1,4 +1,4 @@
-# Claude Scheduled Task Dashboard
+# AI Roundup
 
 A personal dashboard that displays the live outputs of scheduled Claude tasks.
 
@@ -146,7 +146,7 @@ privacy link in the privacy page's own footer — you are standing on it.
 
 ## Ownership and Licence
 
-The Claude Task Dashboard is an independent personal project by Charles Adams — built on
+AI Roundup is an independent personal project by Charles Adams — built on
 personally owned hardware, with a personally paid-for Claude subscription, in a personal
 GitHub account. No employer equipment, funding or code went into it, and it carries no
 employer information: the cards are the output of his own scheduled personal-interest

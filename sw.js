@@ -1,5 +1,5 @@
 'use strict';
-/* Task Dashboard — the offline service worker.
+/* AI Roundup — the offline service worker.
    ==========================================================================
    Ported from the five app repos, where the design and its objections are
    recorded at length. The two facts that make this the most security-sensitive

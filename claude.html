@@ -20,7 +20,7 @@
      and reads no data. Same line, same reasoning, in every sibling app. -->
 <meta http-equiv="Content-Security-Policy"
       content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
-<title>Claude Task Dashboard</title>
+<title>AI Roundup</title>
 <!-- The mark is what this page is: a stack of task cards, the front one carrying two
      lines of its content, on the tile the rest of the app family wears — midnight
      page, soft disc in the corner. The SVG is what every current browser shows;
@@ -411,11 +411,11 @@
   .headbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
              max-width: var(--page-w); margin: 0 auto; padding: 0 16px; }
   .wrap { max-width: var(--page-w); margin: 0 auto; padding: 0 16px 32px; }
-  /* The family's brand line: mark, name, then the strapline muted behind a middle
-     dot. The auto right margin pushes the controls to the far edge. It is NOT a
-     flex row — the mark sits in the heading's own text flow, so a strapline that
-     wraps on a phone runs on below the name rather than being laid out as a
-     second narrow column beside it. */
+  /* The family's brand line: mark and name, no subtitle (the "· Charlie's Epic
+     Information Roundup" strapline went on 2026-10-24, family-wide, when the page
+     was renamed AI Roundup). The auto right margin pushes the controls to the far
+     edge. It is NOT a flex row — the mark sits in the heading's own text flow, the
+     family's arrangement. */
   .brand { font-size: calc(var(--fs-md) * var(--scale)); font-weight: var(--fw-bold); margin: 0 auto 0 0;
            color: var(--text-primary); letter-spacing: -0.01em; }
   .brand span { color: var(--text-muted); font-weight: 400; }
@@ -713,7 +713,7 @@ footer { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
          without it this would keep showing whatever icon it cached the first time.
          Bump it on both references when make_favicon.py is re-run. -->
     <h1 class="brand"><img src="favicon.ico?v=1" width="23" height="23" alt=""
-      >Task&nbsp;Dashboard <span>&middot; Charlie&rsquo;s Epic Information Roundup</span></h1>
+      >AI&nbsp;Roundup</h1>
     <!-- `.headrow` holds the scroller and its two arrows; the arrows cannot go
          inside the thing they scroll. The arrows ship `hidden`, and
          wireScrollRow() shows them only while the row has something off an end. -->
