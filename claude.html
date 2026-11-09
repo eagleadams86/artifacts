@@ -33,6 +33,11 @@
      request. -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'> <rect width='64' height='64' rx='14' fill='%230a0e1a'/> <circle cx='14' cy='52' r='20' fill='%23141c33'/> <rect x='13' y='10' width='30' height='26' rx='6' fill='%23818cf8'/> <rect x='16.5' y='23.5' width='35' height='31' rx='8.5' fill='%230a0e1a'/> <rect x='19' y='26' width='30' height='26' rx='6' fill='%23a5b4fc'/> <path d='M25 34H43M25 44H37' stroke='%230a0e1a' stroke-width='4' stroke-linecap='round'/> </svg>">
 <link rel="alternate icon" href="favicon.ico?v=1">
+<!-- The iPhone home-screen icon. Safari's "Add to Home Screen" reads this tag, not
+     the manifest's icons — without it iOS drew a plain letter "A" on the
+     background colour. Full bleed and opaque (iOS rounds it and paints any
+     transparency black); make_favicon.py writes it from the same drawing. -->
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <!-- Installing the dashboard. The manifest is what turns Chrome's "Install page
      as app…" into a real install: its own window with no browser chrome, its own
      icon in the Dock or on the taskbar, opening straight on this page.

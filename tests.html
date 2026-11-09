@@ -101,7 +101,7 @@ function ok(cond, note, detail) {
    top of the window stopped landing under the sticky header; 66 → 69 on
    2026-09-20, when a description too long for the row started dropping below
    it. */
-const EXPECTED = 69;
+const EXPECTED = 70;
 let w;
 
 group('formatContent — escapes everything, then re-enables a tiny allowlist');
@@ -1033,6 +1033,13 @@ t('the kill switch stays a pure uninstaller', () => {
   ok(!/cache\.put|addAll/.test(KILL), 'and never cache anything');
   ok(/startsWith\('dash-shell-'\)/.test(KILL), 'and clear only this page\u2019s caches');
 });
+/* iPhones read THIS tag for "Add to Home Screen", not the manifest's icons —
+   without it iOS drew a letter "A" on the background colour (2026-11-09). */
+t('the page names an iPhone home-screen icon that ships', () => {
+  ok(/<link rel="apple-touch-icon" href="apple-touch-icon\.png">/.test(APP_SRC),
+     'claude.html must link apple-touch-icon.png, or iOS draws a letter tile');
+  ok(TOUCH_ICON_OK, 'apple-touch-icon.png did not load as a PNG — is it named in .gitignore?');
+});
 t('the page declares worker-src and guards registration', () => {
   /* \\s+ between the attributes: this page wraps the meta tag across two lines,
      so the single-space form the sibling suites use matches nothing here and
@@ -1106,6 +1113,7 @@ function showLatestRun() {
 ─────────────────────────────────────────────────────────────────────────── */
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
 
+let TOUCH_ICON_OK = false;
 let PRIVACY_SRC = '', SW_SRC = '', KILL_SRC = '', APP_SRC = '', INDEX_SRC = '';
 let NOJEKYLL_OK = false;
 
@@ -1139,6 +1147,7 @@ window.addEventListener('load', () => {
   bustFetch('sw.js').then((r) => (r.ok ? r.text() : '')).then((t) => { SW_SRC = t; }).catch(() => {});
   bustFetch('sw-kill.js').then((r) => (r.ok ? r.text() : '')).then((t) => { KILL_SRC = t; }).catch(() => {});
   bustFetch('claude.html').then((r) => (r.ok ? r.text() : '')).then((t) => { APP_SRC = t; }).catch(() => {});
+  bustFetch('apple-touch-icon.png').then((r) => { TOUCH_ICON_OK = r.ok && /image\/png/.test(r.headers.get('content-type') || ''); }).catch(() => {});
   bustFetch('index.html').then((r) => (r.ok ? r.text() : '')).then((t) => { INDEX_SRC = t; }).catch(() => {});
   /* Existence is the whole assertion — the file is empty by design. */
   bustFetch('.nojekyll').then((r) => { NOJEKYLL_OK = r.ok; }).catch(() => {});

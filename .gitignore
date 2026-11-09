@@ -39,6 +39,10 @@
 !/icon-192.png
 !/icon-512.png
 !/icon-512-maskable.png
+# apple-touch-icon.png: the iPhone home-screen icon (2026-11-09). Another NAMED
+# public file, written by make_favicon.py — without this line it is never
+# committed and iPhones keep drawing a letter "A".
+!/apple-touch-icon.png
 !/make_favicon.py
 # The offline worker and its escape hatch, added 2026-08-22 when the dashboard
 # stopped being the one page in the family with no offline. Two more NAMED

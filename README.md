@@ -76,7 +76,8 @@ Every option in the theme picker is written into the markup at its final size, a
 
 - **`manifest-src 'self'` in the CSP.** It falls back to `default-src`, which is `'none'` here, so without the directive the manifest fetch is refused. Suspect this first.
 - **`make_favicon.py` writes the install icons** — `icon-192.png`, `icon-512.png` and `icon-512-maskable.png` — from the same drawing as `favicon.ico` and the inline SVG.
-- **Each of those four files needs its own line in the whitelist `.gitignore`.** An unnamed file here is silently never committed.
+- **`apple-touch-icon.png` is the iPhone's icon.** Safari's "Add to Home Screen" reads `<link rel="apple-touch-icon">`, not the manifest — without it iOS drew a plain letter "A". `make_favicon.py` writes it at 180px, full bleed and opaque (iOS rounds the corners itself and turns transparency black).
+- **Each of those five files needs its own line in the whitelist `.gitignore`.** An unnamed file here is silently never committed.
 
 **It works offline too, since 2026-08-22.** This was the one page in the family without a service worker, on the argument that what it displays is task output rewritten hourly and a cached copy of that presented as current is a wrong answer rather than an old page. That argument was right — and it is not what the worker does. `sw.js` is **network-first**: the cache only ever answers a network that actually failed, so a newer briefing landing while you are online is impossible to miss. Offline, you get the last copy, and every card states its own age from its data file's own timestamp, so a stale briefing says so rather than passing itself off as this morning's.
 

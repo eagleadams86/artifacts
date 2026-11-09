@@ -72,6 +72,15 @@ PWA_ICONS = [(192, 'icon-192.png'), (512, 'icon-512.png')]
 MASKABLE = (512, 'icon-512-maskable.png')
 MASKABLE_SCALE = 0.85
 
+# The iPHONE icon, added 2026-11-09. "Add to Home Screen" in Safari reads
+# <link rel="apple-touch-icon"> and nothing else dependable — it ignored the
+# manifest's icons and drew a letter "A" on the background colour instead. iOS
+# rounds the corners itself and turns any transparency BLACK, so this one is full
+# bleed and opaque (rounded=False). Its corner mask is far gentler than a
+# launcher's circle, so the cards stay at full size. 180 is the size iPhones ask
+# for. Like every icon here it needs a line in .gitignore's whitelist.
+APPLE_TOUCH = (180, 'apple-touch-icon.png')
+
 
 def rect(d, box, r, fill, grow=0, k=1.0):
     x0, y0, x1, y1 = box
@@ -137,6 +146,11 @@ def main():
     build(rounded=False, k=MASKABLE_SCALE).resize(
         (size, size), Image.LANCZOS).save(name, format='PNG', optimize=True)
     print(f'{name} written (full bleed, cards at {MASKABLE_SCALE:.0%})')
+
+    size, name = APPLE_TOUCH
+    build(rounded=False).resize((size, size), Image.LANCZOS).save(
+        name, format='PNG', optimize=True)
+    print(f'{name} written (full bleed, opaque — iOS rounds it itself)')
 
     print('Now bump the ?v= on both favicon.ico references in claude.html — '
           'browsers cache an icon for a long time and will keep showing the old '
