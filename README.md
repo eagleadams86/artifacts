@@ -113,6 +113,7 @@ Both pages are a `<main>` / `<footer>` pair, in that order. A `<footer>` nested 
 | 💉 GLP-1 News | Every Saturday at 1:15 AM | GLP-1 drug news from the past week — trials, FDA actions, and industry developments |
 | 🤖 Claude and Other AI News | Every day at 1:30 AM | Latest Anthropic, Claude, and AI industry news from the past 24 hours |
 | 🗞️ Daily News Briefing | Every day at 1:45 AM | Local Pendleton/Buffalo/WNY, US, and global headlines |
+| 🚗 Tesla Software Updates | Every day at 2:00 AM | Latest FSD and vehicle software for the Model Y Premium AWD (HW4) |
 
 ## How It Works
 
